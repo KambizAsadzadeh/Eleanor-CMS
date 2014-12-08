@@ -1,6 +1,6 @@
 <?php
 /*
-	Copyright © Eleanor CMS
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 
@@ -11,35 +11,37 @@ namespace Eleanor;
 /** Кодировка файлов */
 define('Eleanor\CHARSET','utf-8');
 define('Eleanor\UTF8',true);
+mb_internal_encoding(CHARSET);
 
 /** Путь к сайту, относительно домена */
-define('Eleanor\SITEDIR',isset($_SERVER['PHP_SELF']) ? dirname($_SERVER['PHP_SELF']).'/' : '/');
+defined('Eleanor\SITEDIR')||define('Eleanor\SITEDIR',isset($_SERVER['PHP_SELF']) ? rtrim(dirname($_SERVER['PHP_SELF']),'/\\').'/' : '/');
+
+/** Протокол доступа */
+defined('Eleanor\PROTOCOL')||define('Eleanor\PROTOCOL',isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']=='on' ? 'https://' : 'http://');
 
 /** Тут есть некоторые глюки... */
 define('Eleanor\W',stripos(PHP_OS,'win')===0);
 
+/** Базовый класс, от которого рекомендуется наследовать все остальные: содержит необходимые заглушки, облегчающие поиск
+ * багов и их исправление */
 abstract class BaseClass
 {
-	/**
-	 * Получение местоположения ошибки в коде: файл + строка
+	/** Получение местоположения ошибки в коде: файл + строка
 	 * @param array $d Дамп стека вызова при помощи функции debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,1)
-	 * @return array
-	 */
+	 * @return array */
 	public static function _BT($d)
 	{
 		return isset($d[0]['file'],$d[0]['line']) ? [ 'file'=>$d[0]['file'],'line'=>$d[0]['line'] ] : [];
 	}
 
-	/**
-	 * Обработка ошибочных вызовов несуществующих статических методов.
+	/** Обработка ошибочных вызовов несуществующих статических методов.
 	 * Наличие этого метода может показаться странным: ведь если вызвать несуществующий статический метод, будет
 	 * сгенерирован Fatal error, который можно отловить и залогировать. Но удобство метода проявляется в классе
 	 * наследнике с методом __callStatic который не может выполнить все вызываемые методы.
 	 * @param string $n Название несуществующего метода
 	 * @param array $p Массив входящих параметров вызываемого метода
 	 * @throws \Eleanor\Classes\EE
-	 * @return null
-	 */
+	 * @return null */
 	public static function __callStatic($n,$p)
 	{
 		$E=new Classes\EE(
@@ -51,21 +53,16 @@ abstract class BaseClass
 			throw$E;
 
 		$E->Log();
-
-		#Redundance for PhpStorm: удалить следующую строку
-		return null;
 	}
 
-	/**
-	 * Обработка ошибочных вызовов несуществующих методов.
+	/** Обработка ошибочных вызовов несуществующих методов.
 	 * Наличие этого метода может показаться странным: ведь если вызвать несуществующий метод объекта, будет
 	 * сгенерирован Fatal error, который можно отловить и залогировать. Но удобство метода проявляется в классе
 	 * наследнике с методом __call который не может выполнить все вызываемые методы.
 	 * @param string $n Название несуществующего метода
 	 * @param array $p Массив входящих параметров вызываемого метода
 	 * @throws \Eleanor\Classes\EE
-	 * @return mixed
-	 */
+	 * @return mixed */
 	public function __call($n,$p)
 	{
 		if(property_exists($this,$n) and is_object($this->$n) and method_exists($this->$n,'__invoke'))
@@ -80,20 +77,15 @@ abstract class BaseClass
 			throw$E;
 
 		$E->Log();
-
-		#Redundance for PhpStorm: удалить следующую строку
-		return null;
 	}
 
-	/**
-	 * Обработка получения несуществующих свойств
+	/** Обработка получения несуществующих свойств
 	 * Наличие этого метода может показаться странным: поскольку, при попытке получить неопределенное свойство
 	 * генерируется Notice, который можно отловить и залогировать. Но удобство метода проявляется в классе наследнике с
 	 * методом __get, который может вернуть не все запрашиваемые свойства.
 	 * @param string $n Имя запрашиваемого свойства
 	 * @throws \Eleanor\Classes\EE
-	 * @return null
-	 */
+	 * @return null */
 	public function __get($n)
 	{
 		if(is_array($n))
@@ -104,124 +96,129 @@ abstract class BaseClass
 		else
 			$d=debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,1);
 
-		$d=static::_BT($d);
 		$E=new Classes\EE(
-			'Trying to get value from the unknown variable '.get_class($this).' -› '.$n,
-			Classes\EE::DEV,static::_BT($d)
+			'Trying to get value from the unknown variable '.get_class($this).' -› '.$n,	Classes\EE::DEV,
+			static::_BT($d)
 		);
 
 		if(Framework::$debug)
 			throw$E;
 
 		$E->Log();
-
-		#Redundance for PhpStorm: удалить следующую строку
-		return null;
 	}
 }
 
+/** Основной класс фреймворка Eleanor */
 class Framework extends BaseClass
 {
+	/** Пространство имен из-под которого будут работать функции __call и __get */
+	const NS='\Eleanor\Classes\\';
+
 	public static
-		/** @static Включить режим отладки */
+		/** @var bool Включить режим отладки */
 		$debug=false,
 
-		/** @static Предыдущий обработчик ошибок */
+		/** @var callable Предыдущий обработчик ошибок */
 		$old_errh,
-		/** @static Предыдущий перехватчик исключений */
+
+		/** @var callable Предыдущий перехватчик исключений */
 		$old_exch,
 
-		/** @static Флаг включения логирования всех ошибок */
-		$handleall=false,
-		/** @static Флаг включения логирования всех исключений */
-		$catchall=false,
+		/** @var string Тип страницы и информацией об ошибке: html, text, json . Своеобразный BSOD*/
+		$bsodtype='html',
 
-		/** @static Флаг включения режима логирования */
+		/** @var bool Флаг включения логирования всех ошибок */
+		$logall=true,
+
+		/** @var bool Флаг включения логирования всех исключений */
+		$catchall=true,
+
+		/** @var bool Флаг включения режима логирования */
 		$logs=true,
-		/** @static Флаг включения режима логирования */
+
+		/** @var string Путь к каталогу, в который будут помещаться логи */
 		$logspath;
 
-	/**
-	 * Упрощенный конструктор встроенных классов
+	/** Упрощенный конструктор встроенных классов
 	 * @param string $n Название класса
 	 * @param array $p Массив входящих параметров конструктора
-	 * @return mixed
-	 */
+	 * @return mixed */
 	public function __call($n,$p)
 	{
-		#Импорт выполняется во время компиляции... С этих слов смотри пример на
-		#http://php.net/manual/ru/language.namespaces.importing.php
-		$nn='\Eleanor\Classes\\'.$n;
+		if(property_exists($this,$n) and is_object($this->$n) and method_exists($this->$n,'__invoke'))
+			return call_user_func_array([$this->$n,'__invoke'],$p);
+
+		$nn=static::NS.$n;
+
 		if(class_exists($nn))
 		{
 			if($p)
 			{
 				$toeval='';
+
 				foreach($p as $k=>$v)
 					$toeval.='$p['.$k.'],';
+
 				return$this->$n=eval('return new $nn('.rtrim($toeval,',').');');
 			}
 
 			return$this->$n=new$nn;
 		}
-		parent::__get(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,1),$n);
 
-		#Redundance for PhpStorm: удалить следующую строку
-		return null;
+		parent::__get(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,1),$n);
 	}
 
-	/**
-	 * Метод быстрого создания объектов классов
+	/** Метод быстрого создания объектов классов
 	 * @param string $n Имя класса
-	 * @return mixed
-	 */
+	 * @return mixed */
 	public function __get($n)
 	{
-		$nn='\Eleanor\Classes\\'.$n;
+		$nn=static::NS.$n;
 		if(class_exists($nn))
 			return$this->$n=new$nn;
 
 		parent::__get(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,1),$n);
-
-		#Redundance for PhpStorm: удалить следующую строку
-		return null;
 	}
 }
 
-Framework::$logspath=$_SERVER['DOCUMENT_ROOT'].'/logs/';
+Framework::$logspath=$_SERVER['DOCUMENT_ROOT'].SITEDIR.'logs/';
 
-/**
- * Перехватчик ошибок. Данная функция не является анонимной, поскольку она используется в AwareInclude
+/** Перехватчик ошибок. Данная функция не является анонимной, поскольку она используется в AwareInclude
  * @param int $num Номер ошибки
  * @param string $error Описание ошибки
  * @param string $f Путь к файлу
  * @param int $l Номер строки
  * @param array|null $context Дамп переменных окружения
- * @throws Classes\EE
- */
+ * @throws Classes\EE */
 function ErrorHandler($num,$error,$f,$l,$context=null)
 {
 	#Возможно, ошибку должен был залогировать предыдущий скрипт
-	if(!Framework::$handleall and Framework::$old_errh and strpos($f,__DIR__.DIRECTORY_SEPARATOR)!==0)
+	if(!Framework::$logall or Framework::$old_errh and strpos($f,__DIR__.DIRECTORY_SEPARATOR)!==0)
 		call_user_func(Framework::$old_errh,$num,$error,$f,$l,$context);
-	elseif(Framework::$logs and class_exists('\Eleanor\Classes\EE'))#Заплатка на случай отключенного автолоадера
+
+	/* Я на ХУЮ вертел ошибки типа Declaration of ... should be compatible with ... + Заплатка на случай отключенного
+	 * автолоадера */
+	elseif($num&~E_STRICT and Framework::$logs and class_exists('\Eleanor\Classes\EE'))#
 	{
 		#Ошибки E_ERROR и E_PARSE могут быть переданы в эту функцию через trigger_error
 		$ae=[ E_ERROR=>'Error', E_WARNING=>'Warning', E_NOTICE=>'Notice', E_PARSE=>'Parse error', ];
 
 		$E=new Classes\EE(
-				(isset($ae[$num]) ? $ae[$num].': ' : '').$error,
-				Classes\EE::DEV,
-				[ 'file'=>$f, 'line'=>$l, 'context'=>$context ]
+			(isset($ae[$num]) ? $ae[$num].': ' : '['.$num.']:').$error,
+			Classes\EE::DEV,
+			[ 'file'=>$f, 'line'=>$l, 'context'=>$context ]
 		);
 
 		if(Framework::$debug and !(E_PARSE&$num))
 			throw$E;
 
 		$E->Log();
+
+		if($num&E_USER_ERROR)
+			BSOD($error);
 	}
 }
-Framework::$old_errh=set_error_handler('\Eleanor\ErrorHandler',E_ALL^E_NOTICE^E_STRICT);
+Framework::$old_errh=set_error_handler('\Eleanor\ErrorHandler',E_ALL);
 
 Framework::$old_exch=set_exception_handler(function($E){
 	/** @var Classes\EE $E */
@@ -230,14 +227,15 @@ Framework::$old_exch=set_exception_handler(function($E){
 	if($E instanceof Classes\EE)
 		$E->Log();
 	elseif((Framework::$catchall or strpos($E->getFile(),__DIR__.DIRECTORY_SEPARATOR)===0)
-			and class_exists('\Eleanor\Classes\EE',false))#Заплатка на случай отключенного автолоадера
+		#Заплатка на случай отключенного автолоадера
+		and (class_exists('\Eleanor\Classes\EE',false) or include(__DIR__.'/classes/ee.php')))
 	{
 		$E2=new Classes\EE($m,Classes\EE::UNIT,[],$E);
 		$E2->Log();
 	}
 
-	#ToDo!
-	//Output::Error($m,isset($E->extra) ? $E->extra : []);
+	$extra=isset($E->extra) ? $E->extra : [];
+	BSOD($m,$extra+['line'=>$E->getLine(),'file'=>$E->getFile()]);
 });
 
 #Реализация своей автозагрузки: загружаем только, что напрямую относится к Eleanor Framework
@@ -245,10 +243,16 @@ spl_autoload_register(function($cl){
 	if(strpos($cl,__NAMESPACE__)===0)
 	{
 		$lccl=strtolower($cl);#LowerCase class
-		$lccl=explode('\\',$lccl,2)[1];#Уберем неймспейс Eleanor 
+		$lccl=explode('\\',$lccl,2);
+
+		#Вдруг кто-то из глобальной области пытается зазгрузить класс Eleanor?
+		if(!isset($lccl[1]))
+			return;
+
+		$lccl=$lccl[1];#Уберем неймспейс Eleanor
 		$trypath=__DIR__.DIRECTORY_SEPARATOR.str_replace('\\','/',$lccl).'.php';
 
-		if(is_file($trypath))
+		if($q=is_file($trypath))
 			require$trypath;
 
 		if(!class_exists($cl,false) and !interface_exists($cl,false) and !trait_exists($cl,false))
@@ -269,19 +273,24 @@ spl_autoload_register(function($cl){
 			}
 
 			if(class_exists('\Eleanor\Classes\EE',false) or include(__DIR__.'/classes/ee.php'))
-				throw new Classes\EE($what.' not found: '.$cl,Classes\EE::DEV,
-					BaseClass::_BT(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,1)));
+			{
+				$bt=debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+
+				foreach($bt as $db)
+					if(isset($db['file'],$db['line']) and (!isset($db['function']) or $db['function']!='class_exists'))
+						break;
+
+				throw new Classes\EE($what.' not found: '.$cl,Classes\EE::DEV,$db);
+			}
 		}
 	}
 });
 
-/**
- * Функция безопасного подключения файла: в случае ParseError-a, будет создан лог
+/** Функция безопасного подключения файла: в случае ParseError-a, будет создан лог
  * @param string $file Полный путь к файлу, который нужно проинклудить
  * @param array $vars Переменные для файла в его области видимости
  * @throws Classes\EE
- * @return mixed
- */
+ * @return mixed */
 function AwareInclude($file,array$vars=[])
 {
 	if(is_file($file))
@@ -289,11 +298,7 @@ function AwareInclude($file,array$vars=[])
 		#Флаг обработки ошибки
 		$skip=false;
 
-		if($vars)
-			extract($vars,EXTR_PREFIX_INVALID|EXTR_SKIP,'v');
-
-		$OFF=function()use(&$skip)
-		{
+		register_shutdown_function(function()use(&$skip){
 			if($skip)
 				return;
 
@@ -306,33 +311,41 @@ function AwareInclude($file,array$vars=[])
 
 				ErrorHandler($e['type'],$e['message'],$e['file'],$e['line']);
 
-				#ToDo!
-				//Output::Error($m,isset($E->extra) ? $E->extra : []);
+				BSOD($e['message'],[ 'file'=>$e['file'], 'line'=>$e['line'] ]);
 			}
 			else
 				ob_end_flush();
-		};
-
-		register_shutdown_function($OFF,$file,$vars);
+		},$file,$vars);
 		ob_start();
 
-		$r=include$file;
+		if($vars)
+			extract($vars,EXTR_PREFIX_INVALID|EXTR_OVERWRITE,'var');
+
+		$r=include func_get_arg(0);
 
 		ob_end_flush();
-		$skip=true;
+		$skip=true;#Эта переменная используется!
 
-		#Redundance for PhpStorm: заменить $skip на true
-		return$r===null ? $skip : $r;
+		return$r===null ? true : $r;
 	}
 	else
 		throw new Classes\EE('Missing file '.(strpos($file,SITEDIR)===0 ? substr($file,strlen(SITEDIR)) : $file),Classes\EE::ENV);
 }
 
-/**
- * Обертка для создания сессии
+/** "Тихое" выполнение кода, когда отключается показ ошибок
+ * @param callback $Func
+ * @return mixed */
+function QuitExecute($Func)
+{
+	set_error_handler(function(){});
+	$ret=call_user_func($Func);
+	restore_error_handler();
+	return$ret;
+}
+
+/** Обертка для создания сессии
  * @param string $id Идентификатор сессии, возможно, сессия будет создана наново
- * @param string $n Имя сессии
- */
+ * @param string $n Имя сессии */
 function StartSession($id='',$n='')
 {
 	ini_set('session.use_cookies',0);
@@ -355,7 +368,21 @@ function StartSession($id='',$n='')
 	session_start();
 }
 
-function Error()
+/** Системный BSOD
+ * @param string $error Текст ошибки
+ * @param array $extra Дополнительные параметры */
+function BSOD($error,array$extra=[])
 {
-	#ToDo!
+	$Tpl=new Classes\Template(__DIR__.'/template.php');
+	$out=(string)$Tpl->BSOD(Framework::$bsodtype,$error,$extra);
+
+	Classes\OutPut::SendHeaders(Framework::$bsodtype,503);
+	Classes\Output::Gzip($out);
+
+	die;
 }
+
+#Поддержка IDN
+define('Eleanor\PUNYCODE',isset($_SERVER['HTTP_HOST']) && preg_match('#^[a-z0-9\-\.]+$#i',$_SERVER['HTTP_HOST'])>0
+	? $_SERVER['HTTP_HOST'] : 'eleanor-cms.ru');
+define('Eleanor\DOMAIN',strpos(PUNYCODE,'xn--')===false ? PUNYCODE : Classes\Punycode::Domain(PUNYCODE,false));

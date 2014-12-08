@@ -1,28 +1,22 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Поддержка punycode (кириллические домены)
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
+/** Поддержка punycode (кириллические домены) */
 class Punycode extends Eleanor\BaseClass
 {
-	/**
-	 * Кодирование и декодирование домена в/из Punycode. Метод сам определяет, представлен ли домен в нужной форме и,
+	/** Кодирование и декодирование домена в/из Punycode. Метод сам определяет, представлен ли домен в нужной форме и,
 	 * если нет - выполняет преобразования.
 	 * @param string $domain Доменное имя
 	 * @param bool $encode Флаг кодирования в Punycode
-	 * @return string|bool
-	 */
+	 * @return string|bool */
 	public static function Domain($domain,$encode=true)
 	{
-		if(!Strings::CheckUrl($domain))
-			return false;
-
 		if($encode)
 		{
 			if(Eleanor\CHARSET!='utf-8')
@@ -51,11 +45,9 @@ class Punycode extends Eleanor\BaseClass
 		return$domain;
 	}
 
-	/**
-	 * Кодирование Punycode в utf-8 строку
+	/** Кодирование Punycode в utf-8 строку
 	 * @param string $s Домен в Punycode
-	 * @return string
-	 */
+	 * @return string */
 	public static function Decode($s)
 	{
 		if(strpos($s,'xn--')!==0)
@@ -127,18 +119,13 @@ class Punycode extends Eleanor\BaseClass
 		return$s;
 	}
 
-	/**
-	 * Декодирование utf-8 строки в Punycode
+	/** Декодирование utf-8 строки в Punycode
 	 * @param string $s Домен
-	 * @return string|false
-	 */
+	 * @return string|false */
 	public static function Encode($s)
 	{
 		$values=$unicode=[];
 		$n=strlen($s);
-
-		#Redundance for PhpStorm: удалить следующую строку
-		$cc=0;
 
 		for($i=0;$i<$n;$i++)
 		{

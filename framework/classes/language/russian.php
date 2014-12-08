@@ -1,36 +1,31 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Поддержка русского языка
 */
 namespace Eleanor\Classes\Language;
 use \Eleanor;
 
+/** Поддержка русского языка */
 class Russian extends Eleanor\BaseClass
 {
 	const
 		ALPHABET='абвгдеёжзийклмнопрстуфхцчшщьъыэюяєії';#Русский технический алфавит
 
-	/**
-	 * Образование множественной формы слова
+	/** Образование множественной формы слова
 	 * @param int $n Число
 	 * @param array $forms Формы слова. Пример ['один','два, три, четыре', 'пять, шесть, семь, восемь, девять, ноль')
-	 * @return mixed
-	 */
+	 * @return mixed */
 	public static function Plural($n,array$forms)
 	{
 		$forms+=[false,false,false];
 		return $n%10==1&&$n%100!=11?$forms[0]:($n%10>=2&&$n%10<=4&&($n%100<10||$n%100>=20)?$forms[1]:$forms[2]);
 	}
 
-	/**
-	 * Транслитерация строки в латинницу
+	/** Транслитерация строки в латинницу
 	 * @param string $s Текст
-	 * @return string
-	 */
+	 * @return string */
 	public static function Translit($s)
 	{
 		return str_replace(
@@ -45,14 +40,12 @@ class Russian extends Eleanor\BaseClass
 		);
 	}
 
-	/**
-	 * Человеческое представление даты
-	 * @param int|string|bool $d Дата в обычном машинном формате, либо timestamp, false = time()
+	/** Человеческое представление даты
+	 * @param int|string|null $d Дата в обычном машинном формате, либо timestamp, false = time()
 	 * @param string $t Тип вывода: t - машинное время, d - машинная дата, dt - машинная дата и время, my - месяц и год, fd - полная дата, fdt - полная дата и время
 	 * @param array $a Дополнительные опции, например включения ключа advanced позволит выводить значения "Сегодня", "Завтра", "Вчера"
-	 * @return string|false
-	 */
-	public static function Date($d=false,$t='',$a=[])
+	 * @return string|false */
+	public static function Date($d=null,$t='',$a=[])
 	{
 		if(!$d)
 			$d=time();
@@ -138,12 +131,10 @@ class Russian extends Eleanor\BaseClass
 		return $a['lowercase'] ? mb_strtolower($r) : $r;
 	}
 
-	/**
-	 * Человеческое представление даты
+	/** Человеческое представление даты
 	 * @param int $t Дата в оформате timestamp
 	 * @param bool $adv Флаг включения значений "Сегодня", "Завтра", "Вчера"
-	 * @return string
-	 */
+	 * @return string */
 	public static function DateText($t,$adv)
 	{
 		$day=explode(',',date('Y,n,j,t',$t));

@@ -1,22 +1,19 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Библиотека для работы с различными типами данных
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
+/** Библиотека для работы с различными типами данных */
 class Types extends Eleanor\BaseClass
 {
-	/**
-	 * Получение всех доступных временных зон сервера в виде option-ов для select-а
-	 * @param string|array|bool $act Выбранные пункты (включается параметр selected)
-	 * @return string
-	 */
-	public static function TimeZonesOptions($act=false)
+	/** Получение всех доступных временных зон сервера в виде option-ов для select-а
+	 * @param string|array|null $act Выбранные пункты (включается параметр selected)
+	 * @return string */
+	public static function TimeZonesOptions($act=null)
 	{
 		$tzi=timezone_identifiers_list();
 
@@ -37,20 +34,24 @@ class Types extends Eleanor\BaseClass
 			'US/Indiana-Starke','US/Michigan','US/Mountain','US/Pacific','US/Pacific-New','US/Samoa','UTC','W-SU',
 			'WET','Zulu']);
 
-		$r=$gr=$grname='';
+		$r=$options=$group='';
 		$a=is_array($act);
 
-		foreach($tzi as &$v)
+		foreach($tzi as $v)
 			if(false!==$p=strpos($v,'/'))
 			{
 				$g=substr($v,0,$p);
-				if($g!=$grname)
+
+				if($g!=$group)
 				{
-					$r.=Html::Optgroup($grname,$gr);
-					$gr='';
-					$grname=$g;
+					if($group)
+						$r.=Html::Optgroup($group,$options);
+
+					$options='';
+					$group=$g;
 				}
-				$gr.=Html::Option(substr($v,$p+1),$v,$a ? in_array($v,$act) : $act==$v);
+
+				$options.=Html::Option(substr($v,$p+1),$v,$a ? in_array($v,$act) : $act==$v);
 			}
 			else
 				$r.=Html::Option($v,$v,$act==$v);
@@ -58,12 +59,10 @@ class Types extends Eleanor\BaseClass
 		return$r;
 	}
 
-	/**
-	 * Определение Mime типа файла в зависимости от его расширения
+	/** Определение Mime типа файла в зависимости от его расширения
 	 * @param string $ext Расширения файла, либо полное имя файла
 	 * @param string $def Mime тип применяемый по умолчанию (если Mime тип не удастся определить)
-	 * @return string
-	 */
+	 * @return string */
 	public static function MimeTypeByExt($ext,$def='application/octet-stream')
 	{
 		if(strpos($ext,'.')!==false)

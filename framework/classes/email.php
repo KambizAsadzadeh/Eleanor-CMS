@@ -1,43 +1,62 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Класс отправки e-mail
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
+/** Отправка email */
 class Email
 {
 	public
-		$from,#Непосредственный автор письма
-		$sender,#Отправитель, кто отправляет письмо, а не тот, кто его автор
-		$subject,#Тема письма
-		$pr=3,#Уровень важности от 1 (самый важный) до 5 (самый неважный)
+		/** @var string Автор письма */
+		$from,
 
-		$reply,#Куда должен прийти ответ
-		$notice_on=false,#Требовать подтверждение о прочтении
-		$notice,#E-mail, куда будет отправляться подверждение
+		/** @var string Отправитель (тот, кто отправляет письмо). Например, секретарь от имени директора */
+		$sender,
 
-		$method='mail',#Метод отправки smtp|mail
+		/** @var string Тема письма */
+		$subject,
+
+		/** @var int Уровень важности от 1 (самый важный) до 5 (самый неважный) */
+		$pr=3,
+
+		/** @var string e-mail куда должен прийти ответ */
+		$reply,
+
+		/** @var bool Флаг требования подтверждение о прочтении */
+		$notice_on=false,
+
+		/** @var string E-mail, куда будет отправляться подверждение */
+		$notice,
+
+		/** @var string Метод отправки smtp|mail */
+		$method='mail',
+
+		/** @var int Порт SMTP */
 		$smtp_port=25,
+
+		/** @var string Хост SMTP */
 		$smtp_host,
+
+		/** @var string Пользователь SMTP */
 		$smtp_user,
+
+		/** @var string Пароль SMTP */
 		$smtp_pass,
 
-		$parts=array();#Части письма
+		/** @var array Части письма */
+		$parts=[];
 
-	/**
-	 * Упрощенная отправка письма, практически идентичена стандартной функции mail().
+	/** Упрощенная отправка письма, практически идентичена стандартной функции mail().
 	 * Пример использования:
 	 * Email::Simple('mail@example.com','Тема','Текст',['files'=>['имя файла'=>'Содержимое',0=>'path/to/files.txt')]];
 	 * @param string|array $to Получатель письма
 	 * @param string $subj Тема письма
 	 * @param string $mess Текст письма
-	 * @param array $extra Дополнительные параметры
-	 */
+	 * @param array $extra Дополнительные параметры */
 	public static function Simple($to,$subj,$mess,array$extra=[])
 	{
 		$extra+=[
@@ -54,7 +73,7 @@ class Email
 			[
 				'content-type'=>$extra['type'],
 				'charset'=>Eleanor\CHARSET,
-				'content'=>str_replace('="go.php?','="',$mess),
+				'content'=>$mess,
 			],
 		];
 
@@ -78,17 +97,15 @@ class Email
 		}
 
 		foreach($extra as $k=>$v)
-			if(!in_array($k,array('type','files','copy','hidden')) and $v!==false)
+			if(!in_array($k,['type','files','copy','hidden']) and $v!==false)
 				$Email->$k=$v;
 
 		$Email->subject=$subj;
 		$Email->Send(['to'=>$to,'cc'=>$extra['copy'],'bcc'=>$extra['hidden']]);
 	}
 
-	/**
-	 * Конструктор класса, здесь задаются значения по умолчанию, которые читаются из настроек системы
-	 * @param array $init Значения свойств
-	 */
+	/** Конструктор класса, здесь задаются значения по умолчанию, которые читаются из настроек системы
+	 * @param array $init Значения свойств */
 	public function __construct(array$init=[])
 	{
 		foreach($init as $k=>$v)
@@ -96,12 +113,10 @@ class Email
 				$this->$k=$v;
 	}
 
-	/**
-	 * Отправка письма
+	/** Отправка письма
 	 * @param array $a Параметры отправки письма
 	 * @throws EE
-	 * @return bool
-	 */
+	 * @return bool */
 	public function Send(array$a=[])
 	{
 		if(empty($a['to']))
@@ -218,12 +233,10 @@ class Email
 		return true;
 	}
 
-	/**
-	 * Создание заголовков письма
+	/** Создание заголовков письма
 	 * @param array $a Параметры письма
 	 * @param array $def Параметры по умолчанию
-	 * @return string
-	 */
+	 * @return string */
 	protected static function DoHeaders($a,array$def=[])
 	{
 		$r='';
@@ -282,6 +295,10 @@ class Email
 		return$r;
 	}
 
+	/** Обработка ответа сокета
+	 * @param resource $socket Сокет
+	 * @param string $resp Ожидаемый ответ
+	 * @return bool */
 	protected static function Parse($socket,$resp)
 	{
 		while($r=fgets($socket,128))

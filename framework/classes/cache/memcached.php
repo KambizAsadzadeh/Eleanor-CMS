@@ -1,94 +1,96 @@
 <?php
-/*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
+/**
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 */
-class CacheMachineMemCached implements CacheMachineInterface
+namespace Eleanor\Classes\Cache;
+use Eleanor;
+
+/** Кэшмашина MemCached */
+class MemCached implements Eleanor\Interfaces\Cache
 {
 	private
-		$u,#Уникализация кэш машины
-		$n=array(''=>true),#Массив имен того, что у нас есть в кеше.
-		$L=false;#Объект MemCache-a
+		/** @var string Уникализация кэш машины */
+		$u,
 
-	/**
-	 * Конструктор кэш машины
-	 *
-	 * @param string $u Строка уникализации кэша (на одной кэш машине может быть запущено несколько копий Eleanor CMS)
-	 */
+		/** @var array Ключи находящихся в кэше */
+		$names=[''=>true];
+
+	/** @var \Memcached Объект */
+	public $M=false;#Объект MemCached-a
+
+	/** @param string $u Уникализации кэша (на одной кэш машине может быть запущено несколько копий Eleanor CMS)
+	 * @throws Eleanor\Classes\EE */
 	public function __construct($u='')
 	{
 		$this->u=$u;
+
 		#Поскольку данная кеш-машина весьма специфична, рекомендую прописать значения самостоятельно.
-		$this->L=new Memcached;
-		#memcache_add_server($this->L, 'server', 'port');
-		if(!$this->L)
-			throw new EE('MemCached failure '.__file__);
-		$this->L->addServer('localhost',11211);
-		$this->n=$this->Get('');
-		if(!$this->n or !is_array($this->n))
-			$this->n=array();
+		$this->M=new \Memcached;
+
+		if(!$this->M)
+			throw new Eleanor\Classes\EE('MemCached failure',Eleanor\Classes\EE::ENV);
+
+		$this->M->addServer('localhost',11211);
+
+		$this->names=$this->Get('');
+
+		if(!$this->names or !is_array($this->names))
+			$this->names=[];
 	}
 
 	public function __destruct()
 	{
-		$this->Put('',$this->n);
+		$this->Put('',$this->names);
 	}
 
-	/**
-	 * Запись значения
-	 *
-	 * @param string $k Ключ. Обратите внимение, что ключи рекомендуется задавать в виде тег1_тег2 ...
-	 * @param mixed $value Значение
-	 * @param int $t Время жизни этой записи кэша в секундах
-	 */
-	public function Put($k,$v,$t=0)
+	/** Запись значения
+	 * @param string $k Ключ. Рекомендуется задавать в виде тег1_тег2 ...
+	 * @param mixed $v Значение
+	 * @param int $ttl Время жизни этой записи кэша в секундах
+	 * @return true */
+	public function Put($k,$v,$ttl=0)
 	{
-		$r=$this->L->set($this->u.$k,$v,$t);
+		$r=$this->M->set($this->u.$k,$v,$ttl);
+
 		if($r)
-			$this->n[$k]=$t+time();
+			$this->names[$k]=$ttl+time();
+
 		return$r;
 	}
 
-	/**
-	 * Получение записи из кэша
-	 *
+	/** Получение записи из кэша
 	 * @param string $k Ключ
-	 */
+	 * @return mixed */
 	public function Get($k)
 	{
-		if(!isset($this->n[$k]))
+		if(!isset($this->names[$k]))
 			return false;
-		$r=$this->L->get($this->u.$k);
+
+		$r=$this->M->get($this->u.$k);
+
 		if($r===false)
-			unset($this->n[$k]);
+			unset($this->names[$k]);
+
 		return$r;
 	}
 
-	/**
-	 * Удаление записи из кэша
-	 *
+	/** Удаление записи из кэша
 	 * @param string $k Ключ
-	 */
+	 * @return bool */
 	public function Delete($k)
 	{
-		unset($this->n[$k]);
-		return$this->L->delete($this->u.$k);
+		unset($this->names[$k]);
+		return$this->M->delete($this->u.$k);
 	}
 
-	/**
-	 * Удаление записей по тегу. Если имя тега пустое - удаляется вешь кэш.
-	 *
-	 * @param string $t Тег
-	 */
-	public function DeleteByTag($t)
+	/** Удаление записей по тегу. Если имя тега пустое - удаляется вешь кэш
+	 * @param string $tag Тег */
+	public function DeleteByTag($tag)
 	{
-		foreach($this->n as $k=>&$v)
-			if($t=='' or strpos($k,$t)!==false)
+		foreach($this->names as $k=>$v)
+			if($tag=='' or strpos($k,$tag)!==false)
 				$this->Delete($k);
 	}
 }

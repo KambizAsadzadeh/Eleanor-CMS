@@ -1,12 +1,8 @@
 <?php
 /*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 
 	Шаблон по умолчанию для пользователей модуля "Новости". Редактирование новостей.
 */
@@ -22,7 +18,7 @@ class TplUserNewsCorrect
 	{
 		$lang=Eleanor::$Language[$GLOBALS['Eleanor']->module['config']['n']];
 		$links=&$GLOBALS['Eleanor']->module['links'];
-		$GLOBALS['jscripts'][]=Eleanor::$Template->default['theme'].'js/publications.js';
+		$GLOBALS['scripts'][]=Eleanor::$Template->default['theme'].'js/publications.js';
 
 		$Lst=Eleanor::LoadListTemplate('headfoot');
 		$GLOBALS['head']['rss']=$Lst('link',array(
@@ -95,7 +91,7 @@ class TplUserNewsCorrect
 	*/
 	public static function AddEdit($id,$values,$errors,$uploader,$voting,$bypost,$hasdraft,$back,$links,$captcha)
 	{
-		$GLOBALS['jscripts'][]='addons/autocomplete/jquery.autocomplete.js';
+		$GLOBALS['scripts'][]='addons/autocomplete/jquery.autocomplete.js';
 		$GLOBALS['head']['autocomplete']='<link rel="stylesheet" type="text/css" href="addons/autocomplete/style.css" />';
 		if(Eleanor::$vars['multilang'])
 		{
@@ -103,8 +99,8 @@ class TplUserNewsCorrect
 			foreach(Eleanor::$langs as $k=>&$v)
 			{
 				$ml['title'][$k]=Eleanor::Input('title['.$k.']',$GLOBALS['Eleanor']->Editor->imgalt=Eleanor::FilterLangValues($values['title'],$k),array('tabindex'=>1,'id'=>'title-'.$k));
-				$ml['announcement'][$k]=$GLOBALS['Eleanor']->Editor->Area('announcement['.$k.']',Eleanor::FilterLangValues($values['announcement'],$k),array('bypost'=>$bypost,'no'=>array('tabindex'=>6,'rows'=>10)));
-				$ml['text'][$k]=$GLOBALS['Eleanor']->Editor->Area('text['.$k.']',Eleanor::FilterLangValues($values['text'],$k),array('bypost'=>$bypost,'no'=>array('tabindex'=>7,'rows'=>15)));
+				$ml['announcement'][$k]=$GLOBALS['Eleanor']->Editor->Area('announcement['.$k.']',Eleanor::FilterLangValues($values['announcement'],$k),array('post'=>$bypost,'no'=>array('tabindex'=>6,'rows'=>10)));
+				$ml['text'][$k]=$GLOBALS['Eleanor']->Editor->Area('text['.$k.']',Eleanor::FilterLangValues($values['text'],$k),array('post'=>$bypost,'no'=>array('tabindex'=>7,'rows'=>15)));
 				$ml['uri'][$k]=Eleanor::Input('uri['.$k.']',Eleanor::FilterLangValues($values['uri'],$k),array('onfocus'=>'if(!$(this).val())$(this).val($(\'#title-'.$k.'\').val())','tabindex'=>2));
 
 				$ml['tags'][$k]=Eleanor::Input('tags['.$k.']',Eleanor::FilterLangValues($values['tags'],$k),array('tabindex'=>5));
@@ -113,8 +109,8 @@ class TplUserNewsCorrect
 		else
 			$ml=array(
 				'title'=>Eleanor::Input('title',$GLOBALS['Eleanor']->Editor->imgalt=$values['title'],array('id'=>'title','tabindex'=>1)),
-				'announcement'=>$GLOBALS['Eleanor']->Editor->Area('announcement',$values['announcement'],array('bypost'=>$bypost,'no'=>array('tabindex'=>6,'rows'=>10))),
-				'text'=>$GLOBALS['Eleanor']->Editor->Area('text',$values['text'],array('bypost'=>$bypost,'no'=>array('tabindex'=>7,'rows'=>15))),
+				'announcement'=>$GLOBALS['Eleanor']->Editor->Area('announcement',$values['announcement'],array('post'=>$bypost,'no'=>array('tabindex'=>6,'rows'=>10))),
+				'text'=>$GLOBALS['Eleanor']->Editor->Area('text',$values['text'],array('post'=>$bypost,'no'=>array('tabindex'=>7,'rows'=>15))),
 				'uri'=>Eleanor::Input('uri',$values['uri'],array('onfocus'=>'if(!$(this).val())$(this).val($(\'#title\').val())','tabindex'=>2)),
 
 				'tags'=>Eleanor::Input('tags',Eleanor::FilterLangValues($values['tags']),array('tabindex'=>5)),
@@ -168,7 +164,7 @@ class TplUserNewsCorrect
 				.($links['draft'] ? Eleanor::Input('_draft',$id,array('type'=>'hidden')).Eleanor::$Template->DraftButton($links['draft'],1).($hasdraft ? ' <a href="'.$links['nodraft'].'">'.static::$lang['nodraft'].'</a>' : '') : '')
 			)
 			->endform()
-			.'<script type="text/javascript">//<![CDATA[
+			.'<script>//<![CDATA[
 $(function(){
 	$("#cs").change(function(){
 		var cs=this;

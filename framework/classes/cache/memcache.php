@@ -1,99 +1,106 @@
 <?php
-/*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
+/**
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 */
-class CacheMachineMemCache implements CacheMachineInterface
+namespace Eleanor\Classes\Cache;
+use Eleanor;
+
+/** Кэшмашина MemCache */
+class MemCache implements Eleanor\Interfaces\Cache
 {
 	private
-		$u,#Уникализация кэш машины
-		$n=array(''=>true),#Массив имен того, что у нас есть в кеше.
-		$M=false;#Объект MemCache-a
+		/** @var string Уникализация кэш машины */
+		$u,
 
-	/**
-	 * Конструктор кэш машины
-	 *
-	 * @param string $u Строка уникализации кэша (на одной кэш машине может быть запущено несколько копий Eleanor CMS)
-	 */
+		/** @var array Ключи находящихся в кэше */
+		$names=[''=>true];
+
+	/** @var \Memcache Объект */
+	public $M=false;#Объект MemCache-a
+
+	/** @param string $u Уникализации кэша (на одной кэш машине может быть запущено несколько копий Eleanor CMS)
+	 * @throws Eleanor\Classes\EE */
 	public function __construct($u='')
 	{
 		$this->u=$u;
-		Eleanor::$nolog=true;
-		$this->M=memcache_connect('localhost');
-		Eleanor::$nolog=false;
-		if(!$this->M)
-			throw new Exception('MemCache failure '.__file__);
+		$this->M=new \Memcache;
 
-		#memcache_add_server($this->M, 'server', 'port');
+		$connected=$this->M->connect('localhost', 11211);
 
-		memcache_set_compress_threshold($this->M,20000,0.2);
-		$this->n=$this->Get('');
-		if(!$this->n or !is_array($this->n))
-			$this->n=array();
+		if(!$connected)
+		{
+			$this->M->close();
+			throw new Eleanor\Classes\EE('MemCache failure',Eleanor\Classes\EE::ENV,
+				['hint'=>'try to delete the file framework/classes/cache/memcache.php']);
+		}
+
+		$this->M->setCompressThreshold(20000,0.2);
+
+		$this->names=$this->Get('');
+
+		if(!$this->names or !is_array($this->names))
+			$this->names=[];
 	}
 
 	public function __destruct()
 	{
-		$this->Put('',$this->n);
-		if($this->M)
-			memcache_close($this->M);
+		$this->Put('',$this->names);
+		$this->M->close();
 	}
 
-	/**
-	 * Запись значения
-	 *
-	 * @param string $k Ключ. Обратите внимение, что ключи рекомендуется задавать в виде тег1_тег2 ...
-	 * @param mixed $value Значение
-	 * @param int $t Время жизни этой записи кэша в секундах
-	 */
-	public function Put($k,$v,$t=0)
+	/** Запись значения
+	 * @param string $k Ключ. Рекомендуется задавать в виде тег1_тег2 ...
+	 * @param mixed $v Значение
+	 * @param int $ttl Время жизни этой записи кэша в секундах
+	 * @return true */
+	public function Put($k,$v,$ttl=0)
 	{
-		$r=$this->M ? memcache_set($this->M,$this->u.$k,$v,is_bool($v) || is_int($v) || is_float($v) ? 0 : MEMCACHE_COMPRESSED,$t) : false;
+		$r=$this->M->set($this->u.$k,$v,is_bool($v) || is_int($v) || is_float($v) ? 0 : MEMCACHE_COMPRESSED,$ttl);
+
 		if($r)
-			$this->n[$k]=$t+time();
+			$this->names[$k]=$ttl+time();
+
 		return$r;
 	}
 
-	/**
-	 * Получение записи из кэша
-	 *
+	/** Получение записи из кэша
 	 * @param string $k Ключ
-	 */
+	 * @return mixed */
 	public function Get($k)
 	{
-		if(!isset($this->n[$k]))
+		if(!isset($this->names[$k]))
 			return false;
-		$r=memcache_get($this->M,$this->u.$k);
+
+		$r=$this->M->get($this->u.$k);
+
 		if($r===false)
-			unset($this->n[$k]);
+			unset($this->names[$k]);
+
 		return$r;
 	}
 
-	/**
-	 * Удаление записи из кэша
-	 *
+	/** Удаление записи из кэша
 	 * @param string $k Ключ
-	 */
+	 * @return bool */
 	public function Delete($k)
 	{
-		unset($this->n[$k]);
-		return memcache_delete($this->M,$this->u.$k);
+		unset($this->names[$k]);
+		return $this->M->delete($this->u.$k);
 	}
 
-	/**
-	 * Удаление записей по тегу. Если имя тега пустое - удаляется вешь кэш.
-	 *
-	 * @param string $t Тег
-	 */
-	public function DeleteByTag($t)
+	/** Удаление записей по тегу. Если имя тега пустое - удаляется вешь кэш
+	 * @param string $tag Тег */
+	public function DeleteByTag($tag)
 	{
-		foreach($this->n as $k=>&$v)
-			if($t=='' or strpos($k,$t)!==false)
-				$this->Delete($k);
+		if($tag)
+		{
+			foreach($this->names as $k=>$v)
+				if($tag=='' or strpos($k,$tag)!==false)
+					$this->Delete($k);
+		}
+		else
+			$this->M->flush();
 	}
 }

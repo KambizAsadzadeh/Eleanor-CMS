@@ -1,6 +1,6 @@
 <?php
 /*
-	Copyright © Eleanor CMS
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 
@@ -13,12 +13,10 @@ use Eleanor;
 
 class Mp3 extends Eleanor\BaseClass
 {
-	/**
-	 * Получение информации о mp3-файле
+	/** Получение информации о mp3-файле
 	 * @param string $mp3file Путь к mp3 файлу
 	 * @throws Classes\EE
-	 * @return array
-	 */
+	 * @return array */
 	public static function GetData($mp3file)
 	{
 		if(!is_file($mp3file) or !$fh=fopen($mp3file,'rb'))
@@ -177,11 +175,9 @@ class Mp3 extends Eleanor\BaseClass
 		return$ret;
 	}
 
-	/**
-	 * Получение информации из ID3v2 mp3-файла
+	/** Получение информации из ID3v2 mp3-файла
 	 * @param resource $fh Результат вызова fopen('file.mp3','rb')
-	 * @return array|bool
-	 */
+	 * @return array|null */
 	public static function GetID3v2($fh)
 	{
 		fseek($fh,0,SEEK_SET);
@@ -190,13 +186,13 @@ class Mp3 extends Eleanor\BaseClass
 		$header=unpack('a3signature/c1version_major/c1version_minor/c1flags/Nsize',$header);
 
 		if($header['signature']!='ID3')
-			return false;
+			return null;
 
 		$bsize=sprintf('%032b',$header['size']);
-		$result=array(
+		$result=[
 			'version'=>$header['version_major'].'.'.$header['version_minor'],
 			'size'=>bindec(substr($bsize, 1, 7).substr($bsize, 9, 7).substr($bsize, 17, 7).substr($bsize, 25, 7)),
-		);
+		];
 		$tags=[
 			'TALB'=>'Album',
 			'TCON'=>'Genre',
@@ -231,11 +227,9 @@ class Mp3 extends Eleanor\BaseClass
 		return$result;
 	}
 
-	/**
-	 * Получение информации из ID3v1 mp3-файла
+	/** Получение информации из ID3v1 mp3-файла
 	 * @param resource $fh Результат вызова fopen('file.mp3','rb')
-	 * @return string|bool
-	 */
+	 * @return string|null */
 	public static function GetID3v1($fh)
 	{
 		fseek($fh,-128,SEEK_END);
@@ -243,7 +237,7 @@ class Mp3 extends Eleanor\BaseClass
 		$s=fread($fh,128);
 		$ret=unpack($s[125]==chr(0) && $s[126]!=chr(0) ? 'a3tag/a30name/a30artists/a30album/a4year/a28comment/x1/c1track/c1genreno' : 'a3tag/a30name/a30artists/a30album/a4year/a30comment/c1genreno',$s);
 
-		return$ret['tag']=='TAG' ? $ret : false;
+		return$ret['tag']=='TAG' ? $ret : null;
 	}
 
 	protected static function decTag($tag,$type)

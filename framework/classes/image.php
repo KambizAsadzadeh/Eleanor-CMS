@@ -1,34 +1,29 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Набор функций для работы с изображениями
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
+/** Набор функций для работы с изображениями */
 class Image extends Eleanor\BaseClass
 {
-	/**
-	 * Вычисление среднего цвета
+	/** Вычисление среднего цвета
 	 * @param int $a Значение 1 либо R либо G либо B
 	 * @param int $b Значение 2 либо R либо G либо B
 	 * @param float $alpha Прозрачность от 0 до 1 (от $a до $b)
-	 * @return float
-	 */
+	 * @return float */
 	public static function GetAverage($a,$b,$alpha)
 	{
 		return round($a*(1-$alpha)+$b*$alpha);
 	}
 
-	/**
-	 * Создание ресурса изображения из файла исходя из его внутренней структуры или типа
+	/** Создание ресурса изображения из файла исходя из его внутренней структуры или типа
 	 * @param string $path Путь к файлу
 	 * @throws EE
-	 * @return resource
-	 */
+	 * @return resource */
 	public static function CreateImage($path)
 	{
 		if(!is_file($path))
@@ -49,13 +44,11 @@ class Image extends Eleanor\BaseClass
 		throw new EE('Incorrect image',EE::ENV,[ 'input'=>$path ]);
 	}
 
-	/**
-	 * Сохранение картинки в виде файла определенного формата
+	/** Сохранение картинки в виде файла определенного формата
 	 * @param resource $image Ресурс картинки
 	 * @param string $path Путь для сохранения картинки
-	 * @param string|bool $type Тип картинки
-	 */
-	public static function SaveImage($image,$path,$type=false)
+	 * @param string|null $type Тип картинки */
+	public static function SaveImage($image,$path,$type=null)
 	{
 		switch($type ? $type : strtolower(pathinfo($path,PATHINFO_EXTENSION)))
 		{
@@ -71,13 +64,11 @@ class Image extends Eleanor\BaseClass
 		}
 	}
 
-	/**
-	 * Создание превьюшки (preview, thumbnail) картинки
+	/** Создание превьюшки (preview, thumbnail) картинки
 	 * @param string $path Путь к файлу
 	 * @param array $o Опции, описание доступно внутри самого метода
 	 * @throws EE
-	 * @return bool|string
-	 */
+	 * @return bool|string */
 	public static function Preview($path,array$o=[])
 	{
 		if(!is_file($path))
@@ -90,8 +81,6 @@ class Image extends Eleanor\BaseClass
 		$setsize=!isset($o['width']) && !isset($o['height']);
 
 		$o+=[
-			'width'=>$setsize && $w>$h ? 100 : 0,#Ширина будущей превьюшки; целое число: 0 - без изменений
-			'height'=>$setsize && $h>$w ? 100 : 0,#Высота будущем превьюшки; целое число: 0 - без изменений
 			'cut_first'=>false,#Если true - превьюшка будет не ужиматься, а тупо обрезаться
 			'cut_last'=>false,#Если true - превьюшка будет уменьшена по одной стороне, а по другой - обрезана
 			'first'=>'b',#Что будет уменьшаться первое: высота или ширина. w,h . Автоматически: b - по наибольшей стороне, s - по наименьшей стороне
@@ -115,69 +104,100 @@ class Image extends Eleanor\BaseClass
 		elseif($o['first']=='s')
 			$o['first']=$w>$h ? 'h' : 'w';
 
-		if($o['first']=='w' and ($o['width']>=$w or $o['width']==0) or $o['first']=='h' and ($o['height']>=$h or $o['height']==0))
-			return $o['returnbool'] ? false : $path;
+		if($setsize)
+			if($w>=$h or $o['first']=='w')
+				$o['width']=100;
+			elseif($w>=$h or $o['first']=='h')
+				$o['height']=100;
 
-		$img=static::CreateImage($path);
+		$o+=[
+			'width'=>0,#Ширина будущей превьюшки; целое число: 0 - без изменений
+			'height'=>0,#Высота будущем превьюшки; целое число: 0 - без изменений
+		];
+
+		if($o['first']=='w' and ($o['width']>=$w or $o['width']==0) or $o['first']=='h' and ($o['height']>=$h or $o['height']==0))
+			return$o['returnbool'] ? false : $path;
+
+		$source=static::CreateImage($path);
 
 		switch($o['first'])
 		{
 			case'w':
 				$height=$o['cut_first'] ? $h : round($h*$o['width']/$w);
-				$r=imagecreatetruecolor($o['width'],$height);
+				$dest=imagecreatetruecolor($o['width'],$height);
 
 				#Сохраняем прозрачность
-				imagealphablending($r,false);
-				imagesavealpha($r,true);
-				imagecopyresampled($r,$img,0,0,0,0,$o['width'],$height,$o['cut_first'] ? $o['width'] : $w,$h);
+				imagealphablending($dest,false);
+				imagesavealpha($dest,true);
+				imagecopyresampled($dest,$source,0,0,0,0,$o['width'],$height,$o['cut_first'] ? $o['width'] : $w,$h);
 
 				if($height>$o['height'] and $o['height'])
 				{
 					$width=$o['cut_last'] ? $o['width'] : round($o['width']*$o['height']/$height);
-					$temp=$r;
-					$r=imagecreatetruecolor($width,$o['height']);
+					$temp=$dest;
+					$dest=imagecreatetruecolor($width,$o['height']);
 
-					imagealphablending($r,false);
-					imagesavealpha($r,true);
-					imagecopyresampled($r,$temp,0,0,0,0,$width,$o['height'],$o['width'],$o['cut_last'] ? $o['height'] : $height);
+					imagealphablending($dest,false);
+					imagesavealpha($dest,true);
+					imagecopyresampled($dest,$temp,0,0,0,0,$width,$o['height'],$o['width'],$o['cut_last'] ? $o['height'] : $height);
+					imagedestroy($temp);
 				}
 			break;
 			#case'h':
 			default:
 				$width=$o['cut_first'] ? $w : round($w*$o['height']/$h);
-				$r=imagecreatetruecolor($width,$o['height']);
+				$dest=imagecreatetruecolor($width,$o['height']);
 
 				#Сохраняем прозрачность
-				imagealphablending($r,false);
-				imagesavealpha($r,true);
-				imagecopyresampled($r,$img,0,0,0,0,$width,$o['height'],$w,$o['cut_first'] ? $o['height'] : $h);
+				imagealphablending($dest,false);
+				imagesavealpha($dest,true);
+				imagecopyresampled($dest,$source,0,0,0,0,$width,$o['height'],$w,$o['cut_first'] ? $o['height'] : $h);
 
 				if($width>$o['width'] and $o['width'])
 				{
 					$height=$o['cut_last'] ? $o['height'] : round($o['height']*$o['width']/$width);
-					$temp=$r;
-					$r=imagecreatetruecolor($o['width'],$height);
+					$temp=$dest;
+					$dest=imagecreatetruecolor($o['width'],$height);
 
-					imagealphablending($r,false);
-					imagesavealpha($r,true);
-					imagecopyresampled($r,$temp,0,0,0,0,$o['width'],$height,$o['cut_last'] ? $o['width'] : $width,$o['height']);
+					imagealphablending($dest,false);
+					imagesavealpha($dest,true);
+					imagecopyresampled($dest,$temp,0,0,0,0,$o['width'],$height,$o['cut_last'] ? $o['width'] : $width,$o['height']);
+					imagedestroy($temp);
 				}
 		}
 
-		imagedestroy($img);
-		static::SaveImage($r,$newpath);
-		imagedestroy($r);
+		/*Квадратная превьюха с центрированием внутри виртуального квадрата
+		$sx=imagesx($dest);
+		$sy=imagesy($dest);
+
+		if($sx!=$sy)
+		{
+			$max=max($sx,$sy);
+
+			$dest2=imagecreatetruecolor($max,$max);
+			imagealphablending($dest2,false);
+			imagesavealpha($dest2,true);
+			imagefill($dest2,0,0,imagecolorexactalpha($dest2,1,1,1,255));
+
+			imagecopy($dest2,$dest,$sx>$sy ? 0 : round(($sy-$sx)/2),$sy>$sx ? 0 : round(($sx-$sy)/2),0,0,$sx,$sy);
+			imagedestroy($dest);
+			$dest=$dest2;
+
+			$newpath=preg_replace('#\.(jpe?g|png|gif)$#','.png',$newpath);
+		}*/
+
+		imagedestroy($source);
+		static::SaveImage($dest,$newpath);
+		imagedestroy($dest);
 
 		return$o['returnbool'] ? true : $newpath;
 	}
 
-	/**
-	 * Установка водяного знака (watermark) на картинку
+	/** Установка водяного знака (watermark) на картинку
 	 * @param string $path Путь к файлу
 	 * @param array $o Опции, описание доступно внутри самого метода
 	 * @throws EE
-	 * @return bool
-	 */
+	 * @return bool */
 	public static function WaterMark($path,$o=[])
 	{
 		if(!is_file($path))
@@ -264,7 +284,7 @@ class Image extends Eleanor\BaseClass
 					$dy=$o['ptop']>0 ? $o['ptop'] : round(($ih-$height)*$o['top']);
 					#Цвет ватермарка
 					$color=imagecolorexactalpha($img,$o['r'],$o['g'],$o['b'],$o['alpha']*127);
-					if(Eleanor\CHARSET!='utf-8')
+					if(!Eleanor\UTF8)
 						$o['text']=mb_convert_encoding($o['text'],'utf-8');
 
 					#Цвет должен быть отрицательным числом. http://phpforum.ru/txt/index.php/t23846.html

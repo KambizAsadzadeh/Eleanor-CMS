@@ -1,33 +1,30 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Вывод содержимого в браузер, сборник методов для выдачи информации через http
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
+/** Вывод содержимого в браузер, сборник методов для выдачи информации через http */
 class Output extends Eleanor\BaseClass
 {
-	/**
-	 * Отдача содержимого клиенту в виде файла
+	/** Отдача содержимого клиенту в виде файла
 	 * @param array $a Опции передачи, может содержать следующие ключи:
-	 *  string data Данные, которые необходимо передать
-	 *  string file Путь к фалу, который будет передан пользователю. Имеет приоритет над data
-	 *  string filename Имя файла, которое будет отображено пользователю
-	 *  int last-modified Timestamp последнего изменения файла, по умолчанию Сегодня 00:00. Важно для мультипоточности.
-	 *  bool multithread Флаг разрешения мультипоточности при скачивании
-	 *  string mimetype Mimetype для передачи файла
-	 *  string etag Etag
-	 *  bool save Флаг отображения пользователю диалога сохранения файла (Для картинок рекомендуется false)
-	 * @throws EE
-	 */
+	 *  [string data] Данные, которые необходимо передать
+	 *  [string file] Путь к фалу, который будет передан пользователю. Имеет приоритет над data
+	 *  [string filename] Имя файла, которое будет отображено пользователю
+	 *  [int last-modified] Timestamp последнего изменения файла, по умолчанию Сегодня 00:00. Важно для мультипоточности.
+	 *  [bool multithread] Флаг разрешения мультипоточности при скачивании
+	 *  [string mimetype] Mimetype для передачи файла
+	 *  [string etag Etag]
+	 *  [bool save] Флаг отображения пользователю диалога сохранения файла (Для картинок рекомендуется false)
+	 * @throws EE */
 	public static function Stream(array$a)
 	{
 		$a+=[
-			'data'=>'',#
+			'data'=>'',
 			'file'=>'',
 			'filename'=>false,
 			'last-modified'=>mktime(0,0,0),
@@ -63,7 +60,8 @@ class Output extends Eleanor\BaseClass
 
 		$fn=preg_match('#^[a-z0-9\-_\.\(\)]+$#i',$a['filename'])>0
 			? $a['filename']
-			: '=?'.Eleanor\CHARSET.'?B?'.base64_encode($a['filename']).'?=';
+			: '=?'.Eleanor\CHARSET.'?B?'.base64_encode(Eleanor\W && Eleanor\UTF8
+				? mb_convert_encoding($a['filename'],'utf-8','cp1251') : $a['filename']).'?=';
 
 		header('Accept-Ranges: '.($a['multithread'] ? 'bytes' : 'none'));
 		header('Connection: '.($a['multithread'] ? 'keep-alive' : 'close'));
@@ -86,7 +84,7 @@ class Output extends Eleanor\BaseClass
 		if($a['multithread'] and isset($_SERVER['HTTP_RANGE']) and !$ifr)
 		{
 			#Поддержка мультипромежуточного запроса
-			$range=array();
+			$range=[];
 			$m=preg_match('/^bytes=((?:\d*-\d*,?\s?)+)/',$_SERVER['HTTP_RANGE'],$m)>0 ? explode(',',$m[1]) : [];
 
 			foreach($m as $v)
@@ -150,7 +148,7 @@ class Output extends Eleanor\BaseClass
 		else
 		{
 			header('Content-Length: '.$size,true,200);
-			$range=array(array(0,$size));
+			$range=[[0,$size]];
 		}
 
 		if($a['data'])
@@ -178,24 +176,29 @@ class Output extends Eleanor\BaseClass
 		}
 	}
 
-	/**
-	 * Проверка возможности вернуть браузеру его кэш
+	/** Проверка возможности вернуть браузеру его кэш
 	 * @param string|false $etag
 	 * @param string|int $modified Дата последнего изменения страницы
-	 * @return bool
-	 */
-	public static function TryReturnCache($etag,$modified)
+	 * @param bool $includes Флаг проверки даты у всех проинклуженых файлов
+	 * @return bool */
+	public static function TryReturnCache($etag,$modified=0,$includes=true)
 	{
 		if(!isset($_SERVER['HTTP_IF_NONE_MATCH'],$_SERVER['HTTP_IF_MODIFIED_SINCE']))
 			return false;
 
 		$ifmod=strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']);
 
-		if(is_string($modified))
+		if(!$modified)
+			$modified=$ifmod;
+		elseif(is_string($modified))
 			$modified=strtotime($modified);
 
 		if(!$etag)
 			$etag=md5($_SERVER['REQUEST_URI']);
+
+		if($includes)
+			foreach(get_included_files() as $file)
+				$modified=max($modified,filemtime($file));
 
 		if($ifmod && $modified && $modified<=$ifmod
 			&& $_SERVER['HTTP_IF_NONE_MATCH'] && $etag==$_SERVER['HTTP_IF_NONE_MATCH'])
@@ -203,23 +206,21 @@ class Output extends Eleanor\BaseClass
 			header('X-Powered-CMS: Eleanor CMS http://eleanor-cms.ru',true,304);
 			return true;
 		}
-		else
-			return false;
+
+		return false;
 	}
 
-	/**
-	 * Подготовка хедеров (действия перед echo)
+	/** Подготовка хедеров (действия перед echo)
 	 * @param string|array $type Тип контента (text,html,js,css,json,xml), второй параметр массива - charset
 	 * @param int $code Код ответа
 	 * @param array $cache Данные для кэширования отвата, ключи:
-	 *   string|int modified Время обновления контента Required!
-	 *   bool revalidate Необходимость проверки кэша браузера сервером (возврат 304 кода)
-	 *   int max-age Возраст кэша в секундах
-	 *   string etag
-	 *   bool public Кэш является публичным?
-	 * @return bool Флаг успешной отправки заголовков
-	 */
-	public static function SendHeaders($type,$code=200,array$cache=[])
+	 *  int max-age Возраст кэша в секундах, можно ставить 0 Required!
+	 *  string|int modified Время обновления контента
+	 *  bool revalidate Необходимость проверки кэша браузера сервером (возврат 304 кода), нужен ключ modified
+	 *  string etag
+	 *  bool public Кэш является публичным?
+	 * @return bool Флаг успешной отправки заголовков */
+	public static function SendHeaders($type='html',$code=200,array$cache=[])
 	{
 		if(headers_sent())
 			return false;
@@ -227,7 +228,7 @@ class Output extends Eleanor\BaseClass
 		if(isset($cache['max-age']))
 		{#http://xmlhack.ru/texts/06/doing-http-caching-right/doing-http-caching-right.html
 
-			$cache+=['revalidate'=>false,'public'=>false];
+			$cache+=['revalidate'=>$cache['max-age']==0 ? true : false,'public'=>false];
 
 			header('Cache-Control: '.($cache['public'] ? 'public' : 'private')
 					.', max-age='.$cache['max-age']
@@ -244,7 +245,7 @@ class Output extends Eleanor\BaseClass
 				elseif(is_string($cache['modified']))
 					$cache['modified']=strtotime($cache['modified']);
 
-				header('ETag: "'.$cache['etag'].'"');
+				header('ETag: '.$cache['etag']);#Кавычки не ставить, ибо они передаются потом в HTTP_IF_NONE_MATCH
 				header('Last-Modified: '.gmdate('D, d M Y H:i:s ',$cache['modified']).'GMT',false);
 			}
 		}
@@ -255,35 +256,29 @@ class Output extends Eleanor\BaseClass
 		switch($type[0])
 		{
 			case'text':
-				$type[0]='';
+				$type[0]='text/plain';
 			break;
 			case'html':
-				$type[0]='';
+			case'css':
+				$type[0]='text/'.$type[0];
 			break;
 			case'js':
-				$type[0]='';
-			break;
-			case'css':
-				$type[0]='';
+				$type[0]='application/javascript';
 			break;
 			case'json':
-				$type[0]='';
-			break;
 			case'xml':
-				$type[0]='';
+				$type[0]='application/'.$type[0];
 		}
 
-		header('Content-Type: '.$type[0].'; charset='.$type[1]);
+		header("Content-Type: {$type[0]}; charset={$type[1]}");
 		header('X-Powered-CMS: Eleanor CMS http://eleanor-cms.ru',false,$code);
 
 		return true;
 	}
 
-	/**
-	 * Вывод контента
+	/** Вывод контента
 	 * @param string $content Строка для вывода
-	 * @param int $level Степень GZIP сжатия от 1 до 9
-	 */
+	 * @param int $level Степень GZIP сжатия от 1 до 9 */
 	public static function Gzip($content,$level=1)
 	{
 		if(isset($_SERVER['HTTP_ACCEPT_ENCODING']) && strpos($_SERVER['HTTP_ACCEPT_ENCODING'],'gzip')!==false && extension_loaded('zlib'))

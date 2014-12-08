@@ -1,12 +1,8 @@
 <?php
 /*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 */
 class TplUserAccount
 {
@@ -18,8 +14,7 @@ class TplUserAccount
 		$groups - массив всех групп. Формат: id=>array(), ключи внутреннего массива:
 			title - название группы
 			descr - описание группы
-			html_pref - HTML префикс группы
-			html_end - HTML окончание группы
+			style - стиль группы
 	*/
 	public static function AcGroups($groups)
 	{
@@ -27,7 +22,7 @@ class TplUserAccount
 		$Lst=Eleanor::LoadListTemplate('table-list',2)
 			->begin(static::$lang['group'],static::$lang['descr']);
 		foreach($groups as $k=>&$v)
-			$Lst->item(array($v['html_pref'].$v['title'].$v['html_end'],'trextra'=>array('id'=>'group-'.$k)),$v['descr']);
+			$Lst->item(array($v['style'].$v['title'],'trextra'=>array('id'=>'group-'.$k)),$v['descr']);
 		return$c.$Lst->end().Eleanor::$Template->CloseTable();
 	}
 
@@ -47,8 +42,7 @@ class TplUserAccount
 			full_name - полное имя пользователя для пользовательской сессии
 		$groups - массив всех групп. Формат: id=>array(), ключи внутреннего массива:
 			title - название группы
-			html_pref - HTML префикс группы
-			html_end - HTML окончание группы
+			style - стиль группы
 		$cnt - количество сессий всего
 		$pp - сессий на страницу
 		$page - номер текущей страницы
@@ -100,7 +94,7 @@ class TplUserAccount
 						if($v['name'] and $v['user_id'])
 						{
 							$name='<a href="'.Eleanor::$Login->UserLink($v['name'],$v['user_id']).'"'
-								.(isset($v['_group'],$groups[$v['_group']]) ? ' title="'.$groups[$v['_group']]['title'].'">'.$groups[$v['_group']]['html_pref'].htmlspecialchars($v['name'],ELENT,CHARSET).$groups[$v['_group']]['html_end'] : '>'.htmlspecialchars($v['name'],ELENT,CHARSET))
+								.(isset($v['_group'],$groups[$v['_group']]) ? ' title="'.$groups[$v['_group']]['title'].'">'.$groups[$v['_group']]['style'].htmlspecialchars($v['name'],ELENT,CHARSET) : '>'.htmlspecialchars($v['name'],ELENT,CHARSET))
 								.'</a>'.($v['name']==$v['full_name'] ? '' : '<br /><i>'.$v['full_name'].'</i>');
 							break;
 						}
@@ -188,7 +182,7 @@ class TplUserAccount
 			);
 		}
 
-		return$C.$Lst->end().'<script type="text/javascript">//<![CDATA[
+		return$C.$Lst->end().'<script>//<![CDATA[
 $(function(){
 	$("#sessions").on("click","a[data-key]",function(){
 		var th=$(this);
@@ -279,7 +273,7 @@ $(function(){
 		if(Eleanor::$vars['reg_off'])
 			return static::AcMenu($handlers)->Message(static::$lang['reg_off'],'error');
 
-		array_push($GLOBALS['jscripts'],'js/module_account.js','js/module_account-'.Language::$main.'.js');
+		array_push($GLOBALS['scripts'],'js/module_account.js','js/module_account-'.Language::$main.'.js');
 
 		$C=static::Menu('guest','register','main');
 
@@ -352,7 +346,7 @@ $(function(){
 				),
 				true,false,'CORE.AcRegister.'
 		).$C.$Lst->item('',Eleanor::Button(static::$lang['do_reg'],'submit',array('tabindex'=>7)))->end()->endform()
-		.'<script type="text/javascript">//<![CDATA[
+		.'<script>//<![CDATA[
 $(function(){
 	var ef={//Error field
 		name:$("#name-error"),
@@ -527,7 +521,7 @@ $(function(){
 			$Lst->item(array(static::$lang['captcha'],$captcha.'<br />'.Eleanor::Input('check','',array('tabindex'=>3)),'tip'=>static::$lang['captcha_']));
 
 		$Lst->button(Eleanor::Button('OK','submit',array('tabindex'=>4)))->end()->endform();
-		return$C.$Lst.'<script type="text/javascript">//<![CDATA[
+		return$C.$Lst.'<script>//<![CDATA[
 $(function(){
 	$("#rpass a.small").click(function(){
 		$("#tr-email,#tr-name").toggle();
@@ -557,7 +551,7 @@ $(function(){
 	*/
 	public static function AcRemindPassStep3($values,$captcha,$errors=array())
 	{
-		$GLOBALS['jscripts'][]='js/module_account-'.Language::$main.'.js';
+		$GLOBALS['scripts'][]='js/module_account-'.Language::$main.'.js';
 		$C=static::Menu('guest','lostpass','main');
 		$errpass=$errpass2='';
 		if($errors)
@@ -604,7 +598,7 @@ $(function(){
 			$Lst->item(array(static::$lang['captcha'],$captcha.'<br />'.Eleanor::Input('check','',array('tabindex'=>3)),'descr'=>static::$lang['captcha_']));
 
 		return$C.$Lst->button(Eleanor::Button('OK','submit',array('tabindex'=>4)))->end()->endform()
-			.'<script type="text/javascript">//<!CDATA[
+			.'<script>//<!CDATA[
 $(function(){
 	var ef={//Error field
 			p:$("#password-error"),
@@ -769,7 +763,7 @@ $(function(){
 		$Lst=Eleanor::LoadListTemplate('table-form')
 			->form()
 			->begin()
-			->item(array(static::$lang['curr_email'],($em=Eleanor::$Login->GetUserValue('email')) ? $em : '&mdash;','td1'=>array('style'=>'width:200px')))
+			->item(array(static::$lang['curr_email'],($em=Eleanor::$Login->Get('email')) ? $em : '&mdash;','td1'=>array('style'=>'width:200px')))
 			->item(static::$lang['new_email'],Eleanor::Input('email',$values['email'],array('tabindex'=>1,'required'=>true)));
 
 		if($captcha)
@@ -802,7 +796,7 @@ $(function(){
 	*/
 	public static function AcNewPass($success,$errors,$values)
 	{
-		$GLOBALS['jscripts'][]='js/module_account-'.Language::$main.'.js';
+		$GLOBALS['scripts'][]='js/module_account-'.Language::$main.'.js';
 
 		Eleanor::LoadOptions('user-profile');
 		$C=static::Menu('user','changepass','main');
@@ -857,7 +851,7 @@ $(function(){
 			->end()
 			->endform();
 
-		return$C.$Lst.'<script type="text/javascript">//<!CDATA[
+		return$C.$Lst.'<script>//<!CDATA[
 $(function(){
 	var ef={//Error field
 			p:$("#password-error"),
@@ -1034,7 +1028,7 @@ $(function(){
 					</div>
 				</div>
 				<div id="avatar-upload">'.$avatar.'</div>
-				<script type="text/javascript">//<![CDATA[
+				<script>//<![CDATA[
 				$(function(){
 					var ai=$("#avatar-input").val();
 					if(ai)
@@ -1176,8 +1170,7 @@ $(function(){
 			timezone - часовой пояс
 			+все поля из таблицы users_extra
 		$groups - группы пользователя, формат: id=>array(), ключи внутреннего массива:
-			html_pref - HTML префикс группы
-			html_end - HTML окончание группы
+			style - стиль группы
 			title - название группы
 			_a - ссылка на просмотр информации о группе
 			_main - флаг основной группы
@@ -1190,9 +1183,9 @@ $(function(){
 		$ogr=$mgr='';
 		foreach($groups as &$v)
 			if($v['_main'])
-				$mgr.='<a href="'.$v['_a'].'">'.$v['html_pref'].$v['title'].$v['html_end'].'</a>';
+				$mgr.='<a href="'.$v['_a'].'">'.$v['style'].$v['title'].'</a>';
 			else
-				$ogr.='<a href="'.$v['_a'].'">'.$v['html_pref'].$v['title'].$v['html_end'].'</a>, ';
+				$ogr.='<a href="'.$v['_a'].'">'.$v['style'].$v['title'].'</a>, ';
 
 		$sname=htmlspecialchars($user['name'],ELENT,CHARSET);
 		if($user['avatar_location'])
@@ -1323,7 +1316,7 @@ $(function(){
 		$s='';
 		foreach($items as &$v)
 			$s.='<span><a href="'.$v['identity'].'" target="_blank" style="font-size:2em">'.(isset(static::$lang[$v['provider']]) ? static::$lang[$v['provider']] : $v['provider']).'</a><a href="#" data-provider="'.$v['provider'].'" data-uid="'.$v['provider_uid'].'" title="'.$ltpl['delete'].'">X</a> </span>';
-		return $C.'<script type="text/javascript">//<![CDATA[
+		return $C.'<script>//<![CDATA[
 $(function(){
 	$("#externals").on("click","a[href=#]",function(){
 		var o=$(this);
@@ -1341,7 +1334,7 @@ $(function(){
 		);
 		return false;
 	})
-})//]]></script><script type="text/javascript" src="http://loginza.ru/js/widget.js"></script><div style="text-align:center;">
+})//]]></script><script src="http://loginza.ru/js/widget.js"></script><div style="text-align:center;">
 <img src="http://loginza.ru/img/providers/facebook.png" title="Yandex" />
 <img src="http://loginza.ru/img/providers/yandex.png" title="Yandex" />
 <img src="http://loginza.ru/img/providers/google.png" title="Google Accounts" />

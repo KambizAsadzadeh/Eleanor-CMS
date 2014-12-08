@@ -1,78 +1,87 @@
 <?php
-/*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
+/**
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 */
-class CacheMachineSerialize implements CacheMachineInterface
+namespace Eleanor\Classes\Cache;
+use Eleanor, Eleanor\Classes;
+
+/** Кэшмашина Serialize */
+class Serialize implements Eleanor\Interfaces\Cache
 {
-	public function __construct()
+	/** @var string Путь файлам кэша */
+	protected $path;
+
+	/** @param null $path Путь к файлам кэша
+	 * @throws Classes\EE */
+	public function __construct($path=null)
 	{
-		if(!is_writeable(Eleanor::$root.'cache'))
-			throw new EE('Folder /cache is write-protected!');
+		$this->path=$path ? $path : $_SERVER['DOCUMENT_ROOT'].Eleanor\SITEDIR.'cache/';
+
+		if(!is_dir($this->path))
+			Classes\Files::MkDir($this->path);
+
+		if(!is_writeable($this->path))
+			throw new Classes\EE('Folder /cache is write-protected',Classes\EE::ENV);
 	}
 
-	/**
-	 * Запись значения
-	 *
-	 * @param string $k Ключ. Обратите внимение, что ключи рекомендуется задавать в виде тег1_тег2 ...
-	 * @param mixed $value Значение
-	 * @param int $t Время жизни этой записи кэша в секундах
-	 */
-	public function Put($k,$v,$t=0)
+	/** Запись значения
+	 * @param string $k Ключ. Рекомендуется задавать в виде тег1_тег2 ...
+	 * @param mixed $v Значение
+	 * @param int $ttl Время жизни этой записи кэша в секундах
+	 * @return true */
+	public function Put($k,$v,$ttl=0)
 	{
-		if($t>0)
-			$t+=time();
-		return file_put_contents(Eleanor::$root.'cache/'.$k.'.php',serialize(array((int)$t,$v)));
+		return file_put_contents($this->path.$k.'.php',serialize([$ttl>0 ? (int)$ttl+time() : 0,$v]));
 	}
 
-	/**
-	 * Получение записи из кэша
-	 *
+	/** Получение записи из кэша
 	 * @param string $k Ключ
-	 */
+	 * @return mixed */
 	public function Get($k)
 	{
-		if(!is_file($f=Eleanor::$root.'cache/'.$k.'.php'))
+		$f=$this->path.$k.'.php';
+
+		if(!is_file($f))
 			return false;
+
 		$d=unserialize(file_get_contents($f));
+
 		if($d[0]>0 and $d[0]<time())
 		{
 			$this->Delete($k);
 			return false;
 		}
+
 		return$d[1];
 	}
 
-	/**
-	 * Удаление записи из кэша
-	 *
+	/** Удаление записи из кэша
 	 * @param string $k Ключ
-	 */
+	 * @return bool */
 	public function Delete($k)
 	{
-		$r=Files::Delete(Eleanor::$root.'cache/'.$k.'.php');
+		$r=Classes\Files::Delete($this->path.$k.'.php');
 		clearstatcache();
 		return$r;
 	}
 
-	/**
-	 * Удаление записей по тегу. Если имя тега пустое - удаляется вешь кэш.
-	 *
-	 * @param string $t Тег
-	 */
-	public function DeleteByTag($t)
+	/** Удаление записей по тегу. Если имя тега пустое - удаляется вешь кэш
+	 * @param string $tag Тег */
+	public function DeleteByTag($tag)
 	{
-		$t=str_replace('..','',$t);
-		if($t!='')
-			$t.='*';
-		if($files=glob(Eleanor::$root.'cache/*'.$t.'.php'))
-			foreach($files as &$f)
-				Files::Delete($f);
+		$tag=str_replace('..','',$tag);
+
+		if($tag!='')
+			$tag.='*';
+
+		$files=glob($this->path.'*'.$tag.'.php');
+
+		if($files)
+			foreach($files as $f)
+				Classes\Files::Delete($f);
+
 		clearstatcache();
 	}
 }

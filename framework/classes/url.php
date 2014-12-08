@@ -1,28 +1,25 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Генерации ссылок
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
+/** Генерации ссылок */
 class Url extends Eleanor\BaseClass
 {
 	public static
 		/** @static Адрес текущего адреса в браузере */
-		$curpage;
+		$current;
 
-	/**
-	 * Конструктор, самый обыкновенный, ничем не приметный конструктор.
-	 * @param string|bool $qs Строка запроса для дальнейшего разбора, false - берется запрос из браузера
-	 * @return array ( статическая часть URL, часть динамического запроса (только для string $qs) )
-	 */
-	public static function ParseRequest($qs=false)
+	/** Конструктор, самый обыкновенный, ничем не приметный конструктор
+	 * @param string|null $qs Строка запроса для дальнейшего разбора, null - берется запрос из браузера
+	 * @return array|string (статическая часть URL, часть динамического запроса (только при $qs)) | стат. часть URL */
+	public static function ParseRequest($qs=null)
 	{
-		if($qs===false)
+		if($qs===null)
 		{
 			$qs=isset($_SERVER['REDIRECT_QUERY_STRING']) ? $_SERVER['REDIRECT_QUERY_STRING'] : $_SERVER['QUERY_STRING'];
 			$direct=false;
@@ -37,6 +34,8 @@ class Url extends Eleanor\BaseClass
 			$qs=substr($qs,0,$ap);
 			$qs=substr($qs,1);
 			$result[0]=static::Decode($qs);
+
+			unset($_GET['!'.$qs.'!']);
 		}
 		elseif($direct)
 		{
@@ -56,24 +55,20 @@ class Url extends Eleanor\BaseClass
 				$result[0]=static::Decode($qs);
 		}
 
-		return$result;
+		return$direct ? $result : $result[0];
 	}
 
-	/**
-	 * Кодирование строк для использования кириличных и других символов, не относящихся к латиннице, в ссылках
+	/** Кодирование строк для использования кириличных и других символов, не относящихся к латиннице, в ссылках
 	 * @param string $s Входящая строка
-	 * @return string
-	 */
+	 * @return string */
 	public static function Encode($s)
 	{
 		return urlencode(Eleanor\UTF8 ? $s : mb_convert_encoding((string)$s,'utf-8'));
 	}
 
-	/**
-	 * Декодирование строк, обратное действие методу Encode
+	/** Декодирование строк, обратное действие методу Encode
 	 * @param string $s Входящая строка
-	 * @return string
-	 */
+	 * @return string */
 	public static function Decode($s)
 	{
 		$s=urldecode($s);
@@ -81,16 +76,14 @@ class Url extends Eleanor\BaseClass
 		if(Eleanor\UTF8)
 			return$s;
 
-		return preg_match('/^.{1}/us',$s)==1 ? mb_convert_encoding($s,Eleanor\CHARSET,'utf-8') : $s;
+		return Eleanor::UTF8 || preg_match('/^.{1}/us',$s)==0 ? $s : mb_convert_encoding($s,Eleanor\CHARSET,'utf-8');
 	}
 
-	/**
-	 * Генерация ссылок
+	/** Генерация ссылок
 	 * @param array $static Статическая часть ссылки
 	 * @param string $ending Окончание ссылки
 	 * @param array $query request часть ссылки
-	 * @return string
-	 */
+	 * @return string */
 	public static function Make(array$static=[],$ending='',array$query=[])
 	{
 		$result=[];
@@ -102,12 +95,10 @@ class Url extends Eleanor\BaseClass
 		return join('/',$result).$ending.($query ? '?'.static::Query($query) : '');
 	}
 
-	/**
-	 * Генерация сложных динамических URLов, состоящих из многомерных массивов
+	/** Генерация сложных динамических URLов, состоящих из многомерных массивов
 	 * @param array $a Многомерный массив параметров, которых должен быть преобразован в URL
 	 * @param string $d Разделитель параметров, получаемого URLа
-	 * @return string
-	 */
+	 * @return string */
 	public static function Query(array$a,$d='&amp;')
 	{
 		$r=[];
@@ -125,12 +116,10 @@ class Url extends Eleanor\BaseClass
 		return join($d,$r);
 	}
 
-	/**
-	 * Генерация многомерных параметров для метода Query.
+	/** Генерация многомерных параметров для метода Query.
 	 * @param array $a Параметры
 	 * @param string $p Префикс для каждого параметра
-	 * @param array &$r Ссылка на массив для помещения результатов
-	 */
+	 * @param array &$r Ссылка на массив для помещения результатов */
 	protected static function QueryPart(array$a,$p,&$r)
 	{
 		$i=0;
@@ -143,13 +132,13 @@ class Url extends Eleanor\BaseClass
 	}
 }
 
-Url::$curpage=isset($_SERVER['REDIRECT_QUERY_STRING']) ? $_SERVER['REDIRECT_QUERY_STRING'] : $_SERVER['QUERY_STRING'];
-Url::$curpage.='&';
-if(strpos(Url::$curpage,'!')===0 and strpos(Url::$curpage,'!&')!==false)
+Url::$current=isset($_SERVER['REDIRECT_QUERY_STRING']) ? $_SERVER['REDIRECT_QUERY_STRING'] : $_SERVER['QUERY_STRING'];
+Url::$current.='&';
+if(strpos(Url::$current,'!')===0 and strpos(Url::$current,'!&')!==false)
 {
-	Url::$curpage=str_replace('!&','?',ltrim(Url::$curpage,'!'));
-	Url::$curpage=rtrim(Url::$curpage,'?&');
-	Url::$curpage=Url::Decode(Url::$curpage);
+	Url::$current=str_replace('!&','?',ltrim(Url::$current,'!'));
+	Url::$current=rtrim(Url::$current,'?&');
+	Url::$current=Url::Decode(Url::$current);
 }
 else
-	Url::$curpage=substr($_SERVER['REQUEST_URI'],strlen(Eleanor\SITEDIR));
+	Url::$current=substr($_SERVER['REQUEST_URI'],strlen(Eleanor\SITEDIR));

@@ -632,7 +632,6 @@ SQL
 				'free'=>1,
 				'ondone'=>'deactivate',
 				'status'=>1,
-				'run_year'=>'*',
 				'run_month'=>'*',
 				'run_day'=>'*',
 				'run_hour'=>0,

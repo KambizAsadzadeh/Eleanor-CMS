@@ -1,38 +1,33 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Поддержка английского языка
 */
 namespace Eleanor\Classes\Language;
 use \Eleanor;
 
+/** Поддержка английского языка */
 class English extends Eleanor\BaseClass
 {
 	const
 		ALPHABET='abcdefghijklmnopqrstuvwxyz';#Латинский технический алфавит
 
-	/**
-	 * Образование множественной формы слова
+	/** Образование множественной формы слова
 	 * @param int $n Число
-	 * @param array $forms Формы слова. Пример array('один','два и больше')
-	 */
+	 * @param array $forms Формы слова. Пример ['один','два и больше'] */
 	public static function Plural($n,array$forms)
 	{
 		return$n==1 ? $forms[0] : $forms[1];
 	}
 
-	/**
-	 * Человеческое представление даты
-	 * @param int|string|bool $d Дата в обычном машинном формате, либо timestamp, false = time()
+	/** Человеческое представление даты
+	 * @param int|string|null $d Дата в обычном машинном формате, либо timestamp, false = time()
 	 * @param string $t Тип вывода: t - время, d - дата, dt - дата и время,my - месяц и год, fd - полная дата,
 	 * fdt - полная дата и время
 	 * @param array $a Экстра опции. Ключ advanced включает вывод значений "Today", "Tomorrow", "Yesterday"
-	 * @return string
-	 */
-	public static function Date($d=false,$t='',$a=array())
+	 * @return string */
+	public static function Date($d=null,$t='',$a=[])
 	{
 		if(!$d)
 			$d=time();
@@ -68,12 +63,10 @@ class English extends Eleanor\BaseClass
 		}
 	}
 
-	/**
-	 * Человеческое представление даты
+	/** Человеческое представление даты
 	 * @param int $t Дата в оформате timestamp
 	 * @param bool $adv Флаг включения значений "Today", "Tomorrow", "Yesterday"
-	 * @return string
-	 */
+	 * @return string */
 	public static function DateText($t,$adv)
 	{
 		$day=explode(',',date('Y,n,j,t',$t));

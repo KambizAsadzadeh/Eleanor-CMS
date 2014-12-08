@@ -1,12 +1,8 @@
 <?php
 /*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 
 	Шаблоны отображения опроса, готового опрашивать людей
 */
@@ -60,7 +56,7 @@ class TplVoting
 				$r.='<li>'.$variant.($percent ? '<div style="width:'.$percent.'%;"><div><div></div></div></div>' : '').'</li>';
 			}
 			$r.='</ul></div>'
-				.($qid ? '<script type="text/javascript">/*<![CDATA[*/new Voting.ChecksLimit("#'.$qid.'",'.$v['maxans'].')//]]></script>' : '');
+				.($qid ? '<script>/*<![CDATA[*/new Voting.ChecksLimit("#'.$qid.'",'.$v['maxans'].')//]]></script>' : '');
 		}
 		switch($status)
 		{
@@ -98,8 +94,8 @@ class TplVoting
 			return$q;
 		$u=uniqid('v');
 
-		$GLOBALS['jscripts'][]='js/voting.js';
-		return'<form id="'.$u.'">'.$q.'</form><script type="text/javascript">//<![CDATA[
+		$GLOBALS['scripts'][]='js/voting.js';
+		return'<form id="'.$u.'">'.$q.'</form><script>//<![CDATA[
 $(function(){
 	new Voting({
 		form:"#'.$u.'",

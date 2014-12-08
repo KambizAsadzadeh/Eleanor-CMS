@@ -1,18 +1,15 @@
 <?php
 /*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 
 	Это не сервис. Это защита от прямых ссылок.
 */
 $ref=getenv('HTTP_REFERER');
 $our=(!$ref or stripos($ref,getenv('HTTP_HOST'))!==false and stripos($ref,getenv('HTTP_HOST'))<14);
 header('HTTP/1.1 301 Moved Permanently');
+
 if($our and isset($_GET['int']) and strpos($_SERVER['QUERY_STRING'],'://')===false)
 {
 	$url=substr($_GET['int'],0,2000);

@@ -1,23 +1,20 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Класс работы с датами
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
+/** Набор функций для работы с датами */
 class Dates extends Eleanor\BaseClass
 {
-	/**
-	 * Генерация "календаря" в виде [week][day], где week это от 1 до 5 или 6, а day от 1 до 7.
+	/** Генерация "календаря" в виде [week][day], где week это от 1 до 5 или 6, а day от 1 до 7.
 	 * @param int $y Год
 	 * @param int $m Месяц
 	 * @param bool $pn Флаг дописывания в начало и конец календаря числа следующих месяцев, FALSE - вставляются нули
-	 * @return array
-	 */
+	 * @return array */
 	public static function BuildCalendar($y,$m,$pn=true)
 	{
 		$mt=mktime(0,0,0,$m,1,$y);

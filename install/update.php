@@ -1,17 +1,26 @@
 <?php
-/*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym. See addons/copyrights/info.txt for more information.
+/**
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 */
-define('CMS',true);
-define('INSTALL',true);
-define('UPDATE',true);
-require './init.php';
+namespace CMS;
+use Eleanor\Classes\EE, Eleanor\Classes\Html, Eleanor\Classes\Output;
+
+define('CMS\STARTED',microtime(true));
+require __DIR__.'/core/core.php';
+
+/** Общновление системы */
+interface Update
+{
+	/**
+	 * @param $data
+	 * @return mixed
+	 */
+	public static function Run($data);
+	public static function GetText();
+	public static function GetNextRunInfo();
+}
 
 $step=isset($_GET['step']) ? (int)$_GET['step'] : 1;
 Eleanor::StartSession(isset($_REQUEST['s']) ? $_REQUEST['s'] : '','INSTALLSESSION');
@@ -222,80 +231,6 @@ switch($step)
 			if(!$error)
 				break;
 		}
-		elseif(is_file(Eleanor::$root.'config_general.php') and (!is_file(Eleanor::$root.'config_general.bak') or isset($_GET['igbak'])))
-		{
-			Install::IncludeDb();
-			$percent=65;
-			$navi=$lang['enter_pass'];
-			if(isset($_POST['login'],$_POST['pass']))
-			{
-				$values=array('login'=>(string)$_POST['login'],'pass'=>(string)$_POST['pass']);
-				$R=Eleanor::$UsersDb->Query('SELECT `id`,`name`,`pass_salt`,`pass_hash` FROM `'.USERS_TABLE.'` WHERE `name`='.Eleanor::$UsersDb->Escape($values['login']).' LIMIT 1');
-				do
-				{
-					if(!$a=$R->fetch_assoc())
-					{
-						$error=$lang['WRONG_LOGIN'];
-						break;
-					}
-
-					$R=Eleanor::$UsersDb->Query('SELECT `groups`,`groups_overload` FROM `'.P.'users_site` WHERE `id`='.(int)$a['id'].' LIMIT 1');
-					if($R->num_rows==0)
-					{
-						$error=$lang['WRONG_LOGIN'];
-						break;
-					}
-					$a+=$R->fetch_assoc();
-
-					if($a['pass_hash']!=UserManager::PassHash($a['pass_salt'],$values['pass']))
-					{
-						$error=$lang['WRONG_PASSWORD'];
-						break;
-					}
-
-					$over=$a['groups_overload'] ? (array)unserialize($a['groups_overload']) : array();
-
-					if(!isset($over['method']['access_cp'],$over['value']['access_cp']) or $over['method']['access_cp']=='inherit')
-						$acp=Eleanor::Permissions(explode(',,',trim($a['groups'],',')),'access_cp');
-					else
-					{
-						$acp=($add=$over['method']['access_cp']=='replace') ? array($over['value']['access_cp']) : Eleanor::Permissions(explode(',,',trim($a['groups'],',')),'access_cp');
-						if(!$can)
-							$acp[]=$over['value']['access_cp'];
-					}
-
-					if(array_sum($acp))
-					{
-						$_SESSION['uid']=$a['id'];
-						$_SESSION['name']=$a['name'];
-						header('Location: update.php?step=3&s='.session_id());
-						die;
-					}
-					else
-						$error=$lang['noacp'];
-				}while(false);
-
-			}
-			else
-				$values=array('login'=>'','pass'=>'');
-
-			$text='<div class="wpbox wpbwhite"><div class="wptop"><b>&nbsp;</b></div>
-			<div class="wpmid"><div class="wpcont">
-			<div class="information"><h4>'.$lang['enter_a'].'</h4></div>'
-			.($error ? Eleanor::$Template->Message($error) : '')
-			.'<form method="post">
-			<ul class="reset formfield">
-				<li class="ffield">
-					<span class="label">'.$lang['login'].'</span><div class="ffdd">'.Eleanor::Input('login',$values['login'],array('class'=>'f_text','tabindex'=>1)).'</div>
-				</li>
-				<li class="ffield">
-					<span class="label">'.$lang['db_pass'].'</span><div class="ffdd">'.Eleanor::Input('pass','',array('type'=>'password','class'=>'f_text','tabindex'=>2)).'</div>
-				</li>
-			</ul>
-			<div class="submitline">'.Eleanor::Button($lang['next'],'submit',array('class'=>'button','tabindex'=>3),2).'</div>
-			</form></div></div><div class="wpbtm"><b>&nbsp;</b></div></div>';
-			break;
-		}
 		elseif(isset($_GET['s']))
 		{
 			if(is_file(Eleanor::$root.'config_general.bak') and !is_file(Eleanor::$root.'config_general.php'))
@@ -426,11 +361,6 @@ switch($step)
 					break;
 				}
 		}
-		elseif(is_file(Eleanor::$root.'config_general.php'))
-		{
-			header('location: update.php?step=2&s='.session_id());
-			die;
-		}
 		else
 		{
 			$error=$lang['nobak'];
@@ -440,8 +370,6 @@ switch($step)
 		$percent=50;
 		$navi=$title=$lang['crconfig'];
 
-		$agm=function_exists('apache_get_modules');
-		$canurl=$agm && in_array('mod_rewrite',apache_get_modules());
 		$host=isset($_POST['host']) ? (string)$_POST['host'] : 'localhost';
 		$name=isset($_POST['name']) ? (string)$_POST['name'] : '';
 		$user=isset($_POST['user']) ? (string)$_POST['user'] : '';
@@ -484,7 +412,8 @@ switch($step)
 		</ul>
 		<div class="submitline">'.Eleanor::Input('s',session_id(),array('type'=>'hidden')).Eleanor::Button($lang['next'],'submit',array('class'=>'button','tabindex'=>7),2).'</div></form></div></div><div class="wpbtm"><b>&nbsp;</b></div></div>';
 }
-if($error and !$text)
-	$text=Eleanor::$Template->Message($error,'error');
-Start($percent,$navi);
-echo$text;
+
+$out=(string)Eleanor::$Template->index(compact('content','navi','percent','errors','percent'));
+
+Output::SendHeaders('html');
+Output::Gzip($out);

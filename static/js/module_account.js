@@ -1,0 +1,55 @@
+﻿/**
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
+*/
+CORE.AcRegister={
+	max_name:15,
+	module:"",
+
+	nameerrors:[],
+	CheckName:function(name,F)
+	{
+		var th=this;
+		if(typeof th.nameerrors[name]!="undefined")
+			F(th.nameerrors[name]);
+		else if(name.length>this.max_name)
+			F(CORE.lang.NICK_TOO_LONG(this.max_name,name.length));
+		else
+			return CORE.Ajax(
+				{
+					module:this.module,
+					"do":"register",
+					event:"login",
+					name:name
+				},
+				function(error)
+				{
+					th.nameerrors[name]=error;
+					F(error);
+				}
+			);
+	},
+
+	emailserrors:[],
+	CheckEmail:function(email,F)
+	{
+		var th=this;
+		if(typeof th.emailserrors[email]!="undefined")
+			F(th.emailserrors[email]);
+		else
+			return CORE.Ajax(
+				{
+					module:this.module,
+					"do":"register",
+					event:"email",
+					email:email
+				},
+				function(error)
+				{
+					th.emailserrors[email]=error;
+					F(error);
+				}
+			);
+	}
+};

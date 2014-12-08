@@ -1,39 +1,47 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Шаблонизатор
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
+/** Шаблонизатор. Все шаблоны на классах, должны находиться в неймспейсе Eleanor\Templates */
 class Template extends Eleanor\Abstracts\AppendString
 {
 	/** Тип обрабатываемых файлов */
 	const EXT='.php';
 
 	public
-		/** @property array $default Переменные, которые будут переданы во все шаблоны по умолчанию (assign)*/
+		/** @var array Переменные, которые будут переданы во все шаблоны по умолчанию (assign)*/
 		$default=[],
-		/** @property array $queue Очередь на загрузку. Принимаются: пути в каталоги с файлами - для файловых шаблонов,
-		 * пути к файлам возвращающих массив (шаблонизатор на массивах), пути к файлам не возвращающим ничего - шаблоны
-		 * на классах */
+
+		/** @var array Очередь на загрузку. Принимаются: пути в каталоги с файлами - для файловых шаблонов,
+		 * пути к файлам возвращающих массив (шаблонизатор на массивах), пути к файлам не возвращающим ничего или
+		 * возвращающим полное имя класса - шаблоны на классах */
 		$queue=[];
 
 	protected
-		/** @property array $loaded Массив загруженных шаблонов */
+		/** @var array Массив загруженных шаблонов */
 		$loaded=[];
 
-	/**
-	 * Источник шаблонов
+	/** @var array Названия свойств, которые при клонирование объектов должны стать ссылками на оригинальны свойства */
+	protected static $linking=['default','queue','loaded'];
+
+	/** @param array $queue Очередь на загрузку */
+	public function __construct($queue=[])
+	{
+		$this->queue=(array)$queue;
+	}
+
+	/** Источник шаблонов
 	 * @param string $n Название шаблона
 	 * @param array $p Параметры шаблона
+	 * @param string $ns Пространство имен
 	 * @throws EE
-	 * @return string
-	 */
-	public function _($n,array$p)
+	 * @return string */
+	public function _($n,array$p,$ns='Eleanor\Templates\\')
 	{
 		$Loader=function($type,$data)use($n,$p)
 		{
@@ -44,16 +52,20 @@ class Template extends Eleanor\Abstracts\AppendString
 					{
 						try
 						{
+							if(isset($p[0]) and count($p)==1 and is_array($p[0]))
+								$p=$p[0];
+
 							ob_start();
 
-							$content=Eleanor\AwareInclude($data[ $n ]);
+							$content=Eleanor\AwareInclude($data[ $n ],$p+$this->default);
 
 							if($content==1)
 								$content='';
 
-							$content.=ob_get_contents();
+							$eched=ob_get_contents();
 
-							ob_end_clean();
+							if($eched)
+								$content.=$eched;
 
 							return$content;
 						}
@@ -82,9 +94,6 @@ class Template extends Eleanor\Abstracts\AppendString
 							? call_user_func_array($data[$n],$p)
 							: BBCode::ExecLogic($data[$n],$p);
 			}
-
-			#Redundance for PhpStorm: убрать следующую строку
-			return null;
 		};
 
 		#Поиск шаблона среди уже загруженных
@@ -103,7 +112,7 @@ class Template extends Eleanor\Abstracts\AppendString
 				$this->loaded[$k]=['a',$path];
 				$result=$Loader('a',$path);
 			}
-			if(is_object($path))
+			elseif(is_object($path))
 			{#Шаблонизатор в виде объекта
 				$this->loaded[$k]=['c',$path];
 				$result=$Loader('c',$path);
@@ -127,21 +136,22 @@ class Template extends Eleanor\Abstracts\AppendString
 			{#Шаблонизатор на файле: либо класс, либо массив
 				$tryclass=true;
 				$class=basename($path);
-				$class=__NAMESPACE__.'\\'.substr($class,0,strpos($class,'.'));
+				$class=substr($class,0,strpos($class,'.'));
+				$nsclass=$ns.$class;
 
 				TryClass:
 
-				if(class_exists($class,false))
+				if(class_exists($nsclass,false))
 				{
-					$this->loaded[$k]=['c',$class];
-					$result=$Loader('c',$class);
+					$this->loaded[$k]=['c',$nsclass];
+					$result=$Loader('c',$nsclass);
 					$tryclass=false;
 				}
 
 				if($tryclass)
 				{
 					ob_start();
-					$content=Eleanor\AwareInclude($path);
+					$content=Eleanor\AwareInclude($path,$this->default);
 					ob_end_clean();
 
 					if(is_array($content))
@@ -151,6 +161,9 @@ class Template extends Eleanor\Abstracts\AppendString
 					}
 					else
 					{
+						if(is_string($content) and strcasecmp(ltrim(strrchr($content,'\\'),'\\'),$class)==0)
+							$nsclass=$content;#Возможно, просто не угадали с пространством имен
+
 						$tryclass=false;
 						goto TryClass;
 					}
@@ -166,7 +179,16 @@ class Template extends Eleanor\Abstracts\AppendString
 				return$result;
 		}
 
-		throw new EE('Template '.$n.' was not found',EE::DEV,
-			Eleanor\BaseClass::_BT(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,1)));
+		$alldb=debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		$db=[];
+
+		foreach($alldb as $v)
+			if(!isset($v['class']) or $v['class']!=__CLASS__ and !is_subclass_of($v['class'],__CLASS__)
+				and !is_subclass_of(__CLASS__,$v['class']))
+				break;
+			else
+				$db=$v;
+
+		throw new EE('Template '.$n.' was not found',EE::DEV,$db);
 	}
 }

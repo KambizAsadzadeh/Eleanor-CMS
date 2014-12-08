@@ -1,11 +1,7 @@
 ﻿/*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 */
 var module;
 $(function(){	$(this).on("click","div.base .getmore, div.base .getmore-active ",function(){		var th=$(this);		if(!th.data("id") || !th.data("more"))

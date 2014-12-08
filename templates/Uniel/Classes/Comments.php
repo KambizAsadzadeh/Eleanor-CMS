@@ -1,12 +1,8 @@
 <?php
 /*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 */
 class TplComments
 {
@@ -46,8 +42,7 @@ class TplComments
 				_online - флаг наличия пользователя онлайн
 			groups - массив групп авторов всех комментариев. Формат id=>array(), ключи внутреннего массива:
 				title - название группы
-				html_pref - HTML префикс группы
-				html_end - HTML окончание группы
+				style - стиль группы
 			parent - массив родительского комментария, ключи:
 				id - идентификатор комментария
 				описание остальных ключей (status, parents, date, answers, author_id, author, ip, text, _edit, _delete, _afind, _n) смотрите выше.
@@ -72,7 +67,7 @@ class TplComments
 	*/
 	public static function ShowComments($rights,$pagpq,$postquery,$dataquery,$cnt,$pp,$page,$pages,$statuses,$gname,$captcha,$links)
 	{
-		array_push($GLOBALS['jscripts'],'js/eleanor_comments.js','js/eleanor_comments-'.Language::$main.'.js');
+		array_push($GLOBALS['scripts'],'js/eleanor_comments.js','js/eleanor_comments-'.Language::$main.'.js');
 
 		$editor='';
 		if($rights['post']!==false)
@@ -99,7 +94,7 @@ class TplComments
 			.'<div class="comments'.($pagpq[3] ? ' children' : '').'"'.($pagpq[0] ? '>'.static::CommentsPosts($rights,$pagpq,static::$lang) : ' style="display:none">').'</div>'
 			.'<div class="paginator"'.($pager ? '>'.$pager : ' style="display:none">').'</div>
 			<div class="status" id="commentsinfo"></div><div style="text-align:center;margin-bottom:15px"><a href="#" class="link-button cb-lnc" style="width:250px"><b>'.static::$lang['lnp'].'</b></a></div>'
-			.$editor.'</div><script type="text/javascript">/*<![CDATA[*/var C;$(function(){C=new CORE.Comments('.Eleanor::JsVars(array(
+			.$editor.'</div><script>/*<![CDATA[*/var C;$(function(){C=new CORE.Comments('.Eleanor::JsVars(array(
 				'lastpost'=>time(),
 				'postquery'=>$postquery,
 				'!dataquery'=>'["'.join('","',$dataquery).'"]',
@@ -219,7 +214,7 @@ class TplComments
 
 	protected static function CommentsModerate($rights)
 	{
-		$GLOBALS['jscripts'][]='js/checkboxes.js';
+		$GLOBALS['scripts'][]='js/checkboxes.js';
 		return Eleanor::Select('',Eleanor::Option(static::$lang['withsel'],'').Eleanor::Option(static::$lang['doact'],1).Eleanor::Option(static::$lang['toblock'],0).Eleanor::Option(static::$lang['tomod'],-1).($rights['mdelete'] ? Eleanor::Option(Eleanor::$Language['tpl']['delete'],'delete') : ''),array('class'=>'modevent')).' '.Eleanor::Check('',false,array('id'=>'masscheck'));
 	}
 
@@ -293,7 +288,7 @@ class TplComments
 				.($c['_n'] ? '<a href="'.$c['_afind'].'" class="cb-findcomment">#'.($c['status'] ? $c['_n'] : '?').'</a>' : '')
 				.($mass && in_array($c['status'],array(-1,0,1)) ? ' '.Eleanor::Check('mass[]',false,array('value'=>$id)) : '')
 				.'</span><h2>'
-				.Eleanor::$Language->Date($c['date'],'fdt').', '.($group ? '<a href="'.Eleanor::$Login->UserLink($author['name'],$c['author_id']).'" title="'.$group['title'].'" class="cb-insertnick">'.$group['html_pref'].$c['author'].$group['html_end'].'</a>' : '<span class="cb-insertnick">'.$c['author'].'</span>').' </h2>'
+				.Eleanor::$Language->Date($c['date'],'fdt').', '.($group ? '<a href="'.Eleanor::$Login->UserLink($author['name'],$c['author_id']).'" title="'.$group['title'].'" class="cb-insertnick">'.$group['style'].$c['author'].'</a>' : '<span class="cb-insertnick">'.$c['author'].'</span>').' </h2>'
 				.($status || $ip ? '<div class="moreinfo">'.$ip.$status.'<div class="clr"></div></div>' : '')
 				.'</div>
 			<div class="maincont"><div class="text">'.$pq.$c['text'].'</div>'

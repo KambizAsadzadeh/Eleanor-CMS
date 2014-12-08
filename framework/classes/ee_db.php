@@ -1,32 +1,28 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Исключение для DB EleanorException
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
+/** Специальное исключение для базы даных */
 class EE_DB extends EE
 {
-	private
-		/** @property string $type Тип исключения */
-		$type;
+	/** @var string $type Тип исключения */
+	private $type;
 
-	/**
-	 * Конструктор
-	 * @param string $type Тип исключения: connect - ошибка при подключении, query - ошибка при запросе
+	/** @param string $type Тип исключения: connect - ошибка при подключении, query - ошибка при запросе
 	 * @param array $db Данные debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,1)
 	 * @param array $extra Данные исключения
-	 * @param \exception $PO Предыдущее перехваченное исключение, что послужило "родителем" для текущего
-	 */
+	 * @param \exception $PO Предыдущее перехваченное исключение, что послужило "родителем" для текущего */
 	public function __construct($type,$db,$extra=[],$PO=null)
 	{
-		$Lang=new Language(__DIR__.'/language/ee-db-*.php');#PhpStorm не видит, что переменная используется ниже :-(
+		$Lang=new Language(__DIR__.'/translation/ee-db-*.php');
 
-		$db=reset($db);
+		if(isset($db[0]))
+			$db=reset($db);
 
 		$this->file=$db['file'];
 		$this->line=$db['line'];
@@ -50,10 +46,8 @@ class EE_DB extends EE
 		parent::__construct($mess,$code,$extra,$PO);
 	}
 
-	/**
-	 * Команда залогировать исключение
-	 * @param string|bool $logfile Путь к лог-файлу. Без расширения.
-	 */
+	/** Команда залогировать исключение
+	 * @param string|bool $logfile Путь к лог-файлу. Без расширения */
 	public function Log($logfile=false)
 	{
 		$this->LogWriter(
@@ -71,12 +65,12 @@ class EE_DB extends EE
 					? substr($this->file,strlen(\Eleanor\SITEDIR))
 					: $this->file;
 
-				$log=$data['error'].PHP_EOL;
+				$log=$this->extra['error'].PHP_EOL;
 
 				switch($this->type)
 				{
 					case'connect':
-						if(strpos($data['error'],'Access denied for user')===false)
+						if(strpos($this->getMessage(),'Access denied for user')!==false)
 						{
 							$data['h']=isset($this->extra['host']) ? $this->extra['host'] : '';
 							$data['u']=isset($this->extra['user']) ? $this->extra['user'] : '';
@@ -87,7 +81,7 @@ class EE_DB extends EE
 						$data['db']=isset($this->extra['db']) ? $this->extra['db'] : '';
 
 						$log.='Database: '.$data['db'].PHP_EOL
-							.'File: '.$data['f'].'['.$data['l'].']'.PHP_EOL
+							//.'File: '.$data['f'].'['.$data['l'].']'.PHP_EOL
 							.'Last happens: '.$data['d'].', total happens: '.$data['n'];
 					break;
 					case'query':

@@ -1,27 +1,24 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Библиотека html примитивов
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
-defined('ENT')||define('ENT',ENT_QUOTES | ENT_HTML5 | ENT_SUBSTITUTE | ENT_DISALLOWED);
+defined('Eleanor\Classes\ENT')||define('Eleanor\Classes\ENT',ENT_QUOTES | ENT_HTML5 | ENT_SUBSTITUTE | ENT_DISALLOWED);
 
+/** Библиотека html примитивов */
 class Html extends Eleanor\BaseClass
 {
-	/**
-	 * Массовы вывод массивов в JSON и JavaScript переменные.
+	/** Массовы вывод массивов в JSON и JavaScript переменные.
 	 * @param array $a Массив со скалярными переменными
 	 * @param bool $tags Включение обрамления результата в <script...>...</script>
 	 * @param bool|string $json Формата вывода: false - набор переменных, true - JSON, string - var Object={}.
 	 * @param string $p Префикс переменных
-	 * @return string
-	 */
-	public static function JsVars($a,$tags=true,$json=false,$p='var ')
+	 * @return string */
+	public static function JSON($a,$tags=false,$json=true,$p='var ')
 	{
 		if($json)
 		{
@@ -40,7 +37,29 @@ class Html extends Eleanor\BaseClass
 		foreach($a as $k=>$v)
 		{
 			if(is_array($v))
-				$v=static::JsVars($v,false,true);
+			{
+				if(!$v)
+					$v='[]';
+				elseif(array_keys($v)===range(0,count($v)-1))
+				{
+					foreach($v as &$av)
+						if(is_array($av))
+							$av=static::JSON($av);
+						elseif(is_bool($av))
+							$av=$av ? 'true' : 'false';
+						elseif($av===null)
+							$av='null';
+						else
+							$av=is_int($av) || is_float($av) || ($av instanceof StringCallback)
+								? (string)$av
+								: '"'.addcslashes($av, "\n\r\t\"\\").'"';
+
+					unset($av);
+					$v='['.join(',',$v).']';
+				}
+				else
+					$v=static::JSON($v);
+			}
 			elseif(is_bool($v))
 				$v=$v ? 'true' : 'false';
 			elseif($v===null)
@@ -48,7 +67,7 @@ class Html extends Eleanor\BaseClass
 			elseif(substr($k,0,1)=='!')
 				$k=substr($k,1);
 			else
-				$v=is_int($v) || is_float($v) ? $v : '"'.addcslashes($v,"\n\r\t\"\\").'"';
+				$v=is_int($v) || is_float($v) || ($v instanceof StringCallback) ? (string)$v : '"'.addcslashes($v,"\n\r\t\"\\").'"';
 
 			$r.=$p.$k.$s.$v.$e;
 		}
@@ -63,20 +82,18 @@ class Html extends Eleanor\BaseClass
 			$r.=';';
 		}
 
-		return$tags ? '<script type="text/javascript">/*<![CDATA[*/'.$r.'//]]></script>' : $r;
+		return$tags ? "<script>/*<![CDATA[*/{$r}//]]></script>" : $r;
 	}
 
-	/**
-	 * Преобразование ассоциативного массива в параметры тега
+	/** Преобразование ассоциативного массива в параметры тега
 	 * @param array $a Ассоциативный массив с параметрами название параметра=>значение параметра
-	 * @return string
-	 */
+	 * @return string */
 	public static function TagParams(array$a)
 	{
 		$params='';
 
-		foreach($a as $k=>&$v)
-			if($v!==false)
+		foreach($a as $k=>$v)
+			if($v!==null and $v!==false)
 				if(is_int($k))
 					$params.=' '.$v;
 				else
@@ -89,8 +106,7 @@ class Html extends Eleanor\BaseClass
 		return$params;
 	}
 
-	/**
-	 * Обработка строки для безопасного её использования в качестве значения параметра тега
+	/** Обработка строки для безопасного её использования в качестве значения параметра тега
 	 * @param string $s Данные
 	 * @param int $mode Режим работы:
 	 *  0 Текст прогоняется через htmlspecialchars, таким образом мы правим строку в таком виде, в каком мы ее получили
@@ -100,8 +116,7 @@ class Html extends Eleanor\BaseClass
 	 *  2 В тексте заменяются только < и > на &lt; и &gt; соответственно.
 	 *  3 Править HTML в таком виде, в котором его видит пользователь.
 	 * @param string $ch Кодировка
-	 * @return string
-	 */
+	 * @return string */
 	public static function ParamValue($s,$mode=1,$ch=Eleanor\CHARSET)
 	{
 		if($mode==1)
@@ -117,15 +132,13 @@ class Html extends Eleanor\BaseClass
 		return static::ParamValue($s,$mode,null);
 	}
 
-	/**
-	 * Генерация <input type="radio" />
+	/** Генерация <input type="radio" />
 	 * @param string|false $name Имя
 	 * @param string|int $value Значение
 	 * @param bool $checked Флаг отмеченности
 	 * @param array $extra Ассоциативных массив дополнительных параметров
 	 * @param int $mode Метод вывода значения, подробности описаны в методе ParamValue
-	 * @return string
-	 */
+	 * @return string */
 	public static function Radio($name,$value=1,$checked=false,array$extra=[],$mode=1)
 	{
 		return'<input'.static::TagParams($extra+[
@@ -136,44 +149,38 @@ class Html extends Eleanor\BaseClass
 		]).' />';
 	}
 
-	/**
-	 * Генерация <textarea>
+	/** Генерация <textarea>
 	 * @param string|false $name Имя
 	 * @param string $value Значение
 	 * @param array $extra Ассоциативных массив дополнительных параметров
 	 * @param int $mode Метод вывода значения, подробности описаны в методе ParamValue
-	 * @return string
-	 */
+	 * @return string */
 	public static function Text($name,$value='',array$extra=[],$mode=1)
 	{
-		return'<textarea'.static::TagParams($extra+['rows'=>5,'cols'=>20,'name'=>$name]).'>'
+		return'<textarea'.static::TagParams($extra+['name'=>$name]).'>'
 			.static::ParamValue($value,(int)$mode).'</textarea>';
 	}
 
-	/**
-	 * Генерация <input type="checkbox" />. Из-за особенностей работы этого элемента формы, метод не содержит
+	/** Генерация <input type="checkbox" />. Из-за особенностей работы этого элемента формы, метод не содержит
 	 * отдельного аргумента для передачи значения, поскольку 99% чекбоксам не важно какое у них значение - важно чтобы
 	 * они передались на сервер. Поэтому значение чекбокса можно установить через массив $a.
 	 * @param string $name Имя
 	 * @param bool $checked Флаг отмеченности
 	 * @param array $extra Ассоциативных массив дополнительных параметров
-	 * @return string
-	 */
+	 * @return string */
 	public static function Check($name,$checked=false,array$extra=[])
 	{
 		return'<input'.static::TagParams($extra+['type'=>'checkbox','value'=>1,'name'=>$name,'checked'=>(bool)$checked])
 			.' />';
 	}
 
-	/**
-	 * Генерация <input> type по умолчанию равно text
+	/** Генерация <input> type по умолчанию равно text
 	 * @param string $name Имя
-	 * @param string|int|bool $value Значение
+	 * @param string|int|null $value Значение
 	 * @param array $extra Ассоциативных массив дополнительных параметров
 	 * @param int $mode Метод вывода значения, подробности описаны в методе ParamValue
-	 * @return string
-	 */
-	public static function Input($name,$value=false,array$extra=[],$mode=1)
+	 * @return string */
+	public static function Input($name,$value=null,array$extra=[],$mode=1)
 	{
 		return'<input'.static::TagParams($extra+[
 			'value'=>$value ? static::ParamValue($value,(int)$mode) : $value,
@@ -182,29 +189,25 @@ class Html extends Eleanor\BaseClass
 		]).' />';
 	}
 
-	/**
-	 * Генерация кнопок на основе <input>
+	/** Генерация кнопок на основе <input>
 	 * @param string $value Надпись на кнопке (значение)
 	 * @param string $type Тип кнопки: submit, button, reset
 	 * @param array $extra Ассоциативных массив дополнительных параметров
 	 * @param int $mode Метод вывода значения, подробности описаны в методе ParamValue
-	 * @return string
-	 */
+	 * @return string */
 	public static function Button($value='OK',$type='submit',array$extra=[],$mode=1)
 	{
 		return static::Input(false,$value,$extra+['type'=>$type],$mode);
 	}
 
-	/**
-	 * Генерация <option> для Select
+	/** Генерация <option> для Select
 	 * @param string $view Выводимое значение
-	 * @param string|bool $value Значение
+	 * @param string|null $value Значение
 	 * @param bool $checked Флаг отмеченности
 	 * @param array $extra Ассоциативных массив дополнительных параметров
 	 * @param int $mode Метод вывода значения, подробности описаны в методе ParamValue
-	 * @return string
-	 */
-	public static function Option($view,$value=false,$checked=false,array$extra=[],$mode=1)
+	 * @return string */
+	public static function Option($view,$value=null,$checked=false,array$extra=[],$mode=1)
 	{
 		return'<option'.static::TagParams($extra+[
 			'value'=>$value ? static::ParamValue($value,(int)$mode) : $value,
@@ -212,27 +215,23 @@ class Html extends Eleanor\BaseClass
 		]).'>'.static::ParamValue($view,(int)$mode).'</option>';
 	}
 
-	/**
-	 * Генерация <optgroup> для Select
+	/** Генерация <optgroup> для Select
 	 * @param string $label Название группы
 	 * @param string $options Перечень option-ов
 	 * @param array $extra Ассоциативных массив дополнительных параметров
 	 * @param int $mode Метод вывода значения, подробности описаны в методе ParamValue
-	 * @return string
-	 */
+	 * @return string */
 	public static function Optgroup($label,$options,array$extra=[],$mode=2)
 	{
 		return'<optgroup'.static::TagParams($extra+['label'=>$label ? static::ParamValue($label,$mode) : $label])
 			.'>'.$options.'</optgroup>';
 	}
 
-	/**
-	 * Генерация <select> с одиночным выбором
+	/** Генерация <select> с одиночным выбором
 	 * @param string $name Название select-а
 	 * @param string $options Перечень option-ов
 	 * @param array $extra Ассоциативных массив дополнительных параметров
-	 * @return string
-	 */
+	 * @return string */
 	public static function Select($name,$options='',array$extra=[])
 	{
 		if(!$options)
@@ -241,16 +240,14 @@ class Html extends Eleanor\BaseClass
 			$extra['disabled']=true;
 		}
 
-		return'<select'.static::TagParams($extra+['name'=>$name,'size'=>1]).'>'.$options.'</select>';
+		return'<select'.static::TagParams($extra+['name'=>$name]).'>'.$options.'</select>';
 	}
 
-	/**
-	 * Генерация <select> с множественным выбором
+	/** Генерация <select> с множественным выбором
 	 * @param string $name Название select-а
 	 * @param string $options Перечень option-ов
 	 * @param array $extra Ассоциативных массив дополнительных параметров
-	 * @return string
-	 */
+	 * @return string */
 	public static function Items($name,$options='',array$extra=[])
 	{
 		return static::Select(substr($name,-2)=='[]' ? $name : $name.'[]',$options,$extra+['size'=>5,'multiple'=>true]);

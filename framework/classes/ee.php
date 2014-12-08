@@ -1,35 +1,40 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Системное исключение EleanorException
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
+/** Системное исключение EleanorException */
 class EE extends \Exception
 {
-	const
-		/** Размер лог файла, после которого он будет сжат */
-		SIZE_TO_COMPRESS=2097152;#2 Mb
-
 	public
-		/** @property string|int $code Код исключения */
+		/** @var string|int Код исключения */
 		$code=0,
 
-		/** @property array $extra Дополнительные параметры исключения */
+		/** @var array Дополнительные параметры исключения */
 		$extra=[];
 
 	const
-		USER=1,#Ошибка пользователя, выполнение некорректных действий: ошибка доступа (403, 404 ...), некорректно заполнена форма и т.п.
-		DEV=2,#Ошибки разработчика: обращение к неинициализированной переменной, свойству, методу
-		ENV=4,#Ошибки среды: когда нет доступа для чтения/записи в файл, нет самого файла и т.п.
-		UNIT=8;#Ошибка внутри подпрограммы: передача внешним сервисом некорректной информации и т.п.
+		/** Размер лог файла, после которого он будет сжат */
+		SIZE_TO_COMPRESS=2097152,#2 Mb
 
-	/**
-	 * Конструктор системных исключений
+		/** Ошибка пользователя, выполнение некорректных действий: ошибка доступа (403, 404 ...), некорректно заполнена
+		 * форма и т.п. */
+		USER=1,
+
+		/** Ошибки разработчика: обращение к неинициализированной переменной, свойству, методу */
+		DEV=2,
+
+		/** Ошибки среды: когда нет доступа для чтения/записи в файл, нет самого файла и т.п. */
+		ENV=4,
+
+		/** Ошибка внутри подпрограммы: передача внешним сервисом некорректной информации и т.п. */
+		UNIT=8;
+
+	/** Конструктор системных исключений
 	 * @param string|array $mess Описание исключения, в случае array - [param in default file], [pathtofile, param]
 	 * @param int $code Код исключения
 	 * @param array $extra Дополнительные данные исключения
@@ -37,21 +42,21 @@ class EE extends \Exception
 	 *   int line Строка с исключением
 	 *   string input Входящие данные, которые вызвали исключение
 	 *   array context Дам всех переменных в области видимости
-	 * @param \exception $PO Предыдущее перехваченное исключение, что послужило "родителем" для текущего
-	 */
+	 * @param \exception $PO Предыдущее перехваченное исключение, что послужило "родителем" для текущего */
 	public function __construct($mess,$code=self::USER,array$extra=[],$PO=null)
 	{
-		if(isset($PO,$PO->extra))
-			$extra+=$PO->extra;
+		if(isset($PO))
+			$extra+=isset($PO->extra) ? $PO->extra : [ 'file'=>$PO->getFile(), 'line'=>$PO->getLine() ];
+
 
 		if(is_array($mess))
 		{
-			$ownlf=isset($mess[0],$mess[1]);
-			$param=$ownlf ? $mess[1] : $mess[0];
+			$ownlang=isset($mess[0],$mess[1]);
+			$param=$ownlang ? $mess[1] : $mess[0];
 
 			try
 			{
-				$Lang=new Language($ownlf ? $mess[0] : __DIR__.'/language/ee-*.php');
+				$Lang=new Language($ownlang ? $mess[0] : __DIR__.'/translation/ee-*.php');
 
 				if(isset($Lang[$param]))
 					$mess=is_callable($Lang[$param]) ? $Lang[$param]($extra) : $Lang[$param];
@@ -73,13 +78,13 @@ class EE extends \Exception
 		parent::__construct($mess,$code,$PO);
 	}
 
+	/** Преобразование в строку */
 	public function __toString()
 	{
 		return$this->getMessage();
 	}
 
-	/**
-	 * Непосредственная запись в лог файл. Лог ошибок состоит из двух файлов: *.log и *.inc Первый представляет собой
+	/** Непосредственная запись в лог файл. Лог ошибок состоит из двух файлов: *.log и *.inc Первый представляет собой
 	 * текстовый файл для открытия любым удобным способом. Второй - содержит служебную информацию для группировки
 	 * идентичных записей.
 	 * @param string $pathfile Путь к файла и его имя без расширения (дописывается методом)
@@ -87,10 +92,14 @@ class EE extends \Exception
 	 * @param callback $F Функция для генерации записи в лог файл. Первым параметром получает данные, которые вернула
 	 * в прошлый раз. Должна вернуть массив из двух элементов 0 - служебные данные, которые
 	 * при следущем исключении будут переданы ей первым параметром, 1 - запись в лог файл.
-	 * @return bool
-	 */
+	 * @return bool */
 	protected function LogWriter($pathfile,$id,$F)
 	{
+		$dir=dirname($pathfile);
+
+		if(!is_dir($dir))
+			Files::MkDir($dir);
+
 		$logpath=$pathfile.'.log';
 		$incpath=$pathfile.'.inc';
 
@@ -138,9 +147,6 @@ class EE extends \Exception
 
 			unset($inc[$id]);
 		}
-
-		#Redundance for PhpStorm: удалить следующую строку
-		$offset=$length=false;
 
 		if($change)
 		{
@@ -207,10 +213,8 @@ class EE extends \Exception
 		return true;
 	}
 
-	/**
-	 * Команда залогировать исключение. Основной наследуемый метод
-	 * @param string|bool $logfile Путь к лог-файлу. Без расширения.
-	 */
+	/** Команда залогировать исключение. Основной наследуемый метод
+	 * @param string|bool $logfile Путь к лог-файлу. Без расширения */
 	public function Log($logfile=false)
 	{
 		if(Eleanor\Framework::$logs)
@@ -221,7 +225,7 @@ class EE extends \Exception
 				{
 					#Запись в переменные нужна для последующего удобного чтения лог-файла любыми читалками
 					$data['n']=isset($data['n']) ? $data['n']+1 : 1;#Happens counter
-					$data['p']=Url::$curpage ? Url::$curpage : '/';
+					$data['p']=Url::$current ? Url::$current : '/';
 					$data['d']=date('Y-m-d H:i:s');
 					$data['l']=$this->line;
 					$data['e']=$this->getMessage();
@@ -230,25 +234,59 @@ class EE extends \Exception
 						? substr($this->file,strlen(\Eleanor\SITEDIR))
 						: $this->file;
 
+					if(isset($this->extra['context']))
+						$context=array_map([__CLASS__,'FilterContext'],$this->extra['context']);
+					else
+						$context=false;
+
 					return[$data,
 						$data['e'].PHP_EOL
 						.'File: '.$data['f'].'['.$data['l'].']'.PHP_EOL
 						.'URL: '.$data['p'].PHP_EOL
-						.'Last happens: '.$data['d'].', total happens: '.$data['n'].PHP_EOL
-						.($data['i'] ? 'Input: '.(is_scalar($data['i']) ? $data['i'] : serialize($data['i'])).PHP_EOL : '')
-						.(isset($this->extra['context']) ? 'Context: '.serialize($this->extra['context']) : '-')
+						.'Last happens: '.$data['d'].', total happens: '.$data['n']
+						.($data['i'] ? PHP_EOL.'Input: '.(is_scalar($data['i']) ? $data['i'] : serialize($data['i'])) : '')
+						.($context ? PHP_EOL.'Context: '.serialize($context) : '')
 					];
 				}
 			);
 	}
 
-	/**
-	 * Создание архива лог файла для экономии места.
+	/** Очистка контекста исключения, подавление ошибки Serialization of 'Closure' is not allowed
+	 * @param array $value Значение массива
+	 * @return array */
+	public static function FilterContext($value)
+	{
+		if(is_scalar($value))
+			return$value;
+
+		if(is_object($value))
+			return($value instanceof\Closure) ? '[Closure]' : '[Object of '.get_class($value).']';
+
+		if(is_array($value))
+		{
+			$serial=[];
+
+			foreach($value as$k=>$v)
+			{
+				if(is_array($v))
+					$v='[Array:'.count($v).']';
+				elseif(!is_scalar($v))
+					$v=($v instanceof \Closure) ? '[Closure]' : '[Object of '.get_class($v).']';
+
+				$serial[$k]=$v;
+			}
+
+			return$serial;
+		}
+
+		return'[Null]';
+	}
+
+	/** Создание архива лог файла для экономии места.
 	 * @param string $source Путь к сжимаемому файлу
 	 * @param string $dest Путь с сжатому файлу (результату)
-	 * @return bool
-	 */
-	static function CompressFile($source,$dest)
+	 * @return bool */
+	public static function CompressFile($source,$dest)
 	{
 		if(!is_file($source) or file_exists($dest) or !is_writable(dirname($dest)))
 			return false;

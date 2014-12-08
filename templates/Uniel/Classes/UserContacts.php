@@ -1,12 +1,8 @@
 <?php
 /*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 
 	Шаблон для пользователей модуля "обратная связь"
 */
@@ -62,7 +58,7 @@ class TplUserContacts
 				$Lst->item(static::$lang['whom'],Eleanor::Select('whom',$wh,array('tabindex'=>2)));
 			$Lst
 				->item(static::$lang['subject'],Eleanor::Input('subject',$values['subject'],array('tabindex'=>3)))
-				->item(static::$lang['message'],$GLOBALS['Eleanor']->Editor->Area('message',$values['message'],array('bypost'=>$bypost,'no'=>array('tabindex'=>4))));
+				->item(static::$lang['message'],$GLOBALS['Eleanor']->Editor->Area('message',$values['message'],array('post'=>$bypost,'no'=>array('tabindex'=>4))));
 
 			if($canupload)
 				$Lst->item(array(static::$lang['file'],Eleanor::Input('file',false,array('type'=>'file')),'descr'=>$canupload===true ? '' : sprintf(static::$lang['maxfs'],Files::BytesToSize($canupload))));

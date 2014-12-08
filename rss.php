@@ -1,390 +1,289 @@
 <?php
-/*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
-*/
-define('CMS',true);
-require __dir__.'/core/core.php';
-$Eleanor=Eleanor::getInstance();
-Eleanor::$service='rss';#ID сервиса
-Eleanor::LoadOptions(array('site','rss','users-on-site'));
-Eleanor::InitService();
-
-$Eleanor->error=$Eleanor->started=false;
-
-if(Eleanor::$vars['site_closed'] and !Eleanor::$Permissions->ShowClosedSite() and !Eleanor::LoadLogin(Eleanor::$services['admin']['login'])->IsUser())
-	return ExitPage();
-
-unset(Eleanor::$vars['site_close_mes']);
-
-$title=array();
-
-$lang=false;
-if(isset($_GET['lang']) and LANGUAGE!=$_GET['lang'])
-	foreach(Eleanor::$langs as $k=>&$v)
-		if($v['uri']==$_GET['lang'])
-		{
-			$lang=$k;
-			break;
-		}
-ApplyLang($lang);
-
-if(Eleanor::$Permissions->IsBanned())
-	throw new EE(Eleanor::$Login->GetUserValue('ban_explain'),EE::USER,array('ban'=>'group'));
-
-$m=isset($_REQUEST['module']) ? (string)$_REQUEST['module'] : false;
-if($m)
-{
-	$Eleanor->modules=Modules::GetCache();
-	if(!isset($Eleanor->modules['ids'][$m]))
-		return ExitPage();
-	$R=Eleanor::$Db->Query('SELECT `id`,`services`,`sections`,`title_l`,`path`,`multiservice`,`file`,`files`,`image` FROM `'.P.'modules` WHERE `id`='.(int)$Eleanor->modules['ids'][$m].' AND `active`=1 LIMIT 1');
-	if(!$a=$R->fetch_assoc())
-		return ExitPage(404);
-	if(!$a['multiservice'])
-	{
-		$files=unserialize($a['files']);
-		$a['file']=isset($files[Eleanor::$service]) ? $files[Eleanor::$service] : false;
-	}
-	if(!$a['file'])
-		return ExitPage();
-	$a['sections']=unserialize($a['sections']);
-	foreach($a['sections'] as $k=>&$v)
-		if(Eleanor::$vars['multilang'] and isset($v[Language::$main]))
-			$v=reset($v[Language::$main]);
-		else
-			$v=isset($v[LANGUAGE]) ? reset($v[LANGUAGE]) : reset($v['']);
-	$a['title_l']=$a['title_l'] ? Eleanor::FilterLangValues(unserialize($a['title_l'])) : '';
-	$Eleanor->module=array(
-		'name'=>$m,
-		'section'=>isset($Eleanor->modules['sections'][$m]) ? $Eleanor->modules['sections'][$m] : '',
-		'title'=>$a['title_l'],
-		'image'=>$a['image'],
-		'path'=>Eleanor::FormatPath($a['path']).DIRECTORY_SEPARATOR,
-		'id'=>$a['id'],
-		'sections'=>$a['sections'],
-	);
-	Modules::Load($Eleanor->module['path'],$a['multiservice'],$a['file'] ? $a['file'] : 'index.php');
-}
-elseif(isset($_POST['direct']) and is_file($f=Eleanor::$root.'addons/direct/'.preg_replace('#[^a-z0-9]+#i','',(string)$_POST['direct']).'.php'))
-	include$f;
-else
-	Result(array());
-
-#Предопределенные функции.
 /**
- * Перенаправление на другую страницу
- * @param mixed $info true - на префикс модуля, false - на предыдущую страницу, string - на адрес, array - компиляция адреса
- * @param int $code Код редиректа 301 или 302
- * @param string $hash Хеш редиректа
- */
-function GoAway($info=false,$code=301,$hash='')
-{global$Eleanor;
-	$ref=getenv('HTTP_REFERER');
-	$current=PROTOCOL.Eleanor::$punycode.$_SERVER['REQUEST_URI'];
-	if(!$ref or $ref==$current or $info)
-	{
-		if(is_bool($info))
-			$info=PROTOCOL.Eleanor::$punycode.Eleanor::$site_path.($info ? $Eleanor->Url->Prefix() : '');
-		elseif(is_array($info))
-			$info=PROTOCOL.Eleanor::$punycode.Eleanor::$site_path.$Eleanor->Url->Construct($info);
-		else
-		{
-			$d=parse_url($info);
-			if(isset($d['host'],$d['scheme']))
-			{
-				if(preg_match('#^[a-z0-9\-\.]+$#',$d['host'])==0)
-					$info=preg_replace('#^'.$d['scheme'].'://'.preg_quote($d['host']).'#',$d['scheme'].'://'.Punycode::Domain($d['host']),$info);
-			}
-			elseif(strpos($info,'/')!==0)
-				$info=Eleanor::$site_path.$info;
-		}
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
+*/
+namespace CMS;
+use \Eleanor\Classes\OutPut;
+define('CMS\STARTED',microtime(true));
 
-		if($info==$current)
-			return ExitPage(404);
-		$ref=$info;
-	}
-	if($hash)
-		$ref=preg_replace('%#.*$%','',$ref).'#'.$hash;
-	header('Cache-Control: no-store');
-	header('Location: '.rtrim(html_entity_decode($ref),'&?'),true,$code);
-	die;
+require __DIR__.'/cms/core.php';
+include DIR.'functions.php';
+
+$Eleanor=new Eleanor(true);
+
+LoadOptions(['site','rss']);
+SetService('rss');
+
+/** Страница с ошибкой
+ * @param int $code Код ошибки
+ * @param int $r Код редиректа на страницу ошибки */
+function ExitPage($code=404,$r=301)
+{
+	$Url=new Url(false);
+
+	if(Eleanor::$vars['multilang'])
+		$Url->prefix=Url::Encode(Eleanor::$langs[ Language::$main ]['uri']).'/';
+
+	$errors=array_keys(GetModules('index')['uri2section'],'errors');
+	GoAway($Url([reset($errors),$code]),$r);
 }
 
-function Start($ch=array())
+/** Подготовка текста для публикации его в RSS сообщении
+ * @param string $text HTML текст публикации
+ * @return string */
+function RssText($text)
+{
+	$text=preg_replace('#(href|src)="(?![a-z]{3,6}://)#i','\1="'.\Eleanor\PROTOCOL.\Eleanor\PUNYCODE.\Eleanor\SITEDIR,$text);
+	$cutoff=[ ['<!-- ',' -->'], ['<![CDATA[',']]>'], 'object', 'noscript', 'script', 'embed',];
+
+	foreach($cutoff as $tag)
+	{
+		$currpos=0;
+		$isa=is_array($tag);
+
+		while(false!==$currpos=strpos($text,$isa ? $tag[0] : '<'.$tag,$currpos))
+		{
+			if($isa)
+			{
+				if(false===$len=strpos($text,$tag[1],$currpos))
+					$len=strlen($tag[0]);
+				else
+					$len-=$currpos;
+			}
+			else
+			{
+				if(false===$len=strpos($text,'</'.$tag.'>',$currpos))
+					$len=strpos($text,$tag.'>',$currpos);
+
+				$len-=$currpos-strlen($tag)-3;
+			}
+
+			$text=substr_replace($text,'',$currpos,$len);
+		}
+	}
+
+	return strip_tags($text,'<b><i><img><span><p><br><a>');
+}
+
+/** Генерация RSS записи <item>...</item> Внимание! Это <item> для пользователей, а не для Яндекс.Новости и т.п.
+ * @param array $data Данные, ключи смотрите внутри функции
+ * @return string */
+function RssItem(array$data)
+{
+	$data+=[
+		'title'=>false,#Заголовок сообщения
+		'link'=>false,#URL сообщения
+		'description'=>false,#Краткий обзор сообщения
+		'author'=>false,#Адрес электронной почты автора сообщения.
+		'category'=>[],#Включает сообщение в одну или более категорий. См. ниже.
+		'comments'=>false,#URL страницы для комментариев, относящихся к сообщению.
+		'enclosure'=>[],#Описывает медиа-объект, прикрепленный к сообщению. См. ниже.
+		'guid'=>false,#Строка, уникальным образом идентифицирующая сообщение.
+		'pubDate'=>false,#Показывает, когда сообщение было опубликовано. TIMESHTAMP или date('r')
+		'source'=>false,#RSS-канал, из которого получено сообщение
+		'files'=>[],#Файлы сообщения
+	];
+
+	$category=$files='';
+	$sitelink=\Eleanor\PROTOCOL.\Eleanor\PUNYCODE.\Eleanor\SITEDIR;
+	$data['category']=(array)$data['category'];
+
+	foreach($data['category'] as $ck=>$cv)
+		$category.=is_int($ck) ? '<category>'.$cv.'</category>' : '<category domain="'.$cv.'">'.$ck.'</category>';
+
+	foreach($data['enclosure'] as $ev)
+		if(isset($ev['url'],$ev['type']))
+			$files.='<enclosure url="'.$ev['url'].'"'.(isset($ev['length']) ? ' length="'.$ev['length'].'"' : '')
+				.' type="'.$ev['type'].'" />';
+
+	foreach($data['files'] as $file)
+		if(isset($file['http'],$file['path']))
+			$files.='<enclosure url="'.$sitelink.$file['http'].'" length="'.filesize($file['path']).'" type="'
+				.\Eleanor\Classes\Types::MimeTypeByExt($file['path']).'" />';
+
+	return'<item>'
+		.($data['title'] ? '<title>'.htmlspecialchars($data['title'],ENT,\Eleanor\CHARSET,false).'</title>' : '')
+		.($data['link']
+			? '<link>'.htmlspecialchars(preg_match('#^[a-z]{3,6}://#i',$data['link'])>0 ? $data['link']
+			: $sitelink.$data['link'],ENT,\Eleanor\CHARSET,false).'</link>' : '')
+		.($data['description'] ? '<description><![CDATA['.RssText($data['description']).']]></description>' : '')
+		.($data['author'] ? '<author>'.htmlspecialchars($data['author'],ENT,\Eleanor\CHARSET,false).'</author>' : '')
+		.($data['comments']
+			? '<comments>'.htmlspecialchars(preg_match('#^[a-z]{3,6}://#i',$data['comments'])>0 ? $data['comments']
+			: $sitelink.$data['comments'],ENT,\Eleanor\CHARSET,false).'</comments>' : '')
+		.($data['guid'] ? '<guid isPermaLink="false">'.htmlspecialchars($data['guid'],ENT,\Eleanor\CHARSET,false).'</guid>' : '')
+		.($data['pubDate'] ? '<pubDate>'.(is_int($data['pubDate']) ? date('r',$data['pubDate']) : $data['pubDate']).'</pubDate>' : '')
+		.($data['source'] ? '<source>'.htmlspecialchars($data['source'],ENT,\Eleanor\CHARSET,false).'</source>' : '')
+		.$category.$files.(isset($data['extra']) ? $data['extra'] : '')
+		.'</item>';
+}
+
+/** "Чердак" RSS ленты
+ * @param array $head Заголовки и служебные параметры шапки
+ * @return string */
+function RssHead(array$head=[])
 {global$Eleanor,$title;
-	if($Eleanor->started)
-		return;
-	Eleanor::AddSession();
-	Eleanor::$content_type='application/xml';
-	Eleanor::HookOutPut('Finish');
+
 	if(!$title)
 		$t=Eleanor::$vars['site_name'];
 	elseif(is_string($title))
 		$t=$title;
 	else
-		$t=(is_array($title) ? implode(Eleanor::$vars['site_defis'],$title) : $title).(Eleanor::$vars['site_name'] ? Eleanor::$vars['site_defis'].Eleanor::$vars['site_name'] : '');
-	$t=htmlspecialchars($t,ELENT,CHARSET,false);
-	$sl=PROTOCOL.Eleanor::$punycode.Eleanor::$site_path;
-	#http://beshenov.ru/rss2.html
-	$ch+=array(
+		$t=(is_array($title) ? join(Eleanor::$vars['site_defis'],$title) : $title)
+			.(Eleanor::$vars['site_name'] ? Eleanor::$vars['site_defis'].Eleanor::$vars['site_name'] : '');
+
+	$t=htmlspecialchars($t,ENT,\Eleanor\CHARSET,false);
+	$sitelink=\Eleanor\PROTOCOL.\Eleanor\PUNYCODE.\Eleanor\SITEDIR;
+
+	$head+=[
 		#Обязательное
 		'title'=>$t,#Название канала
-		'description'=>htmlspecialchars(isset($Eleanor->module,$Eleanor->module['description']) ? $Eleanor->module['description'] : Eleanor::$vars['site_description'],ELENT,CHARSET,false),#Описание канала
-		'link'=>$sl,#URL веб-сайта, связанного с каналом.
+		'description'=>htmlspecialchars(isset($Eleanor->module,$Eleanor->module['description'])
+			? $Eleanor->module['description']
+			: Eleanor::$vars['site_description'],ENT,\Eleanor\CHARSET,false),#Описание канала
+		'link'=>$sitelink,#URL веб-сайта, связанного с каналом
 
 		#Необязательное
-		'language'=>substr(Language::$main,0,2),#Язык, на котором написан канал
+		'language'=>Eleanor::$langs[ Language::$main ]['d'],#Язык, на котором написан канал
 		'copyright'=>false,#Информация об авторском праве
 		'managingEditor'=>false,#Адрес электронной почты ответственного за редакторский текст
 		'webMaster'=>false,#Адрес электронной почты ответственного за технические аспекты
 		'pubDate'=>false,#Дата публикации текста в канале. TIMESHTAMP или date('r')
 		'lastBuildDate'=>false,#Время Последнего изменения содержимого канала. TIMESHTAMP или date('r')
 		'category'=>false,#Указывает одну и более категорию, к которой относится канал.
-		'ttl'=>round(Eleanor::$caching/60),#Время жизни; количество минут, на которые канал может кешироваться перед обновлением с ресурса.
-		'image'=>array(),#Изображение GIF, JPEG или PNG, которое может отображаться с каналом. Смотри ниже.
-	);
+		'ttl'=>1,#Время жизни; количество минут, на которые канал может кешироваться перед обновлением с ресурса.
+		'image'=>[],#Изображение GIF, JPEG или PNG, которое может отображаться с каналом. Смотри ниже.
+	];
+
 	if(Eleanor::$vars['rss_image'])
-		$ch['image']+=array(
+		$head['image']+=[
 			#Обязательное
-			'url'=>$sl.Eleanor::$vars['rss_image'],
+			'url'=>strpos(Eleanor::$vars['rss_image'],'://')
+					? $sitelink.Eleanor::$vars['rss_image'] : Eleanor::$vars['rss_image'],
 			'title'=>$t,
-			'link'=>$sl,
+			'link'=>$sitelink,
+
 			#Необязательное
 			'width'=>false,
 			'height'=>false,
 			'description'=>false,
-		);
-	$image=$ch['image']
-		? '<image><url>'.$ch['image']['url'].'</url><title><![CDATA['.$ch['image']['title'].']]></title><link>'.$ch['image']['link'].'</link>'
-			.($ch['image']['width'] ? '<width>'.(int)$ch['image']['width'].'</width>' : '')
-			.($ch['image']['height'] ? '<height>'.(int)$ch['image']['height'].'</height>' : '')
-			.($ch['image']['description'] ? '<description>'.htmlspecialchars($ch['image']['description'],ELENT,CHARSET,false).'</description>' : '')
-			.'</image>'
+		];
+
+	$image=$head['image']
+		? '<image><url>'.$head['image']['url'].'</url><title><![CDATA['.$head['image']['title'].']]></title><link>'.$head['image']['link'].'</link>'
+		.($head['image']['width'] ? '<width>'.(int)$head['image']['width'].'</width>' : '')
+		.($head['image']['height'] ? '<height>'.(int)$head['image']['height'].'</height>' : '')
+		.($head['image']['description']
+			? '<description>'.htmlspecialchars($head['image']['description'],ENT,\Eleanor\CHARSET,false).'</description>'
+			: '')
+		.'</image>'
 		: '';
-	echo'<?xml version="1.0" encoding="'.DISPLAY_CHARSET.'"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title><![CDATA['.$ch['title'].']]></title><description>'.$ch['description'].'</description><link>'.$ch['link'].'</link><language>'.$ch['language'].'</language><generator>Eleanor RSS Generator</generator><atom:link href="'.PROTOCOL.getenv('HTTP_HOST').htmlspecialchars(getenv('REQUEST_URI')).'" rel="self" type="application/rss+xml" />'
-	.($ch['copyright'] ? '<copyright>'.htmlspecialchars($ch['copyright'],ELENT,CHARSET,false).'</copyright>' : '')
-	.($ch['managingEditor'] ? '<managingEditor>'.htmlspecialchars($ch['managingEditor'],ELENT,CHARSET,false).'</managingEditor>' : '')
-	.($ch['webMaster'] ? '<webMaster>'.htmlspecialchars($ch['webMaster'],ELENT,CHARSET,false).'</webMaster>' : '')
-	.($ch['pubDate'] ? '<pubDate>'.(is_int($ch['pubDate']) ? date('r',$ch['pubDate']) : $ch['pubDate']).'</pubDate>' : '')
-	.($ch['lastBuildDate'] ? '<lastBuildDate>'.(is_int($ch['lastBuildDate']) ? date('r',$ch['lastBuildDate']) : $ch['lastBuildDate']).'</lastBuildDate>' : '')
-	.($ch['category'] ? '<category>'.htmlspecialchars($ch['category'],ELENT,CHARSET,false).'</category>' : '')
-	.($ch['ttl'] ? '<ttl>'.(int)$ch['ttl'].'</ttl>' : '')
-	.$image
-	.(isset($ch['extra']) ? $ch['extra'] : '');
-	$Eleanor->started=true;
+
+	return'<?xml version="1.0" encoding="'.\Eleanor\CHARSET
+		.'"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title><![CDATA['.$head['title']
+		.']]></title><description>'.$head['description'].'</description><link>'.$head['link'].'</link><language>'
+		.$head['language'].'</language><generator>Eleanor RSS Generator</generator><atom:link href="'.\Eleanor\PROTOCOL
+		.getenv('HTTP_HOST').htmlspecialchars(getenv('REQUEST_URI')).'" rel="self" type="application/rss+xml" />'
+		.($head['copyright'] ? '<copyright>'.htmlspecialchars($head['copyright'],ENT,\Eleanor\CHARSET,false).'</copyright>' : '')
+		.($head['managingEditor'] ? '<managingEditor>'.htmlspecialchars($head['managingEditor'],ENT,\Eleanor\CHARSET,false).'</managingEditor>' : '')
+		.($head['webMaster'] ? '<webMaster>'.htmlspecialchars($head['webMaster'],ENT,\Eleanor\CHARSET,false).'</webMaster>' : '')
+		.($head['pubDate'] ? '<pubDate>'.(is_int($head['pubDate']) ? date('r',$head['pubDate']) : $head['pubDate']).'</pubDate>' : '')
+		.($head['lastBuildDate'] ? '<lastBuildDate>'.(is_int($head['lastBuildDate']) ? date('r',$head['lastBuildDate']) : $head['lastBuildDate']).'</lastBuildDate>' : '')
+		.($head['category'] ? '<category>'.htmlspecialchars($head['category'],ENT,\Eleanor\CHARSET,false).'</category>' : '')
+		.($head['ttl'] ? '<ttl>'.(int)$head['ttl'].'</ttl>' : '')
+		.$image
+		.(isset($head['extra']) ? $head['extra'] : '');
 }
 
-
-function Finish($s)
-{global$Eleanor;
-	return $Eleanor->started && !$Eleanor->error ? $s.'</channel></rss>' : $s;
+/** "Подвал" RSS ленты */
+function RssFoot()
+{
+	return'</channel></rss>';
 }
 
-function Error($e=false,$extra=array())
-{global$Eleanor;
-	$csh=!headers_sent();
-	$le=Eleanor::$Language['errors'];
-	if(empty($extra['ban']))
+/** Упрощенный вариант вывода RSS, включает в себя вызов Head() и Foot(). Нужно передать только массив сообщений
+ * @param array $rss Сообщения, ключи внутренних массивов смотреть в функции Rss()
+ * @param array $head Заголовки и служебные параметры шапки */
+function Rss(array$rss,array$head=[])
+{
+	$out=RssHead($head);
+
+	foreach($rss as$v)
+		$out.=RssItem($v);
+
+	$out.=RssFoot();
+
+	OutPut::SendHeaders('xml');
+	Output::Gzip($out);
+}
+
+if(Eleanor::$vars['multilang'])
+{
+	if(isset($_REQUEST['language']) and is_string($_REQUEST['language']) and $_REQUEST['language']!=Language::$main)
 	{
-		$e=Eleanor::LoadFileTemplate(
-			Eleanor::$root.'templates/error.html',
-			array(
-				'title'=>$le['happened'],
-				'error'=>$e,
-				'extra'=>$extra,
-			)
-		);
-		if($csh)
-			header('Retry-After: 7200');
+		Eleanor::$Language->Change($_REQUEST['language']);
+		$Eleanor->Url(false)->prefix=Url::$base=Url::Encode(Eleanor::$langs[ Language::$main ]['uri']).'/';
+	}
+
+	foreach(Eleanor::$lvars as $lk=>$lv)
+		Eleanor::$vars[$lk]=FilterLangValues($lv);
+}
+else
+{
+	Eleanor::$lvars=[];
+	$Eleanor->Url(false);
+}
+
+if(Eleanor::$vars['site_closed'] and (!isset(Eleanor::$Permissions) or !Eleanor::$Permissions->ClosedSiteAccess()))
+{
+	/** @var Logins\Admin $class */
+	$class='\CMS\Logins\\'.Eleanor::$services['admin']['login'];
+
+	if(!$class::IsUser())
+		return ExitPage(403);
+}
+
+unset(Eleanor::$vars['site_close_mes']);
+
+if(Eleanor::$ban or isset(Eleanor::$Permissions) and Eleanor::$Permissions->IsBanned())
+	return ExitPage(403);
+elseif(isset($_GET['direct']) and key($_GET)=='direct'
+	and is_file($f=DIR.'direct/'.preg_replace('#[^a-z0-9\-_]+#i','',(string)$_GET['direct']).'.php'))
+	include$f;
+elseif(isset($_REQUEST['module']) and is_string($_REQUEST['module']))
+{
+	$uri=$_REQUEST['module'];
+	$Eleanor->modules=GetModules();
+
+	if(!isset($Eleanor->modules['uri2id'][$uri]))
+		return ExitPage();
+
+	$id=$Eleanor->modules['uri2id'][$uri];
+	$module=$Eleanor->modules['id2module'][$id];
+	$path=DIR.$module['path'];
+	$Eleanor->module=[
+		'uri'=>$uri,
+		'section'=>isset($Eleanor->modules['uris'][$uri]) ? $Eleanor->modules['uris'][$uri] : '',
+		'path'=>$path,
+		'id'=>$id,
+		'uris'=>$module['uris'],
+	];
+
+	$path.=$module['file'] ? $module['file'] : 'index.php';
+
+	if(is_file($path))
+	{
+		if(Eleanor::$vars['prefix_free_module']!=$module['id'])
+			$Eleanor->Url->prefix.=Url::Encode($uri).'/';
+
+		\Eleanor\AwareInclude($path);
 	}
 	else
-	{
-		if(isset($extra['banned_until']))
-			$e=$le['banlock']($extra['banned_until'],$e);
-		$e=Eleanor::LoadFileTemplate(
-			Eleanor::$root.'templates/ban.html',
-			array(
-				'title'=>$le['you_are_banned'],
-				'message'=>$e ? OwnBB::Parse($e) : Eleanor::$vars['blocked_message'],
-				'extra'=>$extra,
-			)
-		);
-	}
-
-	if(isset($Eleanor,$Eleanor->started) and $Eleanor->started)#Ошибка могла вылететь и в момент создания объекта $Eleanor
-	{
-		$Eleanor->error=true;
-		if($csh)
-			header('Content-Type: text/html; charset='.Eleanor::$charset,true,isset($extra['httpcode']) ? (int)$extra['httpcode'] : 503);
-		while(ob_get_contents()!==false)
-			ob_end_clean();
-		ob_start();ob_start();#Странный глюк PHP... Достаточно сделать Parse error в index.php темы и Core::FinishOutPut будет получать пустое значение
-		echo$e;
-	}
-	else
-	{
-		Eleanor::$content_type='text/html';
-		Eleanor::HookOutPut(false,isset($extra['httpcode']) ? (int)$extra['httpcode'] : 503,$e);
-		die;
-	}
+		return ExitPage();
 }
+else
+	Rss([]);
 
-function Result($rss,$ch=array())
-{
-	Start($ch);
-	foreach($rss as &$v)
-		echo Rss($v);
-}
-
-function RssText($s)
-{
-	$s=preg_replace('#(href|src)="(?![a-z]{3,6}://)#i','\1="'.PROTOCOL.Eleanor::$punycode.Eleanor::$site_path,$s);
-	$a=array(
-		array(
-			'<!-- ',
-			' -->'
-		),
-		array(
-			'<![CDATA[',
-			']]>'
-		),
-		'object',
-		'noscript',
-		'script',
-		'embed',
-	);
-	foreach($a as &$v)
-	{
-		$cp=0;
-		$t=is_array($v);
-		while(false!==$cp=strpos($s,$t ? $v[0] : '<'.$v,$cp))
-			{
-				if($t)
-				{
-					if(false===$l=strpos($s,$v[1],$cp))
-						$l=strlen($v[0]);
-					else
-						$l-=$cp;
-				}
-				else
-				{
-					if(false===$l=strpos($s,'</'.$v.'>',$cp))
-						$l=strpos($s,$v.'>',$cp);
-					$l-=$cp-strlen($v)-3;
-				}
-				$s=substr_replace($s,'',$cp,$l);
-			}
-		}
-	return$s;
-}
-
-#Внимание! Это RSS для пользователей, а не для Яндекс.Новости и т.п.
-function Rss($v)
-{
-	$v+=array(
-		'title'=>false,#Заголовок сообщения
-		'link'=>false,#URL сообщения
-		'description'=>false,#Краткий обзор сообщения
-		'author'=>false,#Адрес электронной почты автора сообщения.
-		'category'=>array(),#Включает сообщение в одну или более категорий. См. ниже.
-		'comments'=>false,#URL страницы для комментариев, относящихся к сообщению.
-		'enclosure'=>array(),#Описывает медиа-объект, прикрепленный к сообщению. См. ниже.
-		'guid'=>false,#Строка, уникальным образом идентифицирующая сообщение.
-		'pubDate'=>false,#Показывает, когда сообщение было опубликовано. TIMESHTAMP или date('r')
-		'source'=>false,#RSS-канал, из которого получено сообщение.
-	);
-	$cats=$en='';
-	$sl=PROTOCOL.Eleanor::$punycode.Eleanor::$site_path;
-	$v['category']=(array)$v['category'];
-	foreach($v['category'] as $ck=>&$cv)
-		$cats.=is_int($ck) ? '<category>'.$cv.'</category>' : '<category domain="'.$cv.'">'.$ck.'</category>';
-	foreach($v['enclosure'] as &$ev)
-		if(isset($ev['url'],$ev['type']))
-			$en.='<enclosure url="'.$ev['url'].'"'.(isset($ev['length']) ? ' length="'.$ev['length'].'"' : '').' type="'.$ev['type'].'" />';
-	if(isset($v['files']) and is_array($v['files']))
-		foreach($v['files'] as &$f)
-			if(is_file($fp=Eleanor::FormatPath($f)))
-				$en.='<enclosure url="'.$sl.$f.'" length="'.filesize($fp).'" type="'.Types::MimeTypeByExt($f).'" />';
-	return'<item>'
-	.($v['title'] ? '<title>'.htmlspecialchars($v['title'],ELENT,CHARSET,false).'</title>' : '')
-	.($v['link'] ? '<link>'.htmlspecialchars(preg_match('#^[a-z]{3,6}://#i',$v['link'])>0 ? $v['link'] : $sl.$v['link'],ELENT,CHARSET,false).'</link>' : '')
-	.($v['description'] ? '<description><![CDATA['.RssText($v['description']).']]></description>' : '')
-	.($v['author'] ? '<author>'.htmlspecialchars($v['author'],ELENT,CHARSET,false).'</author>' : '')
-	.($v['comments'] ? '<comments>'.htmlspecialchars(preg_match('#^[a-z]{3,6}://#i',$v['comments'])>0 ? $v['comments'] : $sl.$v['comments'],ELENT,CHARSET,false).'</comments>' : '')
-	.($v['guid'] ? '<guid isPermaLink="false">'.htmlspecialchars($v['guid'],ELENT,CHARSET,false).'</guid>' : '')
-	.($v['pubDate'] ? '<pubDate>'.(is_int($v['pubDate']) ? date('r',$v['pubDate']) : $v['pubDate']).'</pubDate>' : '')
-	.($v['source'] ? '<source>'.htmlspecialchars($v['source'],ELENT,CHARSET,false).'</source>' : '')
-	.$cats.$en.(isset($v['extra']) ? $v['extra'] : '')
-	.'</item>';
-}
-
-function ExitPage($code=403,$r=301)
-{global$Eleanor;
-	BeAs('user');
-	$Eleanor->Url->file=Eleanor::$services['user']['file'];
-	GoAway($Eleanor->Url->special.$Eleanor->Url->Construct(array('module'=>'errors','code'=>$code),false,''),$r);
-}
-
-function ApplyLang($gl=false)
-{
-	if(Eleanor::$vars['multilang'])
-	{
-		if(!Eleanor::$Login->IsUser() and ($gl or $gl=Eleanor::GetCookie('lang')) and isset(Eleanor::$langs[$gl]) and $gl!=LANGUAGE)
-		{
-			Language::$main=$gl;
-			Eleanor::$Language->Change($gl);
-		}
-		foreach(Eleanor::$lvars as $k=>&$v)
-			Eleanor::$vars[$k]=Eleanor::FilterLangValues($v);
-	}
-	else
-		Eleanor::$lvars=array();
-}
-
-#Функция "Будь как", делает сервис другим. Полностью :)
-function BeAs($n)
-{global$Eleanor;
-	if(Eleanor::$service==$n or !isset(Eleanor::$services[$n]))
-		return;
-
-	Eleanor::$filename=Eleanor::$services[$n]['file'];
-	Eleanor::$Language->queue['main'][]='langs/'.$n.'-*.php';
-
-	if(Eleanor::$services[$n]['login']!=Eleanor::$services[Eleanor::$service]['login'])
-		Eleanor::ApplyLogin(Eleanor::$services[$n]['login']);
-
-	Eleanor::$service=$n;
-	ApplyLang();
-
-	$queue=isset(Eleanor::$Template->queue) ? Eleanor::$Template->queue : array();
-	if($n=='user')
-	{
-		$Eleanor->Url->furl=Eleanor::$vars['furl'];
-		$Eleanor->Url->delimiter=Eleanor::$vars['url_static_delimiter'];
-		$Eleanor->Url->defis=Eleanor::$vars['url_static_defis'];
-		$Eleanor->Url->ending=Eleanor::$vars['url_static_ending'];
-
-		$Eleanor->Url->special=$Eleanor->Url->furl ? '' : Eleanor::$filename.'?';
-		if(Language::$main!=LANGUAGE)
-			$Eleanor->Url->special.=$Eleanor->Url->Construct(array('lang'=>Eleanor::$langs[Language::$main]['uri']),false,false);
-		if(isset($Eleanor->module,$Eleanor->module['name']))
-		{
-			$pref=isset($Eleanor->module['id']) && $Eleanor->module['id']==Eleanor::$vars['prefix_free_module'] ? array() : array('module'=>$Eleanor->module['name']);
-			$Eleanor->Url->SetPrefix(Eleanor::$vars['multilang'] && Language::$main!=LANGUAGE ? array('lang'=>Eleanor::$langs[Language::$main]['uri'])+$pref : $pref);
-		}
-
-		$theme=Eleanor::$Login->IsUser() ? Eleanor::$Login->GetUserValue('theme') : Eleanor::GetCookie('theme');
-		if(!Eleanor::$vars['templates'] or !in_array($theme,Eleanor::$vars['templates']))
-			$theme=false;
-		Eleanor::InitTemplate($theme ? $theme : Eleanor::$services['user']['theme']);
-	}
-	else
-		Eleanor::InitTemplate(Eleanor::$services[$n]['theme']);
-	Eleanor::$Template->queue+=$queue;
-}
+SetSession();

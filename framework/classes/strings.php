@@ -1,66 +1,24 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Набор текстовых функций (работа со строками)
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
+/** Набор текстовых функций (работа со строками) */
 class Strings extends Eleanor\BaseClass
 {
-	/**
-	 * Проверка корректиности e-mail
-	 * @param string $s Проверяемый e-mail
-	 * @param bool $ep Флаг интерпретации пустого значения, как корректного
-	 * @return bool
-	 */
-	public static function CheckEmail($s,$ep=true)
-	{
-		$ab=constant(Language::$main.'::ALPHABET');
-		$s=(array)$s;
-
-		foreach($s as &$v)
-			if((!$ep or $v) and preg_match('#^[_\-\.\wa-z'.$ab.'0-9]+\@([\wa-z'.$ab.'0-9](?:[\.\-\wa-z'.$ab.'0-9][\wa-z'.$ab.'0-9])*)+\.[\wa-z'.$ab.'\-]{2,}$#i',$v)==0)
-				return false;
-
-		return true;
-	}
-
-	/**
-	 * Проверка корректности адреса ссылки
-	 * @param string $s Проверямая ссылка
-	 * @return bool
-	 */
-	public static function CheckUrl($s)
-	{
-		$s=trim($s);
-
-		if(strpos($s,'mailto:')===0)
-		{
-			#Вырежем параметры
-			$parpos=strpos($s,'?');
-			return self::CheckEmail(substr($s,7,$parpos===false ? strlen($s) : $parpos-7));
-		}
-
-		$ab=constant(Language::$main.'::ALPHABET');
-
-		return preg_match('~^([a-z]{3,10}://[\wa-z'.$ab.'0-9/\._\-:]+\.[\wa-z'.$ab.'\-]{2,}/)?(?:[^\s{}]*)?$~i',$s)>0;
-	}
-
-	/**
-	 * Преобразование текстовой строки параметров в массив. Корректно обрабатывает даже некорректные данные.
+	/** Преобразование текстовой строки параметров в массив. Корректно обрабатывает даже некорректные данные.
 	 * Метод корректно работает с UTF-8: lобавлять параметры mb_ в substr не нужно.
 	 * @param string $s Строка параметров, формата param1="value1" param2=   value2 param3=  "value3"
 	 * @param string|int $first Имя первого параметра, в случае если $s начинается с "="
 	 * (в BB кодах такое возможно [url=http://eleanor-cms.ru ]CMS[/url] )
-	 * @return array
-	 */
+	 * @return array */
 	public static function ParseParams($s,$first=0)
 	{
-		$a=array();
+		$a=[];
 		$s=trim($s);
 		$l=strlen($s);
 
@@ -124,13 +82,11 @@ class Strings extends Eleanor\BaseClass
 		return$a;
 	}
 
-	/**
-	 * Корректная обрезка строки до N символов. Метод не ломает html мнемоники.
+	/** Корректная обрезка строки до N символов. Метод не ломает html мнемоники.
 	 * @param string $s Строка, которую необходимо обрезать
 	 * @param int $n Число символов, до которых нужно обрезать строку, считая слева направо
 	 * @param string $e Замена обрезанных символов
-	 * @return string
-	 */
+	 * @return string */
 	public static function CutStr($s,$n=30,$e='...')
 	{
 		if(mb_strlen($s)>$n)
@@ -142,45 +98,78 @@ class Strings extends Eleanor\BaseClass
 		return$s;
 	}
 
-	/**
-	 * Версия функции ucfirst, которая корректно с utf-8
+	/** Версия функции ucfirst, которая корректно с utf-8
 	 * @param string $s Воходящая строка
-	 * @return string
-	 */
+	 * @return string */
 	public static function UcFirst($s)
 	{
 		return $s ? mb_strtoupper(mb_substr($s,0,1)).mb_substr($s,1) : '';
 	}
 
-	/**
-	 * Выделение слов в тексте определенным цветов. Метод корректно минут все теги.
+	/** Выделение слов в тексте определенным цветов. Метод корректно минут все теги.
 	 * @param string|array $w Слово для выделения
 	 * @param string $s Текст в котором слово необходимо выделить
-	 * @param string $spanparam Цвет текста в выделении
-	 * @return string
-	 */
-	public static function MarkWords($w,$s,$spanparam='style="background-color:#FFFF00;color:#FF0000;"')
+	 * @param string $params Цвет текста в выделении
+	 * @return string */
+	public static function MarkWords($w,$s,$params='style="background-color:#FFFF00;color:#FF0000;"')
 	{
 		if(!$s or !$w)
 			return $s;
 
 		$w=(array)$w;
-		$spanparam=preg_quote($spanparam,'#');
+		$params=preg_quote($params,'#');
 
 		foreach($w as $k=>&$v)
 		{
-			$v=preg_quote(str_replace(array('<','>'),'',trim($v)),'#');
+			$v=preg_quote(str_replace(['<','>'],'',trim($v)),'#');
 			if($v=='')
 				unset($w[$k]);
 		}
 
 		return preg_replace_callback(
 			'#(?<=>|^)([^<]+)#',
-			function($s)use($w,$spanparam)
+			function($s)use($w,$params)
 			{
-				return preg_replace('#(?:\b)('.join('|',$w).')(?:\b)#i','<span '.$spanparam.'>\1</span>',$s[1]);
+				return preg_replace('#(?:\b)('.join('|',$w).')(?:\b)#i','<span '.$params.'>\1</span>',$s[1]);
 			},
 			$s
 		);
+	}
+
+	/** Ord для строк UTF-8
+	 * @param string $string Строка
+	 * @param int $offset Позиция символа
+	 * @return int */
+	function OrdUtf8($string, &$offset)
+	{
+		$code=ord(substr($string, $offset,1));
+
+		if($code>=128)#otherwise 0xxxxxxx
+		{
+			if($code<224)#110xxxxx
+				$bytesnum=2;
+			elseif($code<240)#1110xxxx
+				$bytesnum=3;
+			elseif($code<248)#11110xxx
+				$bytesnum=4;
+			else
+				$bytesnum=1;
+
+			$codetemp=$code-192-($bytesnum>2 ? 32 : 0)-($bytesnum>3 ? 16 : 0);
+			for($i=2;$i<=$bytesnum;$i++)
+			{
+				$offset++;
+				$code2=ord(substr($string,$offset,1))-128;#10xxxxxx
+				$codetemp=$codetemp*64+$code2;
+			}
+
+			$code=$codetemp;
+		}
+
+		$offset++;
+		if($offset>=strlen($string))
+			$offset=-1;
+
+		return$code;
 	}
 }

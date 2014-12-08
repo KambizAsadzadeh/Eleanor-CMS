@@ -1,12 +1,8 @@
 <?php
 /*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 
 	Шаблон для пользователей модуля новости.
 
@@ -46,7 +42,7 @@ class TplUserNews
 	{
 		$lang=Eleanor::$Language[$GLOBALS['Eleanor']->module['config']['n']];
 		$links=&$GLOBALS['Eleanor']->module['links'];
-		$GLOBALS['jscripts'][]=Eleanor::$Template->default['theme'].'js/publications.js';
+		$GLOBALS['scripts'][]=Eleanor::$Template->default['theme'].'js/publications.js';
 
 		$Lst=Eleanor::LoadListTemplate('headfoot');
 		$GLOBALS['head']['rss']=$Lst('link',array(
@@ -362,7 +358,7 @@ class TplUserNews
 	*/
 	public static function Search($values,$error,$tags,$data,$cnt,$page,$pp,$links)
 	{
-		$GLOBALS['jscripts'][]='addons/autocomplete/jquery.autocomplete.js';
+		$GLOBALS['scripts'][]='addons/autocomplete/jquery.autocomplete.js';
 		$GLOBALS['head'][__class__.__function__]='<link rel="stylesheet" type="text/css" href="addons/autocomplete/style.css" />';
 
 		$lang=Eleanor::$Language[$GLOBALS['Eleanor']->module['config']['n']];
@@ -398,7 +394,7 @@ class TplUserNews
 				->item(static::$lang['sortby'],Eleanor::Select('sort',Eleanor::Option(static::$lang['sdate'],'date',$values['sort']=='date').Eleanor::Option(static::$lang['srel'],'relevance',$values['sort']=='relevance')).'</label>')
 				->button(Eleanor::Button(static::$lang['find']))
 				->end()
-			.'</form><script type="text/javascript">//<![CDATA[
+			.'</form><script>//<![CDATA[
 $(function(){
 	$("#newssearch [name=text]").autocomplete({
 		serviceUrl:CORE.ajax_file,
@@ -526,12 +522,12 @@ $(function(){
 		if($can)
 		{
 			$u=uniqid('r');
-			$GLOBALS['jscripts'][]=Eleanor::$Template->default['theme'].'js/rating.js';
+			$GLOBALS['scripts'][]=Eleanor::$Template->default['theme'].'js/rating.js';
 			$r='<div class="rate" title="'.$title.'" id="'.$u.'">
 				<div class="noactive">
 					<div class="active" style="width:'.$width.'%;" data-now="'.$width.'%"></div>
 				</div>
-			</div><script type="text/javascript">/*<![CDATA[*/$(function(){new Rating("'.$GLOBALS['Eleanor']->module['name'].'",$("#'.$u.'"),'.$id.',['.join(',',$marks).']);});//]]></script>';
+			</div><script>/*<![CDATA[*/$(function(){new Rating("'.$GLOBALS['Eleanor']->module['name'].'",$("#'.$u.'"),'.$id.',['.join(',',$marks).']);});//]]></script>';
 		}
 		else
 			$r='<div class="rate" title="'.$title.'">

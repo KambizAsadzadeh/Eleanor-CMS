@@ -1,225 +1,513 @@
 <?php
-/*
-	Copyright © Eleanor CMS
+/**
+	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Набор для работы с BB кодами
 */
 namespace Eleanor\Classes;
 use Eleanor;
 
-defined('ENT')||define('ENT',ENT_QUOTES | ENT_HTML5 | ENT_SUBSTITUTE | ENT_DISALLOWED);
+defined('Eleanor\Classes\ENT')||define('Eleanor\Classes\ENT',ENT_QUOTES | ENT_HTML5 | ENT_SUBSTITUTE | ENT_DISALLOWED);
 
+/** Преобразователь BB кодов в HTML и обратно */
 class BBCode extends Eleanor\BaseClass
 {
 	public static
-		#Проверять корректность ссылок, мыл и т.п. Это полезно отключать, когда Вы хотите сохранить, допустим, формат письма. А потом просто заменять переменными текст.
-		$checkout=true,
+		/** @static Включение проверки корректности ссылок. Полезно в случае сохранения текста с переменными */
+		$checkup=true,
 
-		#BB теги, подлежащие замене.
-		$tags=array('b','p','i','s','a','q','li','ul','ol','em','tt','big','sub','sup','var','abbr','cite','code','spansmall','strong','noindex','legend','blockquote','span','small','address','option','optgroup','select','table','tr','td','th','thead','tfoot','tbody','caption','col','colgroup','legend','fieldset','object','param','article','aside','details','details','figcaption','figure','footer','header','hgroup','mark','nav','wbr','source','video','time','summary','section','ruby','rp','rt','progress','output');
+		/** @static BB теги, подлежащие замене на одноименные HTML теги */
+		$tags=['b','p','i','s','a','q','li','ul','ol','em','tt','big','sub','sup','var','abbr','cite','code',
+			'spansmall','strong','noindex','legend','blockquote','span','small','address','option','optgroup','select',
+			'table','tr','td','th','thead','tfoot','tbody','caption','col','colgroup','legend','fieldset','object',
+			'param','article','aside','details','details','figcaption','figure','footer','header','hgroup','mark','nav',
+			'wbr','source','video','time','summary','section','ruby','rp','rt','progress','output','h1','h2','h3','h4',
+			'h5','h6','option','textarea','select','optgroup'];
 
-	/**
-	 * Преобразование текста, размеченного BB кодами в HTML разметку
-	 *
-	 * @param string $text Текст с BB разметкой
-	 */
-	public static function Save($text)
+	/** Преобразование текста из BB в HTML
+	 * @param string $bb Текст, размеченный BB кодами
+	 * @return string */
+	public static function BB2HTML($bb)
 	{
-		$text=static::ParseContainer($text,'[ul','[/ul]',array(__CLASS__,'DoList'),true);
-		$text=static::ParseContainer($text,'[ol','[/ol]',array(__CLASS__,'DoList'),true);
-
-		foreach(array('DoImage'=>'img','DoUrl'=>'url') as $k=>$v)
+		#Списки
+		$List=function($text)
 		{
-			$ocp=-1;
-			$cp=0;
-			while(false!==$cp=stripos($text,'['.$v,$cp))
-			{
-				if($cp==$ocp)
+			$text=trim($text);
+
+			if(preg_match('#^\[(ul|ol)([^\]]*)\](.+)$#is',$text,$m)==0)
+				return'';
+
+			$tag=strtolower($m[1]);
+			$params=Strings::ParseParams($m[2]);
+			$text=trim($m[3]);
+			$attribs=[];
+
+			foreach($params as $k=>$v)
+				switch(strtolower($k))
 				{
-					++$cp;
+					case'id':
+					case'class':
+					case'style':
+					case'title':
+						$attribs[$k]=$k.'="'.htmlspecialchars($v,ENT,Eleanor\CHARSET,false).'"';
+				}
+
+			if(strpos($text,'[*]')==0)
+			{
+				$text=str_replace('[*]','</li><li>',$text);
+				$text=preg_replace('#^</li>#','',$text);
+				$text=preg_replace("#(\r)?(\n)?</li>#",'</li>',$text.'</li>');
+			}
+			else
+				$text='<li>'.$text.'</li>';
+
+			return'<'.$tag.($attribs ? ' '.join(' ',$attribs) : '').'>'.$text.'</'.$tag.'>';
+		};
+		$bb=static::ParseContainer($bb,'[ul','[/ul]',$List,true);
+		$bb=static::ParseContainer($bb,'[ol','[/ol]',$List,true);
+		#/Списки
+
+		$Image=function($src,$params)
+		{
+			$params=Strings::ParseParams($params,'src');
+			$attribs=[];
+
+			foreach($params as $k=>$v)
+			{
+				$v=htmlspecialchars($v,ENT,Eleanor\CHARSET,false);
+
+				switch(strtolower($k))
+				{
+					default:
+						if(strpos($k,'data-')!==0)
+							continue;
+					case'alt':
+					case'title':
+						$attribs['alt']='alt="'.$v.'" title="'.$v.'"';
+					break;
+					case'id':
+					case'class':
+						$attribs[$k]=$k.'="'.$v.'"';
+					break;
+					case'src':
+						$src=htmlspecialchars($src,ENT,Eleanor\CHARSET,false);
+						$attribs['alt']='alt="'.$src.'" title="'.$src.'"';
+						$src=$v;
+				}
+			}
+
+			return'<img src="'.$src.'"'.($attribs ? ' '.join(' ',$attribs) : '').' />';
+		};
+
+		$Url=function($text,$params)
+		{
+			if(is_string($params))#На случай, если мы обратимся из функции DoEmail
+				$params=Strings::ParseParams($params,'href');
+
+			if(!isset($params['href']))
+			{
+				$params['href']=$text;
+
+				if(strlen($text)>55)
+					$text=substr($text,0,35).'...'.substr($text,-15);
+			}
+
+			$sitepref=Eleanor\PROTOCOL.Eleanor\DOMAIN.Eleanor\SITEDIR;
+
+			if(static::$checkup and stripos($params['href'],$sitepref)===0)
+				$params['href']=substr($params['href'],strlen($sitepref));
+
+			$attribs=['target'=>'target="_blank"'];
+
+			foreach($params as $k=>$v)
+				switch(strtolower($k))
+				{
+					default:
+						if(strpos($k,'data-')!==0)
+							continue;
+					case'id':
+					case'class':
+					case'title':
+					case'target':
+					case'href':
+					case'rel':
+						$attribs[$k]=$k.'="'.htmlspecialchars($v,ENT,Eleanor\CHARSET,false).'"';
+					break;
+					case'self':
+						unset($attribs['target']);
+				}
+
+			return'<a'.($attribs ? ' '.join(' ',$attribs) : '').'>'.$text.'</a>';
+		};
+
+		foreach(['img'=>$Image,'url'=>$Url] as $tag=>$handler)
+		{
+			$ostp=-1;#Old STart Pos
+			$stp=0;#STart Pos
+
+			while(false!==$stp=stripos($bb,'['.$tag,$stp))
+			{
+				if($stp==$ostp)
+				{
+					++$stp;
 					continue;
 				}
 
-				$tl=strlen($v);
-				if(trim($text{$cp+$tl+1},'=] ')!='')
+				$taglen=strlen($tag);
+
+				#Возможно, мы нашли какой-то другой тег, который начинается с текущего [i != [img
+				if(trim($bb{$stp+$taglen+1},'=] ')!='')
 				{
-					++$cp;
+					++$stp;
 					continue;
 				}
-				$l=false;
+
+				$len=false;#Длина всего открывающего тега вместе с его параметрами \] не считается закрытие тега
+
 				do
 				{
-					$l=strpos($text,']',$l ? $l+1 : $cp);
-					if($l===false)
+					$len=strpos($bb,']',$len ? $len+1 : $stp);
+
+					if($len===false)
 					{
-						++$cp;
+						++$stp;
 						continue 2;
 					}
-				}while($text{$l-1}=='\\');
-				$ps=substr($text,$cp+$tl+1,$l-$cp-3-1);
-				$ps=str_replace('\\]',']',$ps);
-				if(false===$clpos=stripos($text,'[/'.$v.']',$l+1))
+				}while($bb{$len-1}=='\\');
+
+				$params=substr($bb,$stp+$taglen+1,$len-$stp-4);#1 это пробел или = после имени тега, 4 - подумай сам :)
+				$params=str_replace('\\]',']',$params);
+
+				if(false===$finp=stripos($bb,'[/'.$tag.']',$len+1))#FINish Pos
 				{
-					++$cp;
+					++$stp;
 					continue;
 				}
 
-				$ct=substr($text,$l+1,$clpos-$l-1);
-				$l=$clpos-$cp+$tl+3;#[/]
-
-				$r=static::$k($ct,$ps);
-				$text=substr_replace($text,$r,$cp,$l);
-				$ocp=$cp++;
+				$result=$handler(trim(substr($bb,$len+1,$finp-$len-1)),trim($params));
+				$len=$finp-$stp+$taglen+3;#[/]
+				$bb=substr_replace($bb,$result,$stp,$len);
+				$ostp=$stp++;
 			}
 		}
 
-		$rk=array(
-			'[c]',
-			'[tm]',
-			'[r]',
-			'[s]',
-			'[/s]',
-			'[u]',
-			'[/u]',
-			"\t",
+		#Обработка некоторых устойчивых тегов
+		$bb=str_replace(['[c]','[tm]','[r]','[s]','[/s]','[u]','[/u]','[hr]',"\t"],
+			['&copy;','&trade;','&reg;','<span style="text-decoration:line-through">','</span>',
+				'<span style="text-decoration:underline">','</span>','<hr />','&nbsp;&nbsp;&nbsp;&nbsp;'],
+			$bb);
+
+		#Обработка ссылок на e-mail
+		$bb=preg_replace_callback('#\[email([^\]]*?)\](.+?)\[/email\]#i',function($m)use($Url){
+			$params=Strings::ParseParams($m[1],'href');
+			$text=trim($m[2]);
+
+			if(!isset($params['href']))
+				$params['href']=$text;
+
+			if(static::$checkup and !filter_var($params['href'],FILTER_VALIDATE_EMAIL))
+				return'';
+
+			if(strpos($params['href'],'mailto:')!==0)
+				$params['href']='mailto:'.preg_replace('#^mailto:#i','',$params['href']);
+
+			return$Url($text,$params);
+		},$bb);
+
+		#Обработка тегов выравнивания текста: left|right|center|justify
+		$bb=preg_replace('#\[(left|right|center|justify)\](.+?)\[/\1\]#is','<p style="text-align:\1"\>\2</p>',$bb);
+
+		#Размер
+		$bb=preg_replace('#\[size=(xx?-small|small|medium|large|xx?-large)[^\]]*\](.+?)\[/size\]#is',
+			'<span style="font-size:\1">\2</span>',$bb);
+		$bb=preg_replace_callback(
+			'#\[size=(\d{1,})(px|pt|em)?[^\]]*\](.+?)\[/size\]#is',
+			function($m){
+				$pt=$m[2] ? $m[2] : 'pt';
+				$size=(int)$m[1];
+
+				#Безопасность от сверхогромного и сверхмалого шрифта
+				if($size<1)
+					return$m[3];
+
+				switch($pt)
+				{
+					case'pt':
+						if($size>25)
+							return$m[3];
+					break;
+					case'px':
+						if($size>34)
+							return$m[3];
+					break;
+					case'em':
+						if($size>4)
+							return$m[3];
+				}
+
+				return'<span style="font-size:'.$size.$pt.'">'.$m[3].'</span>';
+			},
+			$bb
 		);
-		$r=array(
-			'&copy;',
-			'&#153;',
-			'&reg;',
-			'<span style="text-decoration:line-through;">',
-			'</span>',
-			'<span style="text-decoration:underline;">',
-			'</span>',
-			'&nbsp;&nbsp;&nbsp;&nbsp;',
-		);
 
-		$text=str_replace($rk,$r,$text);
+		#Цвет
+		$bb=preg_replace('%\[background=([a-z0-9\-#]+)[^\]]*\](.+?)\[/background\]%is',
+			'<span style="background-color:\1">\2</span>',
+			$bb);
+		$bb=preg_replace('%\[color=([a-z0-9\-#]+)[^\]]*\](.+?)\[/color\]%is',
+			'<span style="color:\1">\2</span>',
+			$bb);
 
-		$rk=$r=array();
+		#Шрифт
+		$bb=preg_replace('%\[font=([a-z0-9\-;\s]+)[^\]]*\](.+?)\[/font\]%is',
+			'<span style="font-family:\1">\2</span>',
+			$bb);
 
-		$rk[]='#\[email([^\]]*?)\](.+?)\[/email\]#ie';
-		$r[]='static::DoEmail(\'\2\',\'\1\')';
+		#Замена ошибочных символов
+		$bb=preg_replace('/&amp;#(\d+?);/i','&#\1;',$bb);
+		$bb=preg_replace('/&#(\d+?)([^\d;])/','&#\1;\2',$bb);
 
-		$rk[]='#\[(left|right|center|justify)\](.+?)\[/\1\]#is';
-		$r[]='<div style="text-align:\1"\>\2</div>';
+		#Замена одиночных тегов
+		$bb=preg_replace_callback('#\[input ([^\]]*?)\]#is',function($m){
+			$params=Strings::ParseParams($m[1],'href');
+			$attribs=['type'=>'text'];
 
-		$rk[]='#\[size=(\d{1,}|xx-small|x-small|small|medium|large|x-large|xx-large)(px|pt|em)?;?\](.+?)\[/size\]#ies';
-		$r[]='static::FontAttr(\'size\',\'\1\2\',\'\3\')';
+			foreach($params as $k=>$v)
+				switch(strtolower($k))
+				{
+					default:
+						if(strpos($k,'data-')!==0)
+							continue;
+					case'id':
+					case'class':
+					case'title':
+					case'type':
+					case'value':
+					case'min':
+						$attribs[$k]=$k.'="'.htmlspecialchars($v,ENT,Eleanor\CHARSET,false).'"';
+				}
 
-		$rk[]='#\[background=([^\]]+)\](.+?)\[/background\]#ies';
-		$r[]='static::FontAttr(\'background\',\'\1\',\'\2\')';
+			return'<input'.($attribs ? ' '.join(' ',$attribs) : '').' />';
+		},$bb);
 
-		$rk[]='#\[color=([^\]]+)\](.+?)\[/color\]#ies';
-		$r[]='static::FontAttr(\'color\',\'\1\',\'\2\')';
+		$tags=join('|',static::$tags);
+		$Handler=function($m)
+		{
+			$tag=$m[1];
+			$params=Strings::ParseParams($m[2],'href');
+			$attribs=[];
 
-		$rk[]='#\[font=([^\]]+)\](.+?)\[/font\]#ies';
-		$r[]='static::FontAttr(\'font\',\'\1\',\'\2\')';
+			foreach($params as $k=>$v)
+				switch(strtolower($k))
+				{
+					default:
+						if(strpos($k,'data-')!==0)
+							continue;
+					case'id':
+					case'class':
+					case'title':
+						$attribs[$k]=$k.'="'.htmlspecialchars($v,ENT,Eleanor\CHARSET,false).'"';
+				}
 
-		$rk[]='/&amp;#(\d+?);/i';
-		$r[]='&#\1;';
+			return'<'.$tag.($attribs ? ' '.join(' ',$attribs) : '').'>'.trim($m[3]).'</'.$tag.'>';
+		};
+		while(preg_match('#\[('.$tags.')(\s+[^\]]+)?\].*?\[/\1\]#is',$bb))
+			$bb=preg_replace_callback('#\[('.$tags.')(\s+[^\]]+)?\](.*?)\[/\1\]#is',$Handler,$bb);
 
-		$rk[]='/&#(\d+?)([^\d;])/';
-		$r[]='&#\1;\2';
-
-		$rk[]='#\[(hr|input|option)([^\]]*?)\]#is';
-		$r[]='<\1\2 />';
-
-		$text=preg_replace($rk,$r,$text);
-		$bb=join('|',static::$tags);
-		while(preg_match('#\[('.$bb.'|h1|h2|h3|h4|h5|h6)(\s+[^\]]+)?\].*?\[/\1\]#is',$text))
-			$text=preg_replace('#\[('.$bb.'|h1|h2|h3|h4|h5|h6)(\s+[^\]]+)?\](.*?)\[/\1\]#is','<\1\2>\3</\1>',$text);
-		return nl2br($text);
+		return nl2br($bb);
 	}
 
-	/**
-	 * Преобразование HTML разметки в текст, текст размеченный BB кодами
-	 *
-	 * @param string $text Текст с HTML разметкой
-	 */
-	public static function Load($text)
+	/** Преобразование HTML разметки в текст, текст размеченный BB кодами
+	 * @param string $html Текст с HTML разметкой
+	 * @return string */
+	public static function HTML2BB($html)
 	{
-		$text=self::ParseContainer($text,'<ul','</ul>',array(__CLASS__,'UnDoList'),true);
-		$text=self::ParseContainer($text,'<ol','</ol>',array(__CLASS__,'UnDoList'),true);
+		$html=preg_replace('#<!\-\- .+? -->#Uis','',$html);
 
-		$rk[]='#<a([^>]+?)>(.+?)</a>#e';
-		$r[]='static::UnDoUrl(\'\2\',\'\1\')';
+		#Списки
+		$List=function($text)
+		{
+			$text=trim($text);
 
-		$rk[]='#<div align="(left|right|center|justify)">(.+?)</div>#si';
-		$r[]='[\1]\2[/\1]';
+			if(preg_match('#^<(ul|ol)([^>]*)>(.+)$#is',$text,$m)==0)
+				return'';
 
-		$rk[]='#<(p|div) style="text-align:\s*(left|right|center|justify);?">(.+?)</\1>#si';
-		$r[]='[\2]\3[/\2]';
+			$tag=strtolower($m[1]);
+			$params=Strings::ParseParams($m[2]);
+			$text=str_replace(['<li>','</li>'],["\n[*]",''],trim($m[3]));
+			$attribs='';
 
-		$rk[]='#<span style="text\-decoration:\s*line-through;?">(.+?)</span>#si';
-		$r[]='[s]\1[/s]';
+			foreach($params as $k=>$v)
+			{
+				$q='';
 
-		$rk[]='#<span style="text\-decoration:\s*underline;?">(.+?)</span>#si';
-		$r[]='[u]\1[/u]';
+				if(strpos($v,'"')!==false)
+					$q='\'';
+				elseif(strpos($v,'\'')!==false or preg_match('#\s#',$v)>0)
+					$q='"';
 
-		$rk[]="#(<br>|<br />)[\r\n]*#i";
-		$r[]="\n";
+				$attribs.=' '.$k.'='.$q.$v.$q;
+			}
 
-		$rk[]='#<span style="font-size:\s*(\d{1,}|xx-small|x-small|small|medium|large|x-large|xx-large)(px|pt|em)?;?">(.+?)</span>#s';
-		$r[]='[size=\1\2]\3[/size]';
+			return'['.$tag.$attribs.']'.$text."\n[/".$tag.']';
+		};
 
-		$rk[]='#<span style="font-family:\s*(.+?)">(.+?)</span>#s';
-		$r[]='[font=\1]\2[/font]';
+		$html=static::ParseContainer($html,'<ul','</ul>',$List,true);
+		$html=static::ParseContainer($html,'<ol','</ol>',$List,true);
+		#/Списки
 
-		$rk[]='#<span style="color:\s*([^"]+?)">(.+?)</span>#s';
-		$r[]='[color=\1]\2[/color]';
+		$html=preg_replace_callback('#<a([^>]+?)>(.+?)</a>#',function($m){
+			$text=trim($m[2]);
+			$params=$m[1] ? Strings::ParseParams($m[1]) : [];
+			$tag='url';
+			$attribs=['self'=>'self'];
+			$sitepref=Eleanor\PROTOCOL.Eleanor\DOMAIN.Eleanor\SITEDIR;
 
-		$rk[]='#<span style="background-color:\s*(.+?)">(.+?)</span>#s';
-		$r[]='[background=\1]\2[/background]';
+			if(isset($params['href']) and stripos($text,$sitepref)===0 and $params['href']==substr($text,strlen($sitepref)))
+				unset($params['href']);
 
-		$rk[]='#<img([^>]+?)>#e';
-		$r[]='static::UnDoImage(\'\1\')';
+			$ta='';
+			foreach($params as $k=>$v)
+			{
+				$q='';
 
-		$rk[]='#<(hr|input|option)(\s+[^>]+?)?>#ise';
-		$r[]='\'[\1\'.rtrim(\'\2\',\' /\').\']\'';
+				if(strpos($v,'"')!==false)
+					$q='\'';
+				elseif(strpos($v,'\'')!==false or preg_match('#\s#',$v)>0)
+					$q='"';
 
-		$text=preg_replace($rk,$r,$text);
+				switch(strtolower($k))
+				{
+					case'target':
+						unset($attribs['self']);
 
-		$bb=join('|',static::$tags);
-		while(preg_match('#<('.$bb.'|h1|h2|h3|h4|h5|h6)(\s+[^>]+)?>.*?</\1>#is',$text))
-			$text=preg_replace('#<('.$bb.'|h1|h2|h3|h4|h5|h6)(\s+[^>]+)?>(.*?)</\1>#is','[\1\2]\3[/\1]',$text);
+						if($v!='_blank')
+							$attribs[$k]='target='.$v;
+					break;
+					case'href':
+						if(strpos($v,'mailto:')===0)
+						{
+							$tag='email';
+							$v=preg_replace('#^mailto:#','',$v);
+						}
 
-		$rk=array(
-			'&copy;',
-			'&#153;',
-			'&reg;',
-			'&nbsp;&nbsp;&nbsp;&nbsp;',
-		);
-		$r=array(
-			'[c]',
-			'[tm]',
-			'[r]',
-			"\t",
-		);
-		return str_replace($rk,$r,$text);
+						if($v==$text)
+							continue;
+
+						$ta.='='.$q.$v.$q;
+					break;
+					default:
+						if(strpos($k,'data-')!==0)
+							continue;
+					case'id':
+					case'class':
+					case'title':
+					case'rel':
+						$attribs[$k]=$k.'='.$q.$v.$q;
+				}
+			}
+
+			#Для того, чтобы параметр self был всегда последним
+			if(isset($attribs['self']))
+			{
+				unset($attribs['self']);
+				$attribs[]='self';
+			}
+
+			return'['.$tag.$ta.($attribs ? ' '.join(' ',$attribs) : '').']'.$text.'[/'.$tag.']';
+		},$html);
+
+		$html=preg_replace('#<(p|div) style="text-align:\s*(left|right|center|justify);?">(.+?)</\1>#si','[\2]\3[/\2]',
+			$html);
+		$html=preg_replace('#<span style="text\-decoration:\s*line-through;?">(.+?)</span>#si','[s]\1[/s]',$html);
+		$html=preg_replace('#<span style="text\-decoration:\s*underline;?">(.+?)</span>#si','[u]\1[/u]',$html);
+		$html=preg_replace("#(<br>|<br />)[\r\n]*#i","\n",$html);
+		$html=preg_replace('#<hr ?/?>*#i','[hr]',$html);
+		$html=preg_replace(
+			'#<span style="font-size:\s*(\d{1,}|xx?-small|small|medium|large|xx?-large)(px|pt|em)?;?">(.+?)</span>#s',
+			'[size=\1\2]\3[/size]',$html);
+		$html=preg_replace('#<span style="font-family:\s*(.+?)">(.+?)</span>#s','[font=\1]\2[/font]',$html);
+		$html=preg_replace('#<span style="color:\s*([^"]+?)">(.+?)</span>#s','[color=\1]\2[/color]',$html);
+		$html=preg_replace('#<span style="background-color:\s*(.+?)">(.+?)</span>#s','[background=\1]\2[/background]',
+			$html);
+
+		$html=preg_replace_callback('#<img([^>]+?)>#',function($m){
+			$params=Strings::ParseParams($m[1]);
+			$attribs=[];
+
+			foreach($params as $k=>$v)
+			{
+				$q='';
+				if(strpos($v,'"')!==false)
+					$q='\'';
+				elseif(strpos($v,'\'')!==false or preg_match('#\s#',$v)>0)
+					$q='"';
+
+				switch(strtolower($k))
+				{
+					case'border':
+						$v=(int)$v;
+						if($v>5)
+							$v=5;
+						if($v>0)
+							$attribs['border']='border='.$v;
+						break;
+					case'alt':
+					case'title':
+						if($v!='')
+							$attribs['alt']='alt='.$q.$v.$q;
+						break;
+					case'src':
+						break;
+					default:
+						$attribs[$k]=$k.'='.$q.$v.$q;
+				}
+			}
+			return'[img'.($attribs ? ' '.join(' ',$attribs) : '').']'.$params['src'].'[/img]';
+		},$html);
+
+		$html=preg_replace('#<input(\s+[^>]+?)?>#is','[input\1]',$html);
+
+		$bbs=join('|',static::$tags);
+		$Handler=function($m)
+		{
+			$params=Strings::ParseParams($m[2]);
+			$attribs=[];
+
+			foreach($params as $k=>$v)
+			{
+				$q='';
+				if(strpos($v,'"')!==false)
+					$q='\'';
+				elseif(strpos($v,'\'')!==false or preg_match('#\s#',$v)>0)
+					$q='"';
+
+				$attribs[$k]=$k.'='.$q.$v.$q;
+			}
+
+			return'['.$m[1].($attribs ? ' '.join(' ',$attribs) : '').']'.$m[3].'[/'.$m[1].']';
+		};
+		while(preg_match('#<('.$bbs.')(\s+[^>]*)?>.*?</\1>#is',$html))
+			$html=preg_replace_callback('#<('.$bbs.')(\s+[^>]*)?>(.*?)</\1>#is',$Handler,$html);
+
+		return str_replace(['&copy;','&trade;','&reg;','&nbsp;&nbsp;&nbsp;&nbsp;'],['[c]','[tm]','[r]',"\t"],$html);
 	}
 
-	/**
-	 * Обработка контейнера в тексте
-	 *
-	 * Простой пример. Есть текст: '[quote]Первая цитатая[quote]Цитата в цитате[/quote][/quote]';
-	 * сли мы будем пытаться обработать цитату при помощи регулярки '#\[quote([^\]]*)\](.*)\[/quote\]#Use'=>'DoQuote(\'\2\',\'\1\')',
-	 * то получим следующее:
+	/** Обработка контейнера в тексте. Например есть текст: '[quote]Первая цитата[quote]Цитата в цитате[/quote][/quote]'
+	 * Если мы будем пытаться обработать цитату при помощи регулярки '#\[quote([^\]]*)\](.*)\[/quote\]#U' то получим:
 	 *    |------------Первая цитатая------------------|
 	 *    |                     |-----Вторая цитата----|-------|
 	 * '[quote]Первая цитатая [quote]Цитата в цитате[/quote][/quote]';
-	 * Текущий метод метод позволяет добиться корректной обработки цитаты:
+	 * Это метод метод позволяет добиться корректной обработки цитаты:
 	 *    |------------Вторая цитатая--------------------------|
 	 *    |                     |-----Первая цитата----|       |
 	 * '[quote]Первая цитатая [quote]Цитата в цитате[/quote][/quote]';
 	 *
 	 * @param string $s Входящий текст с контейнером
 	 * @param string $beg Начало контейнера
-	 * @param string $eb Конец контейнера
-	 * @params callable $cb Функция которой будет передана строка для обработки, содержащая начало и содержимое контейнера, но не содержащая его конец
-	 */
+	 * @param string $end Конец контейнера
+	 * @param callable $cb Обработчик, которому передается строка, $beg и содержимое контейнера и не содержащая $end
+	 * @return string */
 	public static function ParseContainer($s,$beg,$end,$cb)
 	{
 		$bl=strlen($beg);
@@ -236,303 +524,15 @@ class BBCode extends Eleanor\BaseClass
 		return$s;
 	}
 
-	/**
-	 * Внутренний метод создания картинки
-	 *
-	 * @param string $url Адрес картинки
-	 * @param string $params Необработанная строка параметров картинки
-	 */
-	protected static function DoImage($url,$params)
-	{
-		$url=stripslashes($url);
-		$params=Strings::ParseParams(stripslashes($params),'url');
-		$tparams=array();
-		foreach($params as $k=>$v)
-		{
-			$v=str_replace('"','&quot;',$v);
-			switch(strtolower($k))
-			{
-				case'border':
-					$v=abs((int)$v);
-					if($v>5)
-						$v=5;
-					$tparams['border']=' border="'.$v.'"';
-				break;
-				case'alt':
-					$tparams['alt']=' alt="'.$v.'" title="'.$v.'"';
-				break;
-				case'id':
-				case'class':
-				case'style':
-				case'width':
-				case'height':
-					$tparams[$k]=' '.$k.'="'.$v.'"';
-				break;
-				case'url':
-					$url=str_replace('"','&quot;',$url);
-					$tparams['alt']=' alt="'.$url.'" title="'.$url.'"';
-					$url=$v;
-			}
-		}
-		return'<img src="'.$url.'"'.join($tparams).' />';
-	}
-
-	/**
-	 * Внутренний метод создания списка
-	 *
-	 * @param string $text Предварительно размеченный bb кодами списоков текст
-	 */
-	protected static function DoList($text)
-	{
-		if(preg_match('#^\[(ul|ol)([^\]]*)\](.+)$#is',$text,$m)==0)
-			return '';
-		$type=strtolower($m[1]);
-		$params=$m[2];
-		$text=trim($m[3]);
-		$tparams=array();
-		$params=Strings::ParseParams($params);
-		foreach($params as $k=>&$v)
-			switch(strtolower($k))
-			{
-				case'id':
-				case'class';
-				case'style';
-				case'title';
-					$tparams[$k]=' '.$k.'="'.str_replace('"','&quot;',$v).'"';
-			}
-		if(strpos($text,'[*]')==0)
-		{
-			$text=str_replace('[*]','</li><li>',$text);
-			$text=preg_replace('#^</li>#','',$text);
-			$text=preg_replace("#(\r)?(\n)?</li>#",'</li>',$text.'</li>');
-		}
-		else
-			$text='<li>'.$text.'</li>';
-		return'<'.$type.join($tparams).'>'.$text.'</'.$type.'>';
-	}
-
-	/**
-	 * Внутренний метод создания ссылок
-	 *
-	 * @param string $text Текст ссылки
-	 * @param string $params Необработанная строка параметров ссылки
-	 */
-	protected static function DoUrl($text,$params='')
-	{
-		if(is_string($params))#На случай, если мы обратимся из функции DoEmail
-			$params=Strings::ParseParams($params,'href');
-		if(isset($params['name']))
-		{
-			unset($params['href'],$params['target']);
-			$tparams=array();
-		}
-		else
-		{
-			if(!isset($params['href']))
-			{
-				$params['href']=$text;
-				if(strlen($text)>55)
-					$text=substr($text,0,35).'...'.substr($text,-15);
-			}
-			if(static::$checkout and stripos($params['href'],PROTOCOL.Eleanor::$domain.Eleanor::$site_path)===0)
-				$params['href']=substr($params['href'],strlen(PROTOCOL.Eleanor::$domain.Eleanor::$site_path));
-			$tparams=array('target'=>' target="_blank"');
-		}
-		foreach($params as $k=>$v)
-			switch(strtolower($k))
-			{
-				case'id':
-				case'name':
-				case'class':
-				case'style':
-				case'title':
-				case'target':
-				case'href':
-				case'rel':
-					$tparams[$k]=' '.$k.'="'.htmlspecialchars($v,ELENT,CHARSET,false).'"';
-				break;
-				case'self':
-					unset($tparams['target']);
-			}
-		return'<a'.join($tparams).' />'.$text.'</a>';
-	}
-
-	/**
-	 * Внутренний метод создания ссылок на e-mail
-	 *
-	 * @param string $text Текст ссылки
-	 * @param string $params Необработанная строка параметров ссылки
-	 */
-	protected static function DoEmail($text,$params='')
-	{
-		$text=stripslashes($text);
-		$params=Strings::ParseParams(stripslashes($params),'href');
-		if(!isset($params['href']))
-			$params['href']=$text;
-		$params['href']='mailto:'.preg_replace('#^mailto:#','',$params['href']);
-		return static::DoUrl($text,$params);
-	}
-
-	/**
-	 * Внутренний метод создания выделения текста определенным цветом
-	 *
-	 * @param string $param Название параметра, который будет настроен в тексте: size - размер, background - фон, color - цвет, font - шрифт
-	 * @param string $value Значение параметра настройки
-	 * @param string $text Текст для настройки
-	 */
-	protected static function FontAttr($param,$value,$text)
-	{
-		$text=stripslashes($text);
-		if(static::$checkout)
-			$value=preg_replace('/[^#a-z0-9\-;,\)\( ]/i','',$value);
-		if($param=='size')
-		{
-			$pt='pt';
-			if(preg_match('#(pt|px|em);?$#i',$value,$m))
-				$pt=strtolower($m[1]);
-			$value=(int)$value;
-			if($value>32)
-				$value=32;
-			return'<span style="font-size:'.$value.$pt.'">'.$text.'</span>';
-		}
-		if($param=='background')
-			return'<span style="background-color:'.$value.'">'.$text.'</span>';
-		if($param=='color')
-			return'<span style="color:'.$value.'">'.$text.'</span>';
-		if($param=='font')
-			return'<span style="font-family:'.$value.'">'.$text.'</span>';
-	}
-
-	/**
-	 * Внутренний метод преобразования списка, размеченного на HTML в список, размеченный BB кодами
-	 *
-	 * @param string $text HTML размеченного списка
-	 */
-	protected static function UnDoList($text)
-	{
-		if(preg_match('#^<(ul|ol)([^>]*)>(.+)$#is',$text,$m)==0)
-			return'';
-		$type=strtolower($m[1]);
-		$params=$m[2];
-		$text=trim($m[3]);
-		$params=Strings::ParseParams($params);
-		$tparams='';
-		foreach($params as $k=>&$v)
-		{
-			$q='';
-			if(strpos($v,'"')!==false)
-				$q='\'';
-			elseif(strpos($v,'\'')!==false or preg_match('#\s#',$v)>0)
-				$q='"';
-			$tparams.=' '.$k.'='.$q.$v.$q;
-		}
-		$text=str_replace(array('<li>','</li>'),array("\n[*]",''),stripslashes($text));
-		return'['.$type.ltrim($tparams).']'.$text."\n[/".$type.']';
-	}
-
-	/**
-	 * Внутренний метод преобразования HTML ссылок в ссылки на BB кодах
-	 *
-	 * @param string $text Текст ссылки
-	 * @param string $params Необработанная строка параметров ссылки
-	 */
-	protected static function UnDoUrl($text,$params)
-	{
-		$text=stripslashes($text);
-		$params=Strings::ParseParams(stripslashes($params));
-		$tag='url';
-		$params_a=isset($params['name']) ? array() : array('self'=>' self');
-		if(isset($params['href']) and stripos($text,PROTOCOL.Eleanor::$domain.Eleanor::$site_path)===0 and $params['href']==substr($text,strlen(PROTOCOL.Eleanor::$domain.Eleanor::$site_path)))
-			unset($params['href']);
-		$ta='';
-		foreach($params as $k=>$v)
-		{
-			$q='';
-			if(strpos($v,'"')!==false)
-				$q='\'';
-			elseif(strpos($v,'\'')!==false or preg_match('#\s#',$v)>0)
-				$q='"';
-			switch(strtolower($k))
-			{
-				case'target':
-					if($v=='_blank')
-						unset($params_a['self']);
-					else
-						$params_a[$k]=' target='.$v;
-				break;
-				case'href':
-					if(strpos($v,'mailto:')===0)
-					{
-						$tag='email';
-						$v=preg_replace('#^mailto:#','',$v);
-					}
-					if($v==$text)
-						continue;
-					$ta.='='.$q.$v.$q;
-				break;
-				default:
-					$params_a[$k]=' '.$k.'='.$q.$v.$q;
-			}
-		}
-		#Для того, чтобы параметр self был всегда последним
-		if(isset($params_a['self']))
-		{
-			unset($params_a['self']);
-			$params_a['self']=' self';
-		}
-		return'['.$tag.$ta.join($params_a).']'.$text.'[/'.$tag.']';
-	}
-
-	/**
-	 * Внутренний метод преобразования HTML картинок в картинки на BB кодах
-	 *
-	 * @param string $params Необработанная строка параметров картинки
-	 */
-	protected static function UnDoImage($params)
-	{
-		$params=Strings::ParseParams(stripslashes($params));
-		$iparams=array();
-		foreach($params as $k=>$v)
-		{
-			$q='';
-			if(strpos($v,'"')!==false)
-				$q='\'';
-			elseif(strpos($v,'\'')!==false or preg_match('#\s#',$v)>0)
-				$q='"';
-			switch(strtolower($k))
-			{
-				case'border':
-					$v=(int)$v;
-					if($v>5)
-						$v=5;
-					if($v>0)
-						$iparams['border']=' border='.$v;
-				break;
-				case'alt':
-				case'title':
-					if($v!='')
-						$iparams['alt']=' alt='.$q.$v.$q;
-				break;
-				case'src':
-				break;
-				default:
-					$iparams[$k]=' '.$k.'='.$q.$v.$q;
-			}
-		}
-		return'[img'.join($iparams).']'.$params['src'].'[/img]';
-	}
-
-	/**
-	 * Интерпретация bb логики в тексте. Несколько примеров
+	/** Интерпретация bb логики в тексте. Несколько примеров
 	 * Вывод переменной: {var}
 	 * Условия: [var]Переменная var равна {var}[/var]
 	 * Условия с else: [var]Переменная var равна {var}[-var]Переменная var пуста[/var]
 	 * Подбора корректной формы слова, в зависимости от рядом стоящего числа: Вам {var} [var=plural]год|года|лет[var]
-	 * Сравненеие: [var>2]Переменная var больше 2[/var]
+	 * captcha.php* Сравненеие: [var>2]Переменная var больше 2[/var]
 	 * @param string $text Текст, с bb переменными
 	 * @param array $bbs Массив var=>значение
-	 * @return string
-	 */
+	 * @return string */
 	public static function ExecLogic($text,array$bbs)
 	{
 		foreach($bbs as $k=>$v)
@@ -583,7 +583,7 @@ class BBCode extends Eleanor\BaseClass
 				{
 					case'=plural':
 						$cont=call_user_func(
-							[ __NAMESPACE__.'\\Languages\\'.Language::$main,'Plural'],$v,explode('|',$cont)
+							[ __NAMESPACE__.'\\Language\\'.Language::$main,'Plural'],$v,explode('|',$cont)
 						);
 					break;
 					default:
@@ -601,7 +601,7 @@ class BBCode extends Eleanor\BaseClass
 									break;
 							}
 
-						$cont=explode('[-'.$k.']',$cont,2)+array(1=>'');
+						$cont=explode('[-'.$k.']',$cont,2)+[1=>''];
 						$cont=$v ? $cont[0] : $cont[1];
 				}
 
