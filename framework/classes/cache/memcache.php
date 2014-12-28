@@ -18,25 +18,25 @@ class MemCache implements Eleanor\Interfaces\Cache
 		$names=[''=>true];
 
 	/** @var \Memcache Объект */
-	public $M=false;#Объект MemCache-a
+	public $Driver=false;#Объект MemCache-a
 
 	/** @param string $u Уникализации кэша (на одной кэш машине может быть запущено несколько копий Eleanor CMS)
 	 * @throws Eleanor\Classes\EE */
 	public function __construct($u='')
 	{
 		$this->u=$u;
-		$this->M=new \Memcache;
+		$this->Driver=new \Memcache;
 
-		$connected=$this->M->connect('localhost', 11211);
+		$connected=$this->Driver->connect('localhost', 11211);
 
 		if(!$connected)
 		{
-			$this->M->close();
+			$this->Driver->close();
 			throw new Eleanor\Classes\EE('MemCache failure',Eleanor\Classes\EE::ENV,
 				['hint'=>'try to delete the file framework/classes/cache/memcache.php']);
 		}
 
-		$this->M->setCompressThreshold(20000,0.2);
+		$this->Driver->setCompressThreshold(20000,0.2);
 
 		$this->names=$this->Get('');
 
@@ -47,7 +47,7 @@ class MemCache implements Eleanor\Interfaces\Cache
 	public function __destruct()
 	{
 		$this->Put('',$this->names);
-		$this->M->close();
+		$this->Driver->close();
 	}
 
 	/** Запись значения
@@ -57,7 +57,7 @@ class MemCache implements Eleanor\Interfaces\Cache
 	 * @return true */
 	public function Put($k,$v,$ttl=0)
 	{
-		$r=$this->M->set($this->u.$k,$v,is_bool($v) || is_int($v) || is_float($v) ? 0 : MEMCACHE_COMPRESSED,$ttl);
+		$r=$this->Driver->set($this->u.$k,$v,is_bool($v) || is_int($v) || is_float($v) ? 0 : MEMCACHE_COMPRESSED,$ttl);
 
 		if($r)
 			$this->names[$k]=$ttl+time();
@@ -73,7 +73,7 @@ class MemCache implements Eleanor\Interfaces\Cache
 		if(!isset($this->names[$k]))
 			return false;
 
-		$r=$this->M->get($this->u.$k);
+		$r=$this->Driver->get($this->u.$k);
 
 		if($r===false)
 			unset($this->names[$k]);
@@ -87,7 +87,7 @@ class MemCache implements Eleanor\Interfaces\Cache
 	public function Delete($k)
 	{
 		unset($this->names[$k]);
-		return $this->M->delete($this->u.$k);
+		return $this->Driver->delete($this->u.$k);
 	}
 
 	/** Удаление записей по тегу. Если имя тега пустое - удаляется вешь кэш
@@ -101,6 +101,6 @@ class MemCache implements Eleanor\Interfaces\Cache
 					$this->Delete($k);
 		}
 		else
-			$this->M->flush();
+			$this->Driver->flush();
 	}
 }

@@ -5,10 +5,11 @@
 	info@eleanor-cms.ru
 */
 namespace CMS;
+use \Eleanor\BaseClass;
 defined('CMS\STARTED')||die;
 
 /** Блоки на странице */
-class Blocks extends \Eleanor\BaseClass
+class Blocks extends BaseClass
 {
 	/** @var array Кэш блоков */
 	public static $blocks;
@@ -131,15 +132,15 @@ class Blocks extends \Eleanor\BaseClass
 			}
 		}
 
-		$r=array_combine($place,array_fill(0,count($place),''));
+		$r=array_fill_keys($place,'');
 		$Tpl=Eleanor::$Template;
 
 		foreach($place as $pl)
 		{
-			$s='';
+			$s=new BlocksArray;
 
 			if(isset(static::$blocks[$pl]))
-				foreach(static::$blocks[$pl] as &$v)
+				foreach(static::$blocks[$pl] as $k=>&$v)
 				{
 					if(!isset($dump[$v]))
 						continue;
@@ -147,9 +148,9 @@ class Blocks extends \Eleanor\BaseClass
 					$b=$dump[$v];
 
 					if($b['tpl'])
-						$s.=$Tpl($b['tpl']===true ? 'Blocks_'.$pl : $b['tpl'],['title'=>$b['t'],'content'=>$b['c']]);
+						$s[$k]=$Tpl($b['tpl']===true ? 'Blocks_'.$pl : $b['tpl'],['title'=>$b['t'],'content'=>$b['c']]);
 					else
-						$s.=$b['c'];
+						$s[$k]=$b['c'];
 				}
 
 			$r[$pl]=$s;
@@ -165,4 +166,10 @@ class Blocks extends \Eleanor\BaseClass
 	{
 		return eval(func_get_arg(0));
 	}
+}
+
+/** Специальная строка для передачи */
+class BlocksArray extends BaseClass implements \ArrayAccess, \Countable, \Iterator, \IteratorAggregate
+{
+	use \Eleanor\Traits\AutoJoin;
 }

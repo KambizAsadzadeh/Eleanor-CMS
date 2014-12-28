@@ -263,9 +263,6 @@ else
 				$check=true;
 			else
 				$errors[]='WRONG_CAPTCHA';
-
-		if(method_exists($Captcha,'Destroy'))
-			$Captcha->Destroy();
 	}
 
 	if($login and $password==='')

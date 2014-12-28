@@ -322,7 +322,7 @@ else
 
 	if(isset($query['fi']))
 	{
-		$R=Eleanor::$Db->Query("SELECT COUNT(`id`) FROM `{$table}` `g`{$where}");
+		$R=Eleanor::$Db->Query("SELECT COUNT(`id`) FROM `{$table}`");
 		list($total)=$R->fetch_row();
 	}
 	else

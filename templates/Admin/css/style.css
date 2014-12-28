@@ -319,6 +319,20 @@ a { outline: none !important; }
 	.set-list .col_item-text { margin-left: 0; }
 	.set-list .col_item-text p { margin-bottom: 0; }
 
+/* --- Список настроек - просмотр --- */
+.field-list.table > tbody > tr > td.col_field { vertical-align: middle; }
+	.field-list.table > tbody > tr > td.col_pos, .field-list.table > tbody > tr > td.col_icons { vertical-align: top; }
+	.field-list.table > tbody > tr > td.col_icons > .dropdown { margin-top: 4px; }
+	.field-list.table > tbody > tr > td.col_pos > .pos-lines { margin-top: 21px; }
+	.field-list.table > tbody > tr > td { padding-top: 18px; padding-bottom: 18px; }
+	.field-list .col_pos { width: 30px; padding: 0 !important; }
+	.field-list .col_label { width: 25%; }
+	.field-list .col_label > label { padding: 5px; }
+	.field-list .col_descript { color: #888; line-height: normal; width: 25%; }
+	.field-list .col_descript > small { display: block; margin: 8px 0; }
+	.field-list.table > tbody > tr > td.col_field { width: 35%; }
+	.field-list.table > tbody > tr.set-head-group > th { border-width: 0; background-color: #f1f1f1; color: #888; padding: 14px 14px; vertical-align: bottom; }
+
 /* --- BB Editor --- */
 .sel-lang { background-color: #f0f0f0; padding: 3px; border-radius: 6px; }
 .bb-editor { border: 1px solid #d0d0d0; border-radius: 4px; background-color: #fff; }

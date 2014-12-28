@@ -38,10 +38,10 @@ class EE extends \Exception
 	 * @param string|array $mess Описание исключения, в случае array - [param in default file], [pathtofile, param]
 	 * @param int $code Код исключения
 	 * @param array $extra Дополнительные данные исключения
-	 *   string file Имя файла
-	 *   int line Строка с исключением
-	 *   string input Входящие данные, которые вызвали исключение
-	 *   array context Дам всех переменных в области видимости
+	 *  [string file] Имя файла
+	 *  [int line] Строка с исключением
+	 *  [string input] Входящие данные, которые вызвали исключение
+	 *  [array context] Дам всех переменных в области видимости
 	 * @param \exception $PO Предыдущее перехваченное исключение, что послужило "родителем" для текущего */
 	public function __construct($mess,$code=self::USER,array$extra=[],$PO=null)
 	{

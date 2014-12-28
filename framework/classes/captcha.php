@@ -47,7 +47,7 @@ class Captcha extends Eleanor\BaseClass implements Eleanor\Interfaces\Captcha_Im
 	/** Получение HTML кода капчи, для вывода его на странице. Код определяется шаблонизатором.
 	 * @param string $name Имя капчи, используется в случае, когда на странице выводится более одной капчи
 	 * @param array|null $post Подмена $_POST массива. Полезно, в случае использования AJAX
-	 * @return string */
+	 * @return CaptchaCallback */
 	public function GetCode($name='captcha',$post=null)
 	{
 		if(!isset($_SESSION))
@@ -73,7 +73,7 @@ class Captcha extends Eleanor\BaseClass implements Eleanor\Interfaces\Captcha_Im
 			'length'=>$this->length,
 		];
 
-		$Str=new StringCallback(function($Template=null)use($params){
+		$Str=new CaptchaCallback(function($Template=null)use($params){
 			if(!$Template)
 				$Template=$this->Template;
 
@@ -98,19 +98,13 @@ class Captcha extends Eleanor\BaseClass implements Eleanor\Interfaces\Captcha_Im
 		if(!isset($_SESSION))
 			Eleanor\StartSession(isset($post[$name]['s']) ? $post[$name]['s'] : '',$name);
 
-		return isset($_SESSION[$name][''],$post[$name]['t'])
+		$check=isset($_SESSION[$name][''],$post[$name]['t'])
 			? strcasecmp($_SESSION[$name][''],(string)$post[$name]['t'])==0
 			: false;
-	}
 
+		unset($_SESSION[$name]);
 
-	/** Разрушение капчи. После проверки (вне зависимости от того, успешно прошла она или нет), капчу нужно разрушить
-	 * для исключения перебора возможных значений.
-	 * @param string $name Имя капчи, используется в случае, когда на странице выводится более одной капчи */
-	public static function Destroy($name='captcha')
-	{
-		if(isset($_SESSION))
-			unset($_SESSION[$name]);
+		return$check;
 	}
 
 	/** Вывод картинки

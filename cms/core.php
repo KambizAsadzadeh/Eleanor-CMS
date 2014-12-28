@@ -785,13 +785,13 @@ function FilterLangValues(array$a,$l=null,$d=null)
 function SetTemplate($tpl)
 {
 	if(!$tpl or !isset(Template::$path['templates']) or !is_dir(Template::$path['templates'].$tpl))
-		throw new EE('Template '.$tpl.' was not found!',EE::ENV);
+		throw new EE("Template {$tpl} was not found",EE::ENV);
 
 	$T=Template::$path['templates'].$tpl.'/run.php';
 	$T=is_file($T) ? include$T : false;
 
 	if(!is_object($T) or !($T instanceof Template))
-		throw new EE('Template '.$tpl.' is not supported',EE::DEV);
+		throw new EE("Template {$tpl} is not supported",EE::DEV);
 
 	Eleanor::$Template=$T;
 }

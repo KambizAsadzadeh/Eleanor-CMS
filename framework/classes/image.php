@@ -65,16 +65,16 @@ class Image extends Eleanor\BaseClass
 	}
 
 	/** Создание превьюшки (preview, thumbnail) картинки
-	 * @param string $path Путь к файлу
+	 * @param string $source Путь к файлу
 	 * @param array $o Опции, описание доступно внутри самого метода
 	 * @throws EE
 	 * @return bool|string */
-	public static function Preview($path,array$o=[])
+	public static function Preview($source,array$o=[])
 	{
-		if(!is_file($path))
-			throw new EE('Image not found',EE::ENV,[ 'input'=>$path ]);
+		if(!is_file($source))
+			throw new EE('Image not found',EE::ENV,[ 'input'=>$source ]);
 
-		if(!list($w,$h)=getimagesize($path))
+		if(!list($w,$h)=getimagesize($source))
 			throw new EE('Incorrect image',EE::ENV);
 
 		#Размер превьюшки по умолчанию 100 на 100 будет установлен если в $o отсутствуют указатели размера
@@ -84,6 +84,7 @@ class Image extends Eleanor\BaseClass
 			'cut_first'=>false,#Если true - превьюшка будет не ужиматься, а тупо обрезаться
 			'cut_last'=>false,#Если true - превьюшка будет уменьшена по одной стороне, а по другой - обрезана
 			'first'=>'b',#Что будет уменьшаться первое: высота или ширина. w,h . Автоматически: b - по наибольшей стороне, s - по наименьшей стороне
+			'imagic'=>[],#Параметры ImageMagic
 
 			#Параметры нового имени
 			'newname'=>false,
@@ -92,11 +93,11 @@ class Image extends Eleanor\BaseClass
 			'returnbool'=>false,
 		];
 
-		$newpath=$o['newname']
-			? (preg_match('#[/\\\]#',$o['newname'])>0 ? '' : dirname($path).'/').$o['newname']
-			: substr_replace($path,$o['suffix'],strrpos($path,'.'),0);
+		$dest=$o['newname']
+			? (preg_match('#[/\\\]#',$o['newname'])>0 ? '' : dirname($source).'/').$o['newname']
+			: substr_replace($source,$o['suffix'],strrpos($source,'.'),0);
 
-		if(!is_writable($dn=dirname($newpath)))#Нам нужно проверить, сможем ли записать не только в каталог файла, но и в сам файл.
+		if(!is_writable($dn=dirname($dest)))#Нам нужно проверить, сможем ли записать не только в каталог файла, но и в сам файл.
 			throw new EE('Folder is write-protected',EE::ENV,[ 'input'=>$dn ]);
 
 		if($o['first']=='b')
@@ -116,54 +117,63 @@ class Image extends Eleanor\BaseClass
 		];
 
 		if($o['first']=='w' and ($o['width']>=$w or $o['width']==0) or $o['first']=='h' and ($o['height']>=$h or $o['height']==0))
-			return$o['returnbool'] ? false : $path;
+			return$o['returnbool'] ? false : $source;
 
-		$source=static::CreateImage($path);
+		if(class_exists('\imagick'))
+			static::PreviewMagic($source,$dest,$w,$h,$o['width'],$o['height'],$o['first'],$o['cut_first'],$o['cut_last'],$o['imagic']);
+		else
+			static::PreviewGD($source,$dest,$w,$h,$o['width'],$o['height'],$o['first'],$o['cut_first'],$o['cut_last']);
 
-		switch($o['first'])
+		return$o['returnbool'] ? true : $dest;
+	}
+
+	/** Создание превьюшки при помощи библиотеки GD */
+	protected static function PreviewGD($source,$dest,$sx,$sy,$dx,$dy,$first,$cut_first,$cut_last)
+	{
+		$source=static::CreateImage($source);
+
+		if($first=='w')
 		{
-			case'w':
-				$height=$o['cut_first'] ? $h : round($h*$o['width']/$w);
-				$dest=imagecreatetruecolor($o['width'],$height);
+			$height=$cut_first ? $sy : round($sy*$dx/$sx);
+			$img_dest=imagecreatetruecolor($dx, $height);
+			#Сохраняем прозрачность
+			imagealphablending($img_dest, false);
+			imagesavealpha($img_dest, true);
+			imagecopyresampled($img_dest, $source, 0, 0, 0, 0, $dx, $height, $cut_first ? $dx : $sx, $sy);
 
-				#Сохраняем прозрачность
-				imagealphablending($dest,false);
-				imagesavealpha($dest,true);
-				imagecopyresampled($dest,$source,0,0,0,0,$o['width'],$height,$o['cut_first'] ? $o['width'] : $w,$h);
+			if($height>$dy and $dy)
+			{
+				$width=$cut_last ? $dx : round($dx*$dy/$height);
+				$temp=$img_dest;
+				$img_dest=imagecreatetruecolor($width, $dy);
 
-				if($height>$o['height'] and $o['height'])
-				{
-					$width=$o['cut_last'] ? $o['width'] : round($o['width']*$o['height']/$height);
-					$temp=$dest;
-					$dest=imagecreatetruecolor($width,$o['height']);
+				imagealphablending($img_dest, false);
+				imagesavealpha($img_dest, true);
+				imagecopyresampled($img_dest, $temp, 0, 0, 0, 0, $width, $dy, $dx, $cut_last ? $dy : $height);
+				imagedestroy($temp);
+			}
+		}
+		else
+		{
+			$width=$cut_first ? $sx : round($sx*$dy/$sy);
+			$img_dest=imagecreatetruecolor($width,$dy);
 
-					imagealphablending($dest,false);
-					imagesavealpha($dest,true);
-					imagecopyresampled($dest,$temp,0,0,0,0,$width,$o['height'],$o['width'],$o['cut_last'] ? $o['height'] : $height);
-					imagedestroy($temp);
-				}
-			break;
-			#case'h':
-			default:
-				$width=$o['cut_first'] ? $w : round($w*$o['height']/$h);
-				$dest=imagecreatetruecolor($width,$o['height']);
+			#Сохраняем прозрачность
+			imagealphablending($img_dest,false);
+			imagesavealpha($img_dest,true);
+			imagecopyresampled($img_dest,$source,0,0,0,0,$width,$dy,$sx,$cut_first ? $dy : $sy);
 
-				#Сохраняем прозрачность
-				imagealphablending($dest,false);
-				imagesavealpha($dest,true);
-				imagecopyresampled($dest,$source,0,0,0,0,$width,$o['height'],$w,$o['cut_first'] ? $o['height'] : $h);
+			if($width>$dx and $dx)
+			{
+				$height=$cut_last ? $dy : round($dy*$dx/$width);
+				$temp=$img_dest;
+				$img_dest=imagecreatetruecolor($dx,$height);
 
-				if($width>$o['width'] and $o['width'])
-				{
-					$height=$o['cut_last'] ? $o['height'] : round($o['height']*$o['width']/$width);
-					$temp=$dest;
-					$dest=imagecreatetruecolor($o['width'],$height);
-
-					imagealphablending($dest,false);
-					imagesavealpha($dest,true);
-					imagecopyresampled($dest,$temp,0,0,0,0,$o['width'],$height,$o['cut_last'] ? $o['width'] : $width,$o['height']);
-					imagedestroy($temp);
-				}
+				imagealphablending($img_dest,false);
+				imagesavealpha($img_dest,true);
+				imagecopyresampled($img_dest,$temp,0,0,0,0,$dx,$height,$cut_last ? $dx : $width,$dy);
+				imagedestroy($temp);
+			}
 		}
 
 		/*Квадратная превьюха с центрированием внутри виртуального квадрата
@@ -187,10 +197,57 @@ class Image extends Eleanor\BaseClass
 		}*/
 
 		imagedestroy($source);
-		static::SaveImage($dest,$newpath);
-		imagedestroy($dest);
+		static::SaveImage($img_dest,$dest);
+		imagedestroy($img_dest);
+	}
 
-		return$o['returnbool'] ? true : $newpath;
+	/** Создание превьюшки при помощи библиотеки ImageMagic. Описание параметров смотрите в PreviewGD */
+	protected static function PreviewMagic($source,$dest,$sx,$sy,$dx,$dy,$first,$cut_first,$cut_last,$params)
+	{
+		$params+=[
+			'filter'=>\imagick::FILTER_BOX,
+			'blur'=>0.9,
+			'bestfit'=>true,
+		];
+
+		$Magic=new \imagick($source);
+
+		#Удаление exif http://stackoverflow.com/questions/13646028/how-to-remove-exif-from-a-jpg-without-losing-image-quality
+		$profiles=$Magic->getImageProfiles('icc',true);
+		$Magic->stripImage();
+
+		if($profiles)
+			$Magic->profileImage('icc',$profiles['icc']);
+		#/Удаление exif
+
+		if($first=='w')
+		{
+			$height=$cut_first ? $sy : round($sy*$dx/$sx);
+
+			if($height>$dy and $dy)
+			{
+				$width=$cut_last ? $dx : round($dx*$dy/$height);
+				$height=$dy;
+			}
+			else
+				$width=$dx;
+		}
+		else
+		{
+			$width=$cut_first ? $sx : round($sx*$dy/$sy);
+
+			if($width>$dx and $dx)
+			{
+				$height=$cut_last ? $dy : round($dy*$dx/$width);
+				$width=$dx;
+			}
+			else
+				$height=$dy;
+		}
+
+		$Magic->resizeImage($width,$height,$params['filter'],$params['blur'],$params['bestfit']);
+		$Magic->writeImage($dest);
+		$Magic->destroy();
 	}
 
 	/** Установка водяного знака (watermark) на картинку
@@ -199,7 +256,7 @@ class Image extends Eleanor\BaseClass
 	 * @throws EE
 	 * @return bool */
 	public static function WaterMark($path,$o=[])
-	{
+	{#ToDo! Image magic
 		if(!is_file($path))
 			throw new EE('File not found',EE::ENV,[ 'input'=>$path ]);
 

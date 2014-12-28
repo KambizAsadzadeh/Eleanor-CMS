@@ -19,13 +19,18 @@ class KeyCaptcha extends Eleanor\BaseClass implements Eleanor\Interfaces\Captcha
 		$user_id=0;
 
 	/** Получение HTML кода капчи, для вывода его на странице
-	 * @return string */
+	 * @return CaptchaCallback */
 	public static function GetCode()
 	{
-		$KC=new KeyCAPTCHA_CLASS(static::$private_key);
-		$KC->p_kc_user_id=static::$user_id;
+		$Str=new CaptchaCallback(function(){
+			$KC=new KeyCAPTCHA_CLASS(static::$private_key);
+			$KC->p_kc_user_id=static::$user_id;
 
-		return'<input type="hidden" name="capcode" id="capcode" value="false" />'.$KC->render_js();
+			return'<input type="hidden" name="capcode" id="capcode" value="false" />'.$KC->render_js();
+		});
+		$Str->creator=__CLASS__;
+
+		return$Str;
 	}
 
 	/** Проверка капчи

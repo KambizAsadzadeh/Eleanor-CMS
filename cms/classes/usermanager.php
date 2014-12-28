@@ -57,13 +57,18 @@ class UserManager extends \Eleanor\BaseClass
 		if($len>0 and ($l=mb_strlen($user['_password']))<$len)
 			throw new EE('PASS_TOO_SHORT',EE::DEV,['min'=>$len,'you'=>$l]);
 
-		$R=Eleanor::$UsersDb->Query('SELECT `name` FROM `'.USERS_TABLE.'` WHERE `name`='
-			.Eleanor::$UsersDb->Escape($user['name']).' LIMIT 1');
+		$table=[
+			'main'=>USERS_TABLE,
+			'site'=>P.'users_site',
+		];
+
+		$name=Eleanor::$UsersDb->Escape($user['name']);
+		$R=Eleanor::$UsersDb->Query("SELECT `name` FROM `{$table['main']}` WHERE `name`={$name} LIMIT 1");
 		if($R->num_rows>0)
 			throw new EE('NAME_EXISTS',EE::DEV);
 
-		$R=Eleanor::$Db->Query('SELECT `email` FROM `'.P.'users_site` WHERE `email`='
-			.Eleanor::$UsersDb->Escape($user['email']).' LIMIT 1');
+		$email=Eleanor::$UsersDb->Escape($user['email']);
+		$R=Eleanor::$Db->Query("SELECT `email` FROM `{$table['site']}` WHERE `email`={$email} LIMIT 1");
 		if($R->num_rows>0)
 			throw new EE('EMAIL_EXISTS',EE::UNIT);
 
@@ -115,7 +120,7 @@ class UserManager extends \Eleanor\BaseClass
 			if(!array_key_exists($k,$tosite) and !array_key_exists($k,$todb) and $k[0]!='_')
 				$toextra[$k]=$v;
 
-		if(isset($toextra['avatar_location']) and !$toextra['avatar_location'] or !isset($toextra['avatar_type']))
+		if(isset($toextra['avatar']) and !$toextra['avatar'] or !isset($toextra['avatar_type']))
 			$toextra['avatar_type']='';
 
 		Eleanor::$Db->Insert(P.'users_site',$tosite);
@@ -182,11 +187,16 @@ class UserManager extends \Eleanor\BaseClass
 
 		if($single)
 		{
+			$table=[
+				'main'=>USERS_TABLE,
+				'site'=>P.'users_site',
+			];
+
 			if(isset($user['email']))
 				if(filter_var($user['email'],FILTER_VALIDATE_EMAIL))
 				{
-					$R=Eleanor::$Db->Query('SELECT `email` FROM `'.P.'users_site` WHERE `email`='
-						.Eleanor::$Db->Escape($user['email']).' AND `id`'.$nin.' LIMIT 1');
+					$email=Eleanor::$Db->Escape($user['email']);
+					$R=Eleanor::$Db->Query("SELECT `email` FROM `{$table['site']}` WHERE `email`={$email} AND `id`{$nin} LIMIT 1");
 					if($R->num_rows>0)
 						throw new EE('EMAIL_EXISTS',EE::UNIT);
 				}
@@ -203,15 +213,14 @@ class UserManager extends \Eleanor\BaseClass
 
 				static::IsNameBlocked($user['name']);
 
-				$R=Eleanor::$UsersDb->Query('SELECT `name` FROM `'.USERS_TABLE.'` WHERE `name`='
-					.Eleanor::$UsersDb->Escape($user['name']).' AND `id`'.$nin.' LIMIT 1');
+				$name=Eleanor::$UsersDb->Escape($user['name']);
+				$R=Eleanor::$UsersDb->Query("SELECT `name` FROM `{$table['main']}` WHERE `name`={$name} AND `id`{$nin} LIMIT 1");
 				if($R->num_rows>0)
 					throw new EE('NAME_EXISTS',EE::DEV);
 
 				if(!isset($todb['full_name']))
 				{
-					$R=Eleanor::$UsersDb->Query('SELECT `full_name`,`name` FROM `'.USERS_TABLE.'` WHERE `id`'.$in
-						.' LIMIT 1');
+					$R=Eleanor::$UsersDb->Query("SELECT `full_name`, `name` FROM `{$table['main']}` WHERE `id`{$in} LIMIT 1");
 					if($a=$R->fetch_assoc() and $a['full_name']==htmlspecialchars($a['name'],ENT,\Eleanor\CHARSET))
 						$tosite['full_name']=$todb['full_name']=htmlspecialchars($user['name'],ENT,\Eleanor\CHARSET);
 				}
@@ -238,7 +247,7 @@ class UserManager extends \Eleanor\BaseClass
 				!in_array($k,['id','register']))
 				$toextra[$k]=$v;
 
-		if(isset($toextra['avatar_location']) and !$toextra['avatar_location'])
+		if(isset($toextra['avatar']) and !$toextra['avatar'])
 			$toextra['avatar_type']='';
 
 		if($todb)
@@ -274,10 +283,11 @@ class UserManager extends \Eleanor\BaseClass
 		$in=Eleanor::$Db->In($ids);
 
 		$aroot=Template::$path['uploads'].'avatars/';
-		$R=Eleanor::$Db->Query('SELECT `avatar_location` FROM `'.P.'users_extra` WHERE `id`'.$in
-			.' AND `avatar_type`=\'upload\'');
+		$table=P.'users_extra';
+
+		$R=Eleanor::$Db->Query("SELECT `avatar` FROM `{$table}` WHERE `id`{$in} AND `avatar_type`='upload'");
 		while($a=$R->fetch_assoc())
-			if(is_file($a=$aroot.$a['avatar_location']))
+			if(is_file($a=$aroot.$a['avatar']))
 				Files::Delete($a);
 
 		#Комментарии помечаем как пользовательские.
@@ -299,7 +309,8 @@ class UserManager extends \Eleanor\BaseClass
 		Eleanor::$Db->Delete(P.'users_extra','`id`'.$in);#InnoDB Удалит автоматически
 
 		$del=[];
-		$R=Eleanor::$UsersDb->Query('SELECT `id` FROM `'.USERS_TABLE.'` WHERE `id`'.$in);
+		$table=USERS_TABLE;
+		$R=Eleanor::$UsersDb->Query("SELECT `id` FROM `{$table}` WHERE `id`{$in}");
 		while($a=$R->fetch_assoc())
 			$del[]=$a['id'];
 

@@ -1,5 +1,5 @@
 <?php
-/*
+/**
 	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
@@ -23,7 +23,7 @@ interface Cache
 	 * @param string $k Ключ */
 	public function Delete($k);
 
-	/** Удаление записей по тегу. Если имя тега пустое - удаляется вешь кэш
+	/** Удаление записей по тегу. Если имя тега пустое - удаляется весь кэш
 	 * @param string $tag Тег */
 	public function DeleteByTag($tag);
 } 

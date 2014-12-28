@@ -10,7 +10,7 @@ namespace Eleanor\Interfaces;
 interface Captcha
 {
 	/** Получение HTML кода капчи
-	 * @return object|string */
+	 * @return \Eleanor\Classes\CaptchaCallback */
 	public static function GetCode();
 
 	/** Проверка пользователя: прошел он капчу, или нет

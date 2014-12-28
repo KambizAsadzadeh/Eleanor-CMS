@@ -270,15 +270,18 @@ switch(isset($_GET['do']) ? (string)$_GET['do'] : '')
 			$Url->prefix=DynUrl::$base.'section=management&amp;module=groups&amp;';
 			$table=P.'groups';
 			$in=Eleanor::$Db->In($grs);
-			$R=Eleanor::$Db->Query("SELECT `id`, `title_l` `title`, `style` FROM `{$table}` WHERE `id`{$in}");
 			$grs=[];
+
+			$R=Eleanor::$Db->Query("SELECT `id`, `title_l` `title`, `style` FROM `{$table}` WHERE `id`{$in}");
 			while($a=$R->fetch_assoc())
 			{
 				$groups[$a['id']]=$a['title']=$a['title'] ? FilterLangValues(json_decode($a['title'],true)) : '';
 				$a['_aedit']=$Url(['edit'=>$a['id']]);
 				$grs[$a['id']]=array_slice($a,1);
 			}
+
 			asort($groups,SORT_STRING);
+
 			foreach($groups as $k=>&$v)
 				$v=$grs[$k];
 		}

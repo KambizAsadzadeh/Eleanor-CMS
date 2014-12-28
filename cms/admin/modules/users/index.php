@@ -14,6 +14,7 @@ $lang=Eleanor::$Language->Load(DIR.'admin/translation/users-*.php','users');
 $Url=$Eleanor->DynUrl;
 $post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
 $id=0;
+$uid=Eleanor::$Login->Get('id');
 $Eleanor->module['links']=[
 	'list'=>(string)$Url,
 	'create'=>$Url(['do'=>'create']),
@@ -21,6 +22,43 @@ $Eleanor->module['links']=[
 	'letters'=>$Url(['do'=>'letters']),
 	'options'=>$Url(['do'=>'options']),
 ];
+
+/** Формирование значения аватара (миниатюры) для шаблона
+ * @param array $a Входящие данные
+ * @return array*/
+function Avatar(array$a)
+{
+	$image=false;
+
+	if($a['miniature'] and $a['miniature']) switch($a['miniature_type'])
+	{
+		case'gallery':
+			if(is_file($f=Template::$path['static'].'images/avatars/'.$a['miniature']))
+				$image=[
+					'type'=>'gallery',
+					'path'=>$f,
+					'http'=>Template::$http['static'].'images/avatars/'.$a['miniature'],
+					'src'=>$a['miniature'],
+				];
+			break;
+		case'upload':
+			if(is_file($f=$config['uploads-path'].$a['miniature']))
+				$image=[
+					'type'=>'upload',
+					'path'=>$f,
+					'http'=>$config['uploads-http'].$a['miniature'],
+					'src'=>$a['miniature'],
+				];
+			break;
+		case'link':
+			$image=[
+				'type'=>'link',
+				'http'=>$a['miniature'],
+			];
+	}
+
+	return$image;
+}
 
 if(isset($_GET['do'])) switch($_GET['do'])
 {
@@ -161,186 +199,123 @@ if(isset($_GET['do'])) switch($_GET['do'])
 
 		Response($c);
 	break;
-	case'userlist':
-		/*$st=Eleanor::$Db===Eleanor::$UsersDb;
-		$table=$st ? USERS_TABLE : P.'users_site';
-		if(isset($_POST['name']))
-		{
-			\Eleanor\StartSession();
-			$_SESSION['query']=$query=' WHERE `name` LIKE \'%'.Eleanor::$Db->Escape((string)$_POST['name'],false).'%\'';
-			$R=Eleanor::$Db->Query('SELECT COUNT(`id`) FROM `'.$table.'`'.$query);
-			list($_SESSION['total'])=$R->fetch_row();
-			$total=$_SESSION['total'];
-			$qs=array('search'=>session_id());
-		}
-		elseif(isset($_GET['search']))
-		{
-			\Eleanor\StartSession((string)$_GET['search']);
-			if(isset($_SESSION['total']))
-				$total=$_SESSION['total'];
-			if(isset($_SESSION['query']))
-				$query=$_SESSION['query'];
-		}
-		if(!isset($total))
-		{
-			$query=' ORDER BY `name` ASC';
-			$R=Eleanor::$Db->Query('SELECT COUNT(`id`) FROM `'.$table.'`');
-			list($total)=$R->fetch_row();
-			$qs=array();
-		}
-
-		$pp=30;
-		$Eleanor->Url->SetPrefix(array('do'=>'userlist'),true);
-		$page=isset($_GET['page']) ? (int)$_GET['page'] : 1;
-		if($page<=0)
-			$page=1;
-		$offset=abs(($page-1)*$pp);
-		$groups=$users=array();
-		if($st)
-		{
-			$R=Eleanor::$Db->Query('SELECT `id`,`name` FROM `'.$table.'`'.$query.' LIMIT '.$offset.', '.$pp);
-			while($a=$R->fetch_assoc())
-				$users[$a['id']]=array_slice($a,1);
-		}
-		if(!$st or $users)
-		{
-			$R=Eleanor::$Db->Query('SELECT `id`,`groups`,`name` FROM `'.P.'users_site`'.($st ? ' WHERE `id`'.Eleanor::$Db->In(array_keys($users)) : $query));
-			while($a=$R->fetch_assoc())
-			{
-				$a['_group']=$a['groups'] ? (int)trim($a['groups'],',') : 0;
-				if($a['_group'])
-					$groups[]=$a['_group'];
-
-				$a['_a']=Eleanor::$Login->UserLink($a['name'],$a['id']);
-				if($st)
-					$users[$a['id']]+=$a;
-				else
-					$users[$a['id']]=array_slice($a,1);
-			}
-		}
-		if($groups)
-		{
-			$R=Eleanor::$Db->Query('SELECT `id`,`title_l` `title`,`style` FROM `'.P.'groups` WHERE `id`'.Eleanor::$Db->In($groups));
-			$groups=array();
-			while($a=$R->fetch_assoc())
-			{
-				$a['title']=$a['title'] ? Eleanor::FilterLangValues((array)unserialize($a['title'])) : '';
-				$groups[$a['id']]=array_slice($a,1);
-			}
-		}
-		$values=array(
-			'name'=>isset($_POST['name']) ? (string)$_POST['name'] : '',
-		);
-		$links=array(
-			'first_page'=>$Eleanor->Url->Construct($qs),
-			'pages'=>function($n)use($qs){ return$GLOBALS['Eleanor']->Url->Construct($qs+array('page'=>$n)); },
-		);
-		$c=Eleanor::$Template->FindUsers($users,$groups,$total,$pp,$page,$values,$links);
-		Start('');
-		echo$c;*/
-	break;
 	case'online':
-		/*$title[]=$lang['whoonline'];
+		$title[]=$lang['online-list'];
 		$page=isset($_GET['page']) ? (int)$_GET['page'] : 1;
-		$d=date('Y-m-d H:i:s');
-		$where=array('expire'=>'`s`.`expire`>\''.$d.'\'');
-		$qs=array('do'=>'online');
+		$date=date('Y-m-d H:i:s');
+		$query=['do'=>'online'];
+		$where=['expire'=>"`s`.`expire`>'{$date}'"];
+
+
 		if(isset($_REQUEST['fi']) and is_array($_REQUEST['fi']))
 		{
-			if($_SERVER['REQUEST_METHOD']=='POST')
+			if($post)
 				$page=1;
-			$qs['']['fi']=array();
+
 			if(isset($_REQUEST['fi']['online']))
 			{
-				$qs['']['fi']['online']=(int)$_REQUEST['fi']['online'];
-				if($qs['']['fi']['online']==1)
-					unset($where['expire']);
-				else
-					$where['expire']='`s`.`expire`<\''.$d.'\'';
-			}
-		}
-		$where=$where ? ' WHERE '.join(' AND ',$where) : '';
-		$R=Eleanor::$Db->Query('SELECT COUNT(`expire`) FROM `'.P.'sessions` `s`'.$where);
-		list($cnt)=$R->fetch_row();
-		if($page<=0)
-			$page=1;
-		if(isset($_GET['new-pp']) and 4<$pp=(int)$_GET['new-pp'])
-			Eleanor::SetCookie('per-page',$pp);
-		else
-			$pp=abs((int)Eleanor::GetCookie('per-page'));
-		if($pp<5 or $pp>500)
-			$pp=50;
-		$offset=abs(($page-1)*$pp);
-		if($cnt and $offset>=$cnt)
-			$offset=max(0,$cnt-$pp);
-		$sort=isset($_GET['sort']) ? (string)$_GET['sort'] : '';
-		if(!in_array($sort,array('enter','ip','location')))
-			$sort='';
-		$so=$_SERVER['REQUEST_METHOD']!='POST' && $sort && isset($_GET['so']) ? (string)$_GET['so'] : 'desc';
-		if($so!='asc')
-			$so='desc';
-		if($sort and ($sort!='enter' or $so!='desc'))
-		{
-			$qs+=array('sort'=>$sort,'so'=>$so);
-			switch($sort)
-			{
-				case'enter':
-					$sort='`s`.`expire`';
-				break;
-				case'ip':
-					$sort='`s`.`ip_guest` '.$so.', `ip_user` ';
-			}
-		}
-		else
-			$sort='`s`.`expire`';
-		$qs+=array('sort'=>false,'so'=>false);
+				$query['fi']['online']=(string)$_REQUEST['fi']['online'];
 
-		$myuid=Eleanor::$Login->Get('id');
-		$groups=$items=array();
+				switch($query['fi']['online'])
+				{
+					case'expired':
+						$where['expire']="`s`.`expire`<'{$date}'";
+					break;
+					case'all':
+						$where=[];
+					break;
+					default:
+						unset($query['fi']['online']);
+				}
+			}
+		}
+
+		$groups=$items=[];
+		$where=$where ? ' WHERE '.join(' AND ',$where) : '';
+		$defsort='expire';
+		$deforder='desc';
+		include DIR.'sort-helper.php';
+
+		$table=[
+			'sessions'=>P.'sessions',
+			'users_site'=>P.'users_site',
+			'groups'=>P.'groups',
+		];
+		$R=Eleanor::$Db->Query("SELECT COUNT(`expire`) FROM `{$table['sessions']}` `s`{$where}");
+		list($cnt)=$R->fetch_row();
+
+		if($where)
+		{
+			$R=Eleanor::$Db->Query("SELECT COUNT(`id`) FROM `{$table['sessions']}`");
+			list($total)=$R->fetch_row();
+		}
+		else
+			$total=$cnt;
+
 		if($cnt>0)
 		{
-			$R=Eleanor::$Db->Query('SELECT `s`.`type`,`s`.`user_id`,`s`.`enter`,`s`.`expire`,`s`.`expire`>NOW() `_online`,`s`.`ip_guest`,`s`.`ip_user`,`s`.`service`,`s`.`browser`,`s`.`location`,`s`.`name` `botname`,`us`.`groups`,`us`.`name`,`us`.`full_name` FROM `'.P.'sessions` `s` INNER JOIN `'.P.'users_site` `us` ON `s`.`user_id`=`us`.`id` '.$where.' ORDER BY '.$sort.' '.$so.' LIMIT '.$offset.','.$pp);
+			list($sort,$order,$limit,$pp)=SortOrderLimit($cnt,$page,$query,['expire','ip','location'],$defsort,$deforder);
+
+			if($sort=='ip')
+				$sort="`s`.`ip_guest` {$order}, `ip_user` ";
+
+			$R=Eleanor::$Db->Query("SELECT `s`.`type`, `s`.`user_id`, `s`.`enter`, `s`.`expire`, `s`.`expire`>NOW() `_online`, `s`.`ip_guest`, `s`.`ip_user`, `s`.`service`, `s`.`browser`, `s`.`location`, `s`.`name` `botname`, `us`.`groups`, `us`.`name`, `us`.`full_name`
+FROM `{$table['sessions']}` `s` INNER JOIN `{$table['users_site']}` `us` ON `s`.`user_id`=`us`.`id` {$where}
+ORDER BY `{$sort}` {$order}{$limit}");
 			while($a=$R->fetch_assoc())
 			{
 				if($a['type']=='user')
 					if($a['name'])
 					{
 						$a['_group']=(int)ltrim($a['groups'],',');
-						$a['_aedit']=$Eleanor->Url->Construct(array('edit'=>$a['user_id']));
-						$a['_adel']=$myuid==$a['user_id'] ? false : $Eleanor->Url->Construct(array('delete'=>$a['user_id']));
+						$a['_aedit']=$Url(['edit'=>$a['user_id']]);
+						$a['_adel']=$uid==$a['user_id'] ? false : $Url(['delete'=>$a['user_id']]);
 
 						$groups[]=$a['_group'];
 					}
 					else
 						$a['type']='guest';
+
 				$items[]=$a;
 			}
-		}
 
-		if($groups)
-		{
-			$R2=Eleanor::$Db->Query('SELECT `id`,`title_l` `title`,`style` FROM `'.P.'groups` WHERE `id`'.Eleanor::$Db->In($groups));
-			$groups=array();
-			while($a=$R2->fetch_assoc())
+			if($groups)
 			{
-				$a['title']=$a['title'] ? Eleanor::FilterLangValues((array)unserialize($a['title'])) : '';
+				$in=Eleanor::$Db->In($groups);
+				$groups=[];
+				$GUrl=clone $Url;
+				$GUrl->prefix=DynUrl::$base.'section=management&amp;module=groups&amp;';
 
-				$a['_aedit']=$Eleanor->Url->Construct(array('edit'=>$a['id']));
+				$R=Eleanor::$Db->Query("SELECT `id`,`title_l` `title`,`style` FROM `{$table['groups']}` WHERE `id`{$in}");
+				while($a=$R->fetch_assoc())
+				{
+					$a['title']=$a['title'] ? FilterLangValues(json_decode($a['title'],true)) : '';
+					$a['_aedit']=$GUrl(['edit'=>$a['id']]);
 
-				$groups[$a['id']]=array_slice($a,1);
+					$groups[$a['id']]=array_slice($a,1);
+				}
 			}
+
+			$links=[
+				'sort_ip'=>SortDynUrl('ip',$query,$defsort,$deforder),
+				'sort_expire'=>SortDynUrl('expire',$query,$defsort,$deforder),
+				'sort_location'=>SortDynUrl('location',$query,$defsort,$deforder),
+				'form_items'=>$Url($query+['page'=>$page>1 ? $page : false]),
+				'pp'=>function($n)use($Url,$query){ $query['per-page']=$n; return$Url($query); },
+				'first_page'=>$Url($query),
+				'pagination'=>function($n)use($Url,$query){ return$Url($query+['page'=>$n]); },
+			];
+			$query['sort']=$sort;
+			$query['order']=$order;
 		}
-		$links=array(
-			'sort_ip'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'ip','so'=>$qs['sort']=='ip' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-			'sort_enter'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'enter','so'=>$qs['sort']=='enter' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-			'sort_location'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'location','so'=>$qs['sort']=='location' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-			'pp'=>function($n)use($qs){ return$GLOBALS['Eleanor']->Url->Construct($qs+array('new-pp'=>$n)); },
-			'first_page'=>$Eleanor->Url->Construct($qs),
-			'pages'=>function($n)use($qs){ return$GLOBALS['Eleanor']->Url->Construct($qs+array('page'=>$n)); },
-		);
-		$c=Eleanor::$Template->UsersOnline($items,$groups,$cnt,$pp,$qs,$page,$links);
-		Start();
-		echo$c;*/
+		else
+		{
+			$pp=0;
+			$links=[];
+		}
+
+		$c=Eleanor::$Template->UsersOnline($items,$groups,$total>0,$cnt,$pp,$query,$page,$links);
+		Response($c);
 	break;
 	default:
 		GoAway(true);
@@ -350,263 +325,70 @@ elseif(isset($_GET['edit']))
 	$id=(int)$_GET['edit'];
 
 	CreateEdit:
-	/*array(
-	$lang['personal'],
-	'gender'=>array(
-		'title'=>$lang['gender'],
-		'descr'=>'',
-		'type'=>'select',
+
+	$errors=[];
+	$groups=\Eleanor\AwareInclude(__DIR__.'/users/groups.php');
+	$users=\Eleanor\AwareInclude(__DIR__.'/users/users.php');
+	$avatar=[
+		'type'=>'uploadimage',
+		'name'=>'a',
+		'default'=>'',
 		'post'=>&$Eleanor->us_post,
 		'options'=>array(
-			'options'=>array(-1=>$lang['nogender'],$lang['female'],$lang['male']),
-			'extra'=>array(
-				'tabindex'=>15,
-			),
-		),
-	),
-	'bio'=>array(
-		'title'=>$lang['bio'],
-		'descr'=>'',
-		'type'=>'text',
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'safe'=>true,
-			'extra'=>array(
-				'tabindex'=>16,
-			),
-		),
-	),
-	'interests'=>array(
-		'title'=>$lang['interests'],
-		'descr'=>'',
-		'type'=>'text',
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'safe'=>true,
-			'extra'=>array(
-				'tabindex'=>17,
-			),
-		),
-	),
-	'location'=>array(
-		'title'=>$lang['location'],
-		'descr'=>'',
-		'type'=>'input',
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'safe'=>true,
-			'extra'=>array(
-				'tabindex'=>18,
-			),
-		),
-	),
-	'site'=>array(
-		'title'=>$lang['site'],
-		'descr'=>$lang['site_'],
-		'type'=>'input',
-		'save'=>function($a,$Obj)
-		{
-			if($a['value'] and !filter_var($a['value'],FILTER_VALIDATE_URL))
-				$Obj->errors[]='SITE_ERROR';
-			else
-				return$a['value'];
-		},
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'type'=>'url',
-			'safe'=>false,
-			'extra'=>array(
-				'tabindex'=>19,
-			),
-		),
-	),
-	'signature'=>array(
-		'title'=>$lang['signature'],
-		'descr'=>'',
-		'type'=>'editor',
-		'post'=>&$Eleanor->us_post,
-		'extra'=>array(
-			'no'=>array('tabindex'=>20)
-		)
-	),
-	$lang['connect'],
-	'jabber'=>array(
-		'title'=>'Jabber',
-		'descr'=>'',
-		'type'=>'input',
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'safe'=>true,
-			'extra'=>array(
-				'tabindex'=>21,
-			),
-		),
-	),
-	'skype'=>array(
-		'title'=>'Skype',
-		'descr'=>'',
-		'type'=>'input',
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'safe'=>true,
-			'extra'=>array(
-				'tabindex'=>22,
-			),
-		),
-	),
-	'icq'=>array(
-		'title'=>'ICQ',
-		'descr'=>'',
-		'type'=>'input',
-		'save'=>function($a,$Obj)
-		{
-			$v=preg_replace('#[^0-9\s,]+#','',$a['value']);
-			if($v and !isset($v[4]))
-				$Obj->errors[]='SHORT_ICQ';
-			else
-				return$v;
-		},
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'safe'=>true,
-			'extra'=>array(
-				'tabindex'=>23,
-			),
-		),
-	),
-	'vk'=>array(
-		'title'=>$lang['vk'],
-		'descr'=>$lang['vk_'],
-		'type'=>'input',
-		'save'=>'SaveVK',
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'safe'=>true,
-			'extra'=>array(
-				'tabindex'=>24,
-			),
-		),
-	),
-	'facebook'=>array(
-		'title'=>'Facebook',
-		'descr'=>'',
-		'type'=>'input',
-		'save'=>'SaveVK',
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'safe'=>true,
-			'extra'=>array(
-				'tabindex'=>25,
-			),
-		),
-	),
-	'twitter'=>array(
-		'title'=>'Twitter',
-		'descr'=>$lang['twitter_'],
-		'type'=>'input',
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'safe'=>true,
-			'extra'=>array(
-				'tabindex'=>26,
-			),
-		),
-	),
-	Eleanor::$Language['main']['options'],
-	'theme'=>array(
-		'title'=>$lang['theme'],
-		'descr'=>'',
-		'type'=>'select',
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'callback'=>function($value) use ($lang)
+			'types'=>array('png','jpeg','jpg','bmp','gif'),
+			'path'=>Eleanor::$uploads.'/avatars',
+			'max_size'=>Eleanor::$vars['avatar_bytes'],
+			'max_image_size'=>Eleanor::$vars['avatar_size'],
+			'filename'=>function($a)
 			{
-				$templates=Eleanor::Option($lang['by_default'],'',in_array('',$value['value']));
-				if(Eleanor::$vars['templates'] and is_array(Eleanor::$vars['templates']))
-					foreach(Eleanor::$vars['templates'] as &$v)
-					{
-						$f=Eleanor::$root.'templates/'.$v.'.php';
-						if(!file_exists($f))
-							continue;
-						$a=include($f);
-						$name=(is_array($a) and isset($a['name'])) ? $a['name'] : $v;
-						$templates.=Eleanor::Option($name,$v,in_array($v,$value['value']));
-					}
-				return$templates;
+				return isset($a['id']) ? 'av-'.$a['id'].strrchr($a['filename'],'.') : $a['filename'];
 			},
-			'extra'=>array(
-				'tabindex'=>27,
-			),
 		),
-	),
-	'editor'=>array(
-		'title'=>$lang['editor'],
-		'descr'=>'',
-		'type'=>'select',
-		'post'=>&$Eleanor->us_post,
-		'options'=>array(
-			'callback'=>function($value) use ($lang)
-			{
-				return array(''=>$lang['by_default'])+$GLOBALS['Eleanor']->Editor->editors;
-			},
-			'extra'=>array(
-				'tabindex'=>28,
-			),
-		),
-	),
-)
+	];
 
 
-$Eleanor->avatar=array(
-	'type'=>'uploadimage',
-	'name'=>'a',
-	'default'=>'',
-	'post'=>&$Eleanor->us_post,
-	'options'=>array(
-		'types'=>array('png','jpeg','jpg','bmp','gif'),
-		'path'=>Eleanor::$uploads.'/avatars',
-		'max_size'=>Eleanor::$vars['avatar_bytes'],
-		'max_image_size'=>Eleanor::$vars['avatar_size'],
-		'filename'=>function($a)
-		{
-			return isset($a['id']) ? 'av-'.$a['id'].strrchr($a['filename'],'.') : $a['filename'];
-		},
-	),
-);
-	*/
+	if($id)
+	{
+		/*$R=Eleanor::$Db->Query("SELECT * FROM `{$table}` WHERE `id`={$id} LIMIT 1");
+		if(!$orig=$R->fetch_assoc())
+			return GoAway();
 
-
-
-
-
-
+		if($orig['protected'])
+			unset($controls['is_admin'],$controls['banned'],$controls['closed_site_access']);*/
+	}
 }
 elseif(isset($_GET['delete']))
 {
 	$id=(int)$_GET['delete'];
-	$R=Eleanor::$UsersDb->Query('SELECT `name`,`full_name` FROM `'.USERS_TABLE.'` WHERE `id`='.(int)$id.' LIMIT 1');
-	if(!$a=$R->fetch_assoc() or !Eleanor::$our_query or $id==Eleanor::$Login->Get('id'))
+	$table=USERS_TABLE;
+	$R=Eleanor::$UsersDb->Query("SELECT `name`,`full_name` FROM `{$table}` WHERE `id`={$id} LIMIT 1");
+	if(!$user=$R->fetch_assoc() or !Eleanor::$ourquery or $id==$uid)
 		return GoAway();
+
 	if(isset($_POST['ok']))
 	{
 		UserManager::Delete($id);
-		return GoAway(empty($_POST['back']) ? true : $_POST['back']);
+
+		if(isset($_GET['iframe']))
+			return Response( Eleanor::$Template->Iframe((string)$Url) );
+
+		return GoAway(empty($_POST['back']) ? true : (string)$_POST['back']);
 	}
-	$a['name']=htmlspecialchars($a['name'],ELENT,CHARSET);
-	$title[]=$lang['delc'];
+
+	$title[]=$lang['deleting'];
+
 	if(isset($_GET['noback']))
 		$back='';
 	else
 		$back=isset($_POST['back']) ? (string)$_POST['back'] : getenv('HTTP_REFERER');
-	$c=Eleanor::$Template->Delete($a,$back);
-	Start();
-	echo$c;
+
+	Response( Eleanor::$Template->Delete($user,$back) );
 }
 else
 {
 	$title[]=$lang['list'];
 	$page=isset($_GET['page']) ? (int)$_GET['page'] : 1;
-	$where=$query=$items=[];
+	$where=$query=$items=$groups=[];
 
 	if(isset($_REQUEST['fi']) and is_array($_REQUEST['fi']))
 	{
@@ -625,109 +407,133 @@ else
 			$where[]='`u`.`full_name` LIKE \'%'.Eleanor::$Db->Escape($query['fi']['full_name'],false).'%\'';
 		}
 
-		/*if(!empty($_REQUEST['fi']['id']))
+		if(!empty($_REQUEST['fi']['id']))
 		{
 			$ints=explode(',',Tasks::FillInt($_REQUEST['fi']['id']));
-			$qs['']['fi']['id']=(string)$_REQUEST['fi']['id'];
+			$query['fi']['id']=(string)$_REQUEST['fi']['id'];
 			$where[]='`id`'.Eleanor::$Db->In($ints);
 		}
+
 		if(!empty($_REQUEST['fi']['group']))
 		{
-			$qs['']['fi']['group']=(int)$_REQUEST['fi']['group'];
-			$where[]='`groups` LIKE \','.$qs['']['fi']['group'].',\'';
+			$query['fi']['group']=(int)$_REQUEST['fi']['group'];
+			$where[]="`groups` LIKE ',{$query['fi']['group']},'";
 		}
-		if(!empty($_REQUEST['fi']['lvfrom']) and 0<$t=strtotime($_REQUEST['fi']['lvfrom']))
+
+		if(!empty($_REQUEST['fi']['last_visit_from']) and 0<$t=strtotime($_REQUEST['fi']['last_visit_from']))
 		{
-			$qs['']['fi']['lvfrom']=$_REQUEST['fi']['lvfrom'];
-			$where[]='`u`.`last_visit`>=\''.date('Y-m-d H:i:s',$t).'\'';
+			$query['fi']['last_visit_from']=$_REQUEST['fi']['last_visit_from'];
+			$t=date('Y-m-d H:i:s',$t);
+			$where[]="`u`.`last_visit`>='{$t}'";
 		}
-		if(!empty($_REQUEST['fi']['lvto']) and 0<$t=strtotime($_REQUEST['fi']['lvto']))
+
+		if(!empty($_REQUEST['fi']['last_visit_to']) and 0<$t=strtotime($_REQUEST['fi']['last_visit_to']))
 		{
-			$qs['']['fi']['lvto']=$_REQUEST['fi']['lvto'];
-			$where[]='`u`.`last_visit`<=\''.date('Y-m-d H:i:s',$t).'\'';
+			$query['fi']['last_visit_to']=$_REQUEST['fi']['last_visit_to'];
+			$t=date('Y-m-d H:i:s',$t);
+			$where[]="`u`.`last_visit`<='{$t}'";
 		}
-		if(!empty($_REQUEST['fi']['regfrom']) and 0<$t=strtotime($_REQUEST['fi']['regfrom']))
+
+		if(!empty($_REQUEST['fi']['register_from']) and 0<$t=strtotime($_REQUEST['fi']['register_from']))
 		{
-			$qs['']['fi']['regfrom']=$_REQUEST['fi']['regfrom'];
-			$where[]='`u`.`register`>=\''.date('Y-m-d H:i:s',$t).'\'';
+			$query['fi']['register_from']=$_REQUEST['fi']['register_from'];
+			$t=date('Y-m-d H:i:s',$t);
+			$where[]="`u`.`register`>='{$t}'";
 		}
-		if(!empty($_REQUEST['fi']['regto']) and 0<$t=strtotime($_REQUEST['fi']['regto']))
+
+		if(!empty($_REQUEST['fi']['register_to']) and 0<$t=strtotime($_REQUEST['fi']['register_to']))
 		{
-			$qs['']['fi']['regto']=$_REQUEST['fi']['regto'];
-			$where[]='`u`.`register`<=\''.date('Y-m-d H:i:s',$t).'\'';
+			$query['fi']['register_to']=$_REQUEST['fi']['register_to'];
+			$t=date('Y-m-d H:i:s',$t);
+			$where[]="`u`.`register`<='{$t}'";
 		}
+
 		if(!empty($_REQUEST['fi']['ip']))
 		{
-			$qs['']['fi']['ip']=$_REQUEST['fi']['ip'];
-			$ip=Eleanor::$Db->Escape($_REQUEST['fi']['ip'],false);
-			$where[]='`ip` LIKE \''.str_replace('*','%',$ip).'\'';
+			$query['fi']['ip']=$_REQUEST['fi']['ip'];
+			$where[]='`u`.`ip`='.Eleanor::$Db->Escape(inet_pton($_REQUEST['fi']['ip']));
 		}
+
 		if(!empty($_REQUEST['fi']['email']))
 		{
-			$qs['']['fi']['email']=$_REQUEST['fi']['email'];
-			$email=Eleanor::$Db->Escape($_REQUEST['fi']['email'],false);
-			$where[]='`email` LIKE \''.str_replace('*','%',$email).'\'';
-		}*/
+			$query['fi']['email']=$_REQUEST['fi']['email'];
+			$where[]='`u`.`email` LIKE \'%'.Eleanor::$Db->Escape($query['fi']['email'],false).'%\'';
+		}
 	}
 
-	$where[]='`language` IN (\'\',\''.Language::$main.'\')';
-	$where=' WHERE '.join(' AND ',$where);
+	$where=$where ? ' WHERE '.join(' AND ',$where) : '';
 
-/*	if($post and isset($_POST['event'],$_POST['items']))
+	if($post and isset($_POST['event'],$_POST['items']))
 		switch($_POST['event'])
 		{
 			case'delete':
-				$in=Eleanor::$Db->In($_POST['items']);
+				$items=array_diff((array)$_POST['items'],[$uid]);
 
-				$R=Eleanor::$Db->Query("SELECT `miniature` FROM `{$config['t']}` WHERE `id`{$in} AND `miniature_type`='upload' AND `miniature`!=''");
-				while($a=$R->fetch_assoc())
-					if(is_file($f=$config['uploads-path'].$a['miniature']))
-						Files::Delete($f);
-
-				Eleanor::$Db->Delete($config['t'],'`id`'.$in);
-				Eleanor::$Db->Delete($config['tl'],'`id`'.$in);
-
-				foreach($_POST['items'] as $v)
-					Files::Delete($config['uploads-path'].(int)$v);
+				UserManager::Delete($items);
 		}
 
-	$defsort='title';
+	$defsort='id';
 	$deforder='desc';
 	include DIR.'sort-helper.php';
 
-	$R=Eleanor::$Db->Query("SELECT COUNT(`id`) FROM `{$config['t']}` `s` INNER JOIN `{$config['tl']}` `l` USING(`id`){$where}");
-	list($cnt)=$R->fetch_row();
+	$table=[
+		'main'=>USERS_TABLE,
+		'site'=>P.'users_site',
+		'extra'=>P.'users_extra',
+	];
 
-	if(isset($query['fi']))
-	{
-		$R=Eleanor::$Db->Query("SELECT COUNT(`id`) FROM `{$config['t']}` INNER JOIN `{$config['tl']}` USING(`id`) WHERE `language` IN ('','{$langmain}')");
-		list($total)=$R->fetch_row();
-	}
+	if(Eleanor::$Db===Eleanor::$UsersDb)
+		$where=" INNER JOIN `{$table['site']}` USING(`id`){$where}";
 	else
-		$total=$cnt;
+		$table['main']=P.'users_site';
+
+	$R=Eleanor::$Db->Query("SELECT COUNT(`id`) FROM `{$table['main']}` `u` INNER JOIN `{$table['text']}` USING(`id`){$where}");
+	list($cnt)=$R->fetch_row();
 
 	if($cnt>0)
 	{
-		$IndexUrl=new Url(false);
-		$IndexUrl->prefix.=Url::Encode($Eleanor->module['uri']).'/';
+		list($sort,$order,$limit,$pp)=SortOrderLimit($cnt,$page,$query,['id','name','email','full_name','last_visit'],$defsort,$deforder);
 
-		list($sort,$order,$limit,$pp)=SortOrderLimit($cnt,$page,$query,['id','title','http_code','email'],$defsort,$deforder);
-
-		$R=Eleanor::$Db->Query("SELECT `id`, `http_code`, `miniature_type`, `miniature`, `email`, `log`, `uri`, `title` FROM `{$config['t']}` `s` INNER JOIN `{$config['tl']}` `l` USING(`id`){$where} ORDER BY `{$sort}` {$order}{$limit}");
+		$R=Eleanor::$Db->Query("SELECT `id`, `u`.`full_name`, `u`.`name`, `email`, `groups`, `ip`, `u`.`last_visit` FROM `{$table['main']}` `u` INNER JOIN `{$table['extra']}` USING(`id`){$where} ORDER BY `{$sort}` {$order}{$limit}");
 		while($a=$R->fetch_assoc())
 		{
-			$a['miniature']=Miniature($a);
+			if($a['ip'])
+				$a['ip']=inet_ntop($a['ip']);
+
+			$a['groups']=$a['groups'] ? explode(',,',trim($a['groups'],',')) : [];
+			$groups=array_merge($groups,$a['groups']);
+
+			$a['_a']=UserLink($a['id'],$a['name'],'index');
 			$a['_aedit']=$Url(['edit'=>$a['id']]);
-			$a['_adel']=$Url(['delete'=>$a['id']]);
-			$a['_a']=$IndexUrl($a['uri'] ? [$a['uri']] : [],'',$a['uri'] ? [] : ['id'=>$a['id']]);
+			$a['_adel']=$uid==$a['id'] ? false : $Url(['delete'=>$a['id']]);
 
 			$items[$a['id']]=array_slice($a,1);
 		}
 
+		if($groups)
+		{
+			$old=$Url->prefix;
+			$Url->prefix=DynUrl::$base.'section=management&amp;module=groups&amp;';
+			$table=P.'groups';
+			$in=Eleanor::$Db->In($groups);
+			$groups=[];
+
+			$R=Eleanor::$Db->Query("SELECT `id`, `title_l` `title`, `style` FROM `{$table}` WHERE `id`{$in}");
+			while($a=$R->fetch_assoc())
+			{
+				$a['title']=$a['title'] ? FilterLangValues(json_decode($a['title'],true)) : '';
+				$a['_aedit']=$Url(['edit'=>$a['id']]);
+				$groups[$a['id']]=array_slice($a,1);
+			}
+
+			$Url->prefix=$old;
+		}
+
 		$links=[
-			'sort_title'=>SortDynUrl('title',$query,$defsort,$deforder),
+			'sort_name'=>SortDynUrl('name',$query,$defsort,$deforder),
 			'sort_email'=>SortDynUrl('email',$query,$defsort,$deforder),
-			'sort_http_code'=>SortDynUrl('http_code',$query,$defsort,$deforder),
+			'sort_last_visit'=>SortDynUrl('last_visit',$query,$defsort,$deforder),
+			'sort_ip'=>SortDynUrl('ip',$query,$defsort,$deforder),
 			'sort_id'=>SortDynUrl('id',$query,$defsort,$deforder),
 			'form_items'=>$Url($query+['page'=>$page>1 ? $page : false]),
 			'pp'=>function($n)use($Url,$query){ $query['per-page']=$n; return$Url($query); },
@@ -744,112 +550,8 @@ else
 	}
 
 	$links['nofilter']=isset($query['fi']) ? $Url(['fi'=>[]]+$query) : false;
-	$c=Eleanor::$Template->ShowList($items,$total>0,$cnt,$pp,$query,$page,$links);
-	Response($c);*/
-
-	$title[]=Eleanor::$Language['users']['list'];
-	$page=isset($_GET['page']) ? (int)$_GET['page'] : 1;
-	$groups=$items=$tmp=$where=$qs=array();
-
-
-	$where=$where ? ' WHERE '.join(' AND ',$where) : '';
-	if(Eleanor::$our_query and isset($_POST['op'],$_POST['mass']) and is_array($_POST['mass']))
-		switch($_POST['op'])
-		{
-			case'd':
-				$myid=Eleanor::$Login->Get('id');
-				if(false!==$p=array_search($myid,$_POST['mass']))
-					unset($_POST['mass'][$p]);
-				UserManager::Delete($_POST['mass']);
-		}
-
-	if(Eleanor::$Db===Eleanor::$UsersDb)
-	{
-		$table=USERS_TABLE;
-		$where=' INNER JOIN `'.P.'users_site` USING(`id`)'.$where;
-	}
-	else
-		$table=P.'users_site';
-	$R=Eleanor::$Db->Query('SELECT COUNT(`id`) FROM `'.$table.'` `u` INNER JOIN `'.P.'users_extra` USING(`id`)'.$where);
-	list($cnt)=$R->fetch_row();
-	if($page<=0)
-		$page=1;
-	if(isset($_GET['new-pp']) and 4<$pp=(int)$_GET['new-pp'])
-		Eleanor::SetCookie('per-page',$pp);
-	else
-		$pp=abs((int)Eleanor::GetCookie('per-page'));
-	if($pp<5 or $pp>500)
-		$pp=50;
-	$offset=abs(($page-1)*$pp);
-	if($cnt and $offset>=$cnt)
-		$offset=max(0,$cnt-$pp);
-	$sort=isset($_GET['sort']) ? (string)$_GET['sort'] : '';
-	if(!in_array($sort,array('id','name','email','groups','full_name','last_visit')))
-		$sort='';
-	$so=$_SERVER['REQUEST_METHOD']!='POST' && $sort && isset($_GET['so']) ? (string)$_GET['so'] : 'desc';
-	if($so!='asc')
-		$so='desc';
-	if($sort and ($sort!='id' or $so!='desc'))
-		$qs+=array('sort'=>$sort,'so'=>$so);
-	else
-		$sort='id';
-	$qs+=array('sort'=>false,'so'=>false);
-
-	if($cnt>0)
-	{
-		$myuid=Eleanor::$Login->Get('id');
-		$R=Eleanor::$Db->Query('SELECT `id`,`u`.`full_name`,`u`.`name`,`email`,`groups`,`ip`,`u`.`last_visit` FROM `'.$table.'` `u` INNER JOIN `'.P.'users_extra` USING(`id`)'.$where.' ORDER BY `'.$sort.'` '.$so.' LIMIT '.$offset.', '.$pp);
-		while($a=$R->fetch_assoc())
-		{
-			$a['groups']=$a['groups'] ? explode(',,',trim($a['groups'],',')) : array();
-			if($a['groups'])
-				$groups=array_merge($groups,$a['groups']);
-
-			$a['_aedit']=$Eleanor->Url->Construct(array('edit'=>$a['id']));
-			$a['_adel']=$myuid==$a['id'] ? false : $Eleanor->Url->Construct(array('delete'=>$a['id']));
-
-			$items[]=$a;
-		}
-	}
-
-	if($groups)
-	{
-		$pref=$Eleanor->Url->file.'?section=management&amp;module=groups&amp;';
-		$R=Eleanor::$Db->Query('SELECT `id`,`title_l` `title`,`style` FROM `'.P.'groups` WHERE `id`'.Eleanor::$Db->In($groups));
-		$groups=array();
-		while($a=$R->fetch_assoc())
-		{
-			$a['title']=$a['title'] ? Eleanor::FilterLangValues((array)unserialize($a['title'])) : '';
-			$a['_aedit']=$pref.$Eleanor->Url->Construct(array('edit'=>$a['id']),false);
-			$groups[$a['id']]=array_slice($a,1);
-		}
-	}
-
-	$links=array(
-		'sort_name'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'name','so'=>$qs['sort']=='name' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-		'sort_email'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'email','so'=>$qs['sort']=='email' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-		'sort_group'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'groups','so'=>$qs['sort']=='groups' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-		'sort_visit'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'last_visit','so'=>$qs['sort']=='last_visit' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-		'sort_ip'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'ip','so'=>$qs['sort']=='ip' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-		'sort_id'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'id','so'=>$qs['sort']=='id' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-		'form_items'=>$Eleanor->Url->Construct($qs+array('page'=>$page>1 ? $page : false)),
-		'pp'=>function($n)use($qs){ return$GLOBALS['Eleanor']->Url->Construct($qs+array('new-pp'=>$n)); },
-		'first_page'=>$Eleanor->Url->Construct($qs),
-		'pages'=>function($n)use($qs){ return$GLOBALS['Eleanor']->Url->Construct($qs+array('page'=>$n)); },
-	);
-	$c=Eleanor::$Template->ShowList($items,$groups,$cnt,$pp,$qs,$page,$links);
-	Start();
-	echo$c;
-}
-
-function IntSave($a)
-{
-	return abs((int)$a['value']);
-}
-
-function SaveVK($a)
-{
-	return preg_replace('#[^a-z0-9_\.-]+/#','',$a['value']);
+	$c=Eleanor::$Template->ShowList($items,$groups,$cnt,$pp,$query,$page,$links);
+	Response($c);
 }
 
 /*function AddEdit($id,$error='')

@@ -15,28 +15,24 @@ class Users
 	/** @var array Языковые параметры */
 	public static $lang;
 
-	/*
-		Меню модуля
-	*/
+	/** Меню модуля
+	 * @param string $act Идентификатор активного пункта меню
+	 * @return string */
 	protected static function Menu($act='')
 	{
 		$lang=Eleanor::$Language['users'];
-		$links=&$GLOBALS['Eleanor']->module['links'];
+		$links=$GLOBALS['Eleanor']->module['links'];
 
-		$GLOBALS['Eleanor']->module['navigation']=array(
-			array($links['list'],$lang['list'],'act'=>$act=='list',
-				'submenu'=>array(
-					array($links['add'],static::$lang['add'],'act'=>$act=='add'),
-				)
-			),
-			array($links['online'],$lang['whoonline'],'act'=>$act=='online'),
-			array($links['letters'],$lang['letters'],'act'=>$act=='letters'),
-			array($links['options'],Eleanor::$Language['main']['options'],'act'=>$act=='options'),
-		);
+		T::$data['navigation']=[
+			[$links['list'],$lang['list'],'act'=>$act=='list'],
+			[$links['create'],static::$lang['create'],'act'=>$act=='create'],
+			[$links['online'],$lang['online-list'],'act'=>$act=='online'],
+			[$links['letters'],$lang['letters'],'act'=>$act=='letters'],
+			[$links['options'],T::$lang['options'],'act'=>$act=='options'],
+		];
 	}
 
-	/*
-		Страница отображения пользователей
+	/** Список пользователей
 		$items - массив пользователей. Формат: ID=>array(), ключи внутреннего массива:
 			name - имя пользователя (не безопасных HTML)
 			full_name - полное имя пользователя
@@ -65,16 +61,16 @@ class Users
 			first_page - ссылка на первую страницу пагинатора
 			pages - функция-генератор ссылок на остальные страницы
 	*/
-	public static function ShowList($items,$groups,$cnt,$pp,$qs,$page,$links)
+	public static function ShowList($items,$groups,$cnt,$pp,$query,$page,$links)
 	{
 		static::Menu('list');
 		$ltpl=T::$lang;
 		$GLOBALS['scripts'][]='js/checkboxes.js';
 
-		$qs+=array(''=>array());
-		$qs['']+=array('fi'=>array());
-		$fs=(bool)$qs['']['fi'];
-		$qs['']['fi']+=array(
+		$query+=[''=>[]];
+		$query['']+=['fi'=>[]];
+		$fs=(bool)$query['']['fi'];
+		$query['']['fi']+=[
 			'name'=>false,
 			'namet'=>false,
 			'sname'=>false,
@@ -87,17 +83,17 @@ class Users
 			'ip'=>false,
 			'email'=>false,
 			'id'=>false,
-		);
+		];
 
 		$Lst=Eleanor::LoadListTemplate('table-list',7)
 			->begin(
-				array(static::$lang['name'],'sort'=>$qs['sort']=='name' ? $qs['so'] : false,'href'=>$links['sort_name']),
-				array('E-mail','sort'=>$qs['sort']=='email' ? $qs['so'] : false,'href'=>$links['sort_email']),
-				array(static::$lang['group'],'sort'=>$qs['sort']=='groups' ? $qs['so'] : false,'href'=>$links['sort_group']),
-				array(static::$lang['last_visit'],'sort'=>$qs['sort']=='last_visit' ? $qs['so'] : false,'href'=>$links['sort_visit']),
-				array('IP','sort'=>$qs['sort']=='ip' ? $qs['so'] : false,'href'=>$links['sort_ip']),
-				array($ltpl['functs'],'sort'=>$qs['sort']=='id' ? $qs['so'] : false,80,'href'=>$links['sort_id']),
-				array(Eleanor::Check('mass',false,array('id'=>'mass-check')),20)
+				[static::$lang['name'],'sort'=>$query['sort']=='name' ? $query['so'] : false,'href'=>$links['sort_name']],
+				['E-mail','sort'=>$query['sort']=='email' ? $query['so'] : false,'href'=>$links['sort_email']],
+				[static::$lang['group'],'sort'=>$query['sort']=='groups' ? $query['so'] : false,'href'=>$links['sort_group']],
+				[static::$lang['last_visit'],'sort'=>$query['sort']=='last_visit' ? $query['so'] : false,'href'=>$links['sort_visit']],
+				['IP','sort'=>$query['sort']=='ip' ? $query['so'] : false,'href'=>$links['sort_ip']],
+				[$ltpl['functs'],'sort'=>$query['sort']=='id' ? $query['so'] : false,80,'href'=>$links['sort_id']],
+				[Eleanor::Check('mass',false,['id'=>'mass-check']),20]
 			);
 
 		if($items)
@@ -111,15 +107,15 @@ class Users
 						$grs.='<a href="'.$groups[$gv]['_aedit'].'">'.$groups[$gv]['style'].$groups[$gv]['title'].'</a>, ';
 				$Lst->item(
 					'<a href="'.$v['_aedit'].'">'.htmlspecialchars($v['name'],ELENT,CHARSET).'</a>'.($v['name']==$v['full_name'] ? '' : '<br /><i>'.$v['full_name'].'</i>'),
-					array($v['email'],'center'),
+					[$v['email'],'center'],
 					rtrim($grs,' ,'),
-					array(Eleanor::$Language->Date($v['last_visit'],'fdt'),'center'),
-					array($v['ip'],'center','href'=>'http://eleanor-cms.ru/whois/'.$v['ip'],'hrefextra'=>array('target'=>'_blank')),
+					[Eleanor::$Language->Date($v['last_visit'],'fdt'),'center'],
+					[$v['ip'],'center','href'=>'http://eleanor-cms.ru/whois/'.$v['ip'],'hrefextra'=>['target'=>'_blank']],
 					$Lst('func',
-						array($v['_aedit'],$ltpl['edit'],$images.'edit.png'),
-						$v['_adel'] ? array($v['_adel'],$ltpl['delete'],$images.'delete.png') : false
+						[$v['_aedit'],$ltpl['edit'],$images.'edit.png'],
+						$v['_adel'] ? [$v['_adel'],$ltpl['delete'],$images.'delete.png'] : false
 					),
-					Eleanor::Check('mass[]',false,array('value'=>$v['id']))
+					Eleanor::Check('mass[]',false,['value'=>$v['id']])
 				);
 			}
 		}
@@ -127,36 +123,36 @@ class Users
 			$Lst->empty(static::$lang['unf']);
 
 		$fisnamet=$finamet='';
-		$namet=array(
+		$namet=[
 			'b'=>static::$lang['begins'],
 			'q'=>static::$lang['match'],
 			'e'=>static::$lang['endings'],
 			'm'=>static::$lang['contains'],
-		);
+		];
 		foreach($namet as $k=>&$v)
-			$finamet.=Eleanor::Option($v,$k,$qs['']['fi']['namet']==$k);
+			$finamet.=Eleanor::Option($v,$k,$query['']['fi']['namet']==$k);
 		foreach($namet as $k=>&$v)
-			$fisnamet.=Eleanor::Option($v,$k,$qs['']['fi']['snamet']==$k);
+			$fisnamet.=Eleanor::Option($v,$k,$query['']['fi']['snamet']==$k);
 
 		return Eleanor::$Template->Cover(
 		'<form method="post">
 			<table class="tabstyle tabform" id="ftable">
 				<tr class="infolabel"><td colspan="2"><a href="#">'.$ltpl['filters'].'</a></td></tr>
 				<tr>
-					<td><b>'.static::$lang['name'].'</b><br />'.Eleanor::Select('fi[namet]',$finamet,array('style'=>'width:30%')).Eleanor::Input('fi[name]',$qs['']['fi']['name'],array('style'=>'width:68%')).'</td>
-					<td><b>'.static::$lang['fullname'].'</b><br />'.Eleanor::Select('fi[snamet]',$finamet,array('style'=>'width:30%')).Eleanor::Input('fi[sname]',$qs['']['fi']['sname'],array('style'=>'width:68%')).'</td>
+					<td><b>'.static::$lang['name'].'</b><br />'.Eleanor::Select('fi[namet]',$finamet,['style'=>'width:30%']).Eleanor::Input('fi[name]',$query['']['fi']['name'],['style'=>'width:68%']).'</td>
+					<td><b>'.static::$lang['fullname'].'</b><br />'.Eleanor::Select('fi[snamet]',$finamet,['style'=>'width:30%']).Eleanor::Input('fi[sname]',$query['']['fi']['sname'],['style'=>'width:68%']).'</td>
 				</tr>
 				<tr>
-					<td><b>IDs</b><br />'.Eleanor::Input('fi[id]',$qs['']['fi']['id']).'</td>
-					<td><b>'.static::$lang['group'].'</b><br />'.Eleanor::Select('fi[group]',Eleanor::Option(static::$lang['not_imp'],0).UserManager::GroupsOpts($qs['']['fi']['group'])).'</td>
+					<td><b>IDs</b><br />'.Eleanor::Input('fi[id]',$query['']['fi']['id']).'</td>
+					<td><b>'.static::$lang['group'].'</b><br />'.Eleanor::Select('fi[group]',Eleanor::Option(static::$lang['not_imp'],0).UserManager::GroupsOpts($query['']['fi']['group'])).'</td>
 				</tr>
 				<tr>
-					<td><b>'.static::$lang['last_visit'].'</b> '.static::$lang['from-to'].'<br />'.Dates::Calendar('fi[lvfrom]',$qs['']['fi']['lvfrom'],true,array('style'=>'width:35%')).' - '.Dates::Calendar('fi[lvto]',$qs['']['fi']['lvto'],true,array('style'=>'width:35%')).'</td>
-					<td><b>'.static::$lang['register'].'</b> '.static::$lang['from-to'].'<br />'.Dates::Calendar('fi[regfrom]',$qs['']['fi']['regfrom'],true,array('style'=>'width:35%')).' - '.Dates::Calendar('fi[regto]',$qs['']['fi']['regto'],true,array('style'=>'width:35%')).'</td>
+					<td><b>'.static::$lang['last_visit'].'</b> '.static::$lang['from-to'].'<br />'.Dates::Calendar('fi[lvfrom]',$query['']['fi']['lvfrom'],true,['style'=>'width:35%']).' - '.Dates::Calendar('fi[lvto]',$query['']['fi']['lvto'],true,['style'=>'width:35%']).'</td>
+					<td><b>'.static::$lang['register'].'</b> '.static::$lang['from-to'].'<br />'.Dates::Calendar('fi[regfrom]',$query['']['fi']['regfrom'],true,['style'=>'width:35%']).' - '.Dates::Calendar('fi[regto]',$query['']['fi']['regto'],true,['style'=>'width:35%']).'</td>
 				</tr>
 				<tr>
-					<td><b>E-mail</b><br />'.Eleanor::Input('fi[email]',$qs['']['fi']['email']).'</td>
-					<td><b>IP</b><br />'.Eleanor::Input('fi[ip]',$qs['']['fi']['ip']).'</td>
+					<td><b>E-mail</b><br />'.Eleanor::Input('fi[email]',$query['']['fi']['email']).'</td>
+					<td><b>IP</b><br />'.Eleanor::Input('fi[ip]',$query['']['fi']['ip']).'</td>
 				</tr>
 				<tr>
 					<td style="text-align:center;vertical-align:middle" colspan="2">'.Eleanor::Button($ltpl['apply']).'</td>
@@ -175,7 +171,7 @@ $(function(){
 		</form>
 		<form id="checks-form" action="'.$links['form_items'].'" method="post" onsubmit="return (CheckGroup(this) && confirm(\''.$ltpl['are_you_sure'].'\'))">'
 		.$Lst->end().'<div class="submitline" style="text-align:right"><div style="float:left">'.sprintf(static::$lang['upp'],$Lst->perpage($pp,$links['pp'])).'</div>'.$ltpl['with_selected'].Eleanor::Select('op',Eleanor::Option($ltpl['delete'],'d')).Eleanor::Button('Ok').'</div></form>'
-		.Eleanor::$Template->Pages($cnt,$pp,$page,array($links['pages'],$links['first_page'])));
+		.Eleanor::$Template->Pages($cnt,$pp,$page,[$links['pages'],$links['first_page']]));
 	}
 
 	/*
@@ -514,42 +510,42 @@ $(function(){
 			first_page - ссылка на первую страницу пагинатора
 			pages - функция-генератор ссылок на остальные страницы
 	*/
-	public static function UsersOnline($items,$groups,$cnt,$pp,$qs,$page,$links)
+	public static function UsersOnline($items,$groups,$notempty,$cnt,$pp,$query,$page,$links)
 	{
 		static::Menu('online');
 		$ltpl=T::$lang;
-		$sess=array(
+		$sess=[
 			static::$lang['awo'],
 			static::$lang['alls'],
 			static::$lang['allg']
-		);
+		];
 
-		$qs+=array(''=>array());
-		$qs['']+=array('fi'=>array());
-		$fs=(bool)$qs['']['fi'];
-		$qs['']['fi']+=array(
+		$query+=[''=>[]];
+		$query['']+=['fi'=>[]];
+		$fs=(bool)$query['']['fi'];
+		$query['']['fi']+=[
 			'online'=>false,
-		);
+		];
 
 		$Lst=Eleanor::LoadListTemplate('table-list',6)
 			->begin(
-				array(static::$lang['who'],'colspan'=>2,'tableextra'=>array('id'=>'onlinelist')),
-				array('IP','sort'=>$qs['sort']=='ip' ? $qs['so'] : false,'href'=>$links['sort_ip']),
-				array(static::$lang['ets'],'sort'=>$qs['sort']=='enter' ? $qs['so'] : false,'href'=>$links['sort_enter']),
-				array(static::$lang['pl'],'sort'=>$qs['sort']=='location' ? $qs['so'] : false,'href'=>$links['sort_location']),
-				array($ltpl['functs'],80)
+				[static::$lang['who'],'colspan'=>2,'tableextra'=>['id'=>'onlinelist']],
+				['IP','sort'=>$query['sort']=='ip' ? $query['so'] : false,'href'=>$links['sort_ip']],
+				[static::$lang['ets'],'sort'=>$query['sort']=='enter' ? $query['so'] : false,'href'=>$links['sort_enter']],
+				[static::$lang['pl'],'sort'=>$query['sort']=='location' ? $query['so'] : false,'href'=>$links['sort_location']],
+				[$ltpl['functs'],80]
 			);
 
 		if($items)
 		{
 			$images=Eleanor::$Template->default['theme'].'images/';
-			$bicons=array(
-				'opera'=>array('images/browsers/opera.png','Opera'),
-				'firefox'=>array('images/browsers/firefox.png','Mozilla Firefox'),
-				'chrome'=>array('images/browsers/chrome.png','Google Chrome'),
-				'safari'=>array('images/browsers/safari.png','Apple Safari'),
-				'msie'=>array('images/browsers/ie.png','Microsoft Internet Explore'),
-			);
+			$bicons=[
+				'opera'=>['images/browsers/opera.png','Opera'],
+				'firefox'=>['images/browsers/firefox.png','Mozilla Firefox'],
+				'chrome'=>['images/browsers/chrome.png','Google Chrome'],
+				'safari'=>['images/browsers/safari.png','Apple Safari'],
+				'msie'=>['images/browsers/ie.png','Microsoft Internet Explore'],
+			];
 
 			foreach($items as &$v)
 			{
@@ -580,14 +576,14 @@ $(function(){
 				$ip=$v['ip_guest'] ? $v['ip_guest'] : $v['ip_user'];
 				$loc='<a href="'.$v['location'].'" target="_blank">'.Strings::CutStr($v['location'],100).'</a>';
 				$Lst->item(
-					$icon ? array('<img title="'.$iconh.'" src="'.$icon.'" />','style'=>'width:1px') : false,
-					$icon ? $name : array($name,'colspan'=>2),
-					array($ip,'center','href'=>'http://eleanor-cms.ru/whois/'.$ip,'hrefextra'=>array('target'=>'_blank')),
-					array(($v['_online'] ? '<span style="color:green" title="'.sprintf(static::$lang['expire'],Eleanor::$Language->Date($v['expire'],'fdt')).'">' : '<span style="color:red" title="'.sprintf(static::$lang['expired'],Eleanor::$Language->Date($v['expire'],'fdt')).'">').Eleanor::$Language->Date($v['enter'],'fdt').'</span>','center'),
-					$user ? $loc : array($loc,'colspan'=>2),
+					$icon ? ['<img title="'.$iconh.'" src="'.$icon.'" />','style'=>'width:1px'] : false,
+					$icon ? $name : [$name,'colspan'=>2],
+					[$ip,'center','href'=>'http://eleanor-cms.ru/whois/'.$ip,'hrefextra'=>['target'=>'_blank']],
+					[($v['_online'] ? '<span style="color:green" title="'.sprintf(static::$lang['expire'],Eleanor::$Language->Date($v['expire'],'fdt')).'">' : '<span style="color:red" title="'.sprintf(static::$lang['expired'],Eleanor::$Language->Date($v['expire'],'fdt')).'">').Eleanor::$Language->Date($v['enter'],'fdt').'</span>','center'],
+					$user ? $loc : [$loc,'colspan'=>2],
 					$user ? $Lst('func',
-						array($v['_aedit'],$ltpl['edit'],$images.'edit.png'),
-						$v['_adel'] ? array($v['_adel'],$ltpl['delete'],$images.'delete.png') : false
+						[$v['_aedit'],$ltpl['edit'],$images.'edit.png'],
+						$v['_adel'] ? [$v['_adel'],$ltpl['delete'],$images.'delete.png'] : false
 					) : false
 				);
 			}
@@ -597,7 +593,7 @@ $(function(){
 
 		$fisess='';
 		foreach($sess as $k=>&$v)
-			$fisess.=Eleanor::Option($v,$k,$qs['']['fi']['online']==$k);
+			$fisess.=Eleanor::Option($v,$k,$query['']['fi']['online']==$k);
 
 		return Eleanor::$Template->Cover(
 		'<form method="post">
@@ -619,78 +615,7 @@ $(function(){
 });//]]></script>
 		</form>'
 		.$Lst->end().'<div class="submitline" style="text-align:right"><div style="float:left">'.sprintf(static::$lang['spp'],$Lst->perpage($pp,$links['pp'])).'</div></div>'
-		.Eleanor::$Template->Pages($cnt,$pp,$page,array($links['pages'],$links['first_page'])));
-	}
-
-	/*
-		Шаблон страницы поиска пользователей для вставки их в поле выбора пользователя
-		$users - массив пользователей. Формат: id=>array(), ключи внутреннего массива:
-			name - имя пользователя (не безопасный HTML)
-			groups - перечень идов групп, в которых состоит пользователь
-			_a - ссылка на пользователя
-		$groups - массив групп пользователей. Формат: id=>array(), ключи внутреннего массива:
-			title - название группы
-			style - стиль группы
-		$total - количество пользователей всего
-		$pp - количество пользователей на страницу
-		$page - номер текущей страницы, на которой мы находимся
-		$values - значение контролов формы для поиска. Массив с ключами:
-			name - имя пользователя
-		$links - перечень необходимых ссылок, массив с ключи:
-			pp - фукнция-генератор ссылок на изменение количества пользователей отображаемых на странице
-			first_page - ссылка на первую страницу пагинатора
-			pages - функция-генератор ссылок на остальные страницы
-	*/
-	public static function FindUsers($users,$groups,$total,$pp,$page,$values,$links)
-	{
-		$lang=Eleanor::$Language['users'];
-		$n=($page-1)*$pp;
-		foreach($users as $k=>&$v)
-		{
-			if(isset($groups[$v['_group']]))
-			{
-				$g=&$groups[$v['_group']];
-				$t=$g['title'];
-				$p=$g['style'];
-			}
-			else
-				$t=$p='';
-			$v=++$n.'. <a href="'.$v['_a'].'" data-id="'.$k.'"'.($t ? ' title="'.$t.'"' : '').'>'.$p.htmlspecialchars($v['name'],ELENT,CHARSET).'</a>';
-		}
-		return'<!DOCTYPE html><html><head><meta http-equiv="content-type" content="text/html; charset='.DISPLAY_CHARSET.'" /><title>'.$lang['list'].'</title>
-<style type="text/css">
-	:link, :visited { color: #ff5a00; text-decoration: none; }
-	:link:hover, :visited:hover { color: #ff9600; text-decoration: none; }
-	ul { margin: 2px 0; padding: 0 0 0 5px; }
-	ul li { margin: 5px 0; padding: 0px 0 0px 14px; list-style-type: none; background: none; }
-	h2 { font-size: 18px; font-weight: normal; line-height: 133%; margin: 0.5em 0 0.2em 0; }
-	input, textarea, select { font-size: 11px; font-family: Tahoma, Helvetica, sans-serif; }
-	body, td, div, li { color: #6d6a65; font-size: 11px; font-family: Tahoma, Helvetica, sans-serif; }
-	body { text-align: left; height: 100%; line-height: 142%; padding: 0; margin: 20px; background-color: #FFFFFF; }
-	.clr {clear:both;}
-	hr	{ height: 1px; border: solid #d8d8d8 0px; border-top-width: 1px; }
-</style>
-<base href="'.PROTOCOL.Eleanor::$domain.Eleanor::$site_path.'" />
-<script src="js/jquery.min.js"></script>
-<script src="js/core.js"></script>
-</head>
-<body style="text-align: left; margin: 20px;">
-<script>//<![CDATA[
-$(function(){
-	$("table li a").click(function(){
-		window.opener.AuthorSelected($(this).text(),$(this).data("id"),window.name);
-		window.close();
-		return false;
-	})
-});//]]></script>
-<table><tr>
-	<td colspan="3"><h2>'.$lang['list'].'</h2><hr /></td>
-	</tr>'.($total==0 ? '<tr><td colspan="3" aling="center"><b>'.static::$lang['unf'].'</b></td></tr>' : '
-	<tr>
-	<td><ul><li>'.join('</li><li>',array_splice($users,0,10)).'</li></ul></td>
-	<td><ul><li>'.join('</li><li>',array_splice($users,0,10)).'</li></ul></td>
-	<td><ul><li>'.join('</li><li>',$users).'</li></ul></td>
-	</tr>').'<tr><td colspan="3">'.Eleanor::$Template->Pages($total,$pp,$page,array($links['pages'],$links['first_page'])).'<div class="clr"></div><hr /><form method="post">'.Eleanor::Input('name',$values['name'],array('tabindex'=>1)).Eleanor::Button(static::$lang['find'],'submit',array('tabindex'=>2)).'</form></td></tr></table></body></html>';
+		.Eleanor::$Template->Pages($cnt,$pp,$page,[$links['pages'],$links['first_page']]));
 	}
 
 	/*
