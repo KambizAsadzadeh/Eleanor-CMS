@@ -22,4 +22,7 @@ return[
 	'creating'=>'Creation page of error',
 	'editing'=>'Editing page of error',
 	'deleting'=>'Confirm the deletion',
+	'letter_error'=>'Letter about site error page from user to you',
+	'letter-title'=>'Subject',
+	'letter-descr'=>'Letter text',
 ];

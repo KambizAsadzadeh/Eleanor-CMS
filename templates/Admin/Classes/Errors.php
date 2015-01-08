@@ -142,7 +142,6 @@ HTML;
 						case'email':
 							$applied[]=static::$lang['by-email'];
 							$filters['email']=$v;
-						break;
 					}
 
 				$nofilter='<p class="filters-text grey">'.sprintf(static::$lang['applied-by%'],join(', ',$applied))
@@ -438,12 +437,42 @@ HTML;
 
 		#Content
 		$content='';
+		$new_vars=true;
 		foreach($controls as $k=>&$v)
 			if($v and is_array($v) and !empty($values[$k]))
-				$content.='<div class="form-group">
-								<label>'.$v['title'].'</label><br />
-								'.T::$T->LangEdit($values[$k],null).'
-							</div>';
+			{
+				if($new_vars)
+				{
+					$new_vars=false;
+					$vars=explode('_',$k,2)[0];
+					$vars=static::$lang['vars-'.$vars];
+					$content.=<<<HTML
+<div class="alert alert-info" role="alert">{$vars}</div>
+HTML;
+				}
+
+				$control=T::$T->LangEdit($values[$k], null);
+				$content.=<<<HTML
+<div class="form-group">
+	<label>{$v['title']}</label>
+	{$control}
+</div>
+HTML;
+			}
+			elseif(is_string($v))
+			{
+				$new_vars=true;
+
+				if($content)
+					$content.='</div>';
+
+				$content.=<<<HTML
+<div class="block">
+	<h4>{$v}</h4>
+HTML;
+			}
+
+		$content.='</div>';
 		#/Content
 
 		$c_lang=static::$lang;
@@ -451,11 +480,8 @@ HTML;
 			{$info}
 			<section id="content">
 				<form method="post">
-					<div class="block">
-{$content}
-						<button type="submit" class="btn btn-success"><b>{$c_lang['letters-save']}</b></button>
-					</div>
-					<div class="alert alert-info" role="alert">{$c_lang['letters-vars']}</div>
+					{$content}
+					<button type="submit" class="btn btn-success"><b>{$c_lang['letters-save']}</b></button>
 				</form>
 			</section>
 <script>$(function(){

@@ -20,7 +20,12 @@ class Html extends Eleanor\BaseClass
 	 * @return string */
 	public static function JSON($a,$tags=false,$json=true,$p='var ')
 	{
-		if($json)
+		if($json && array_keys($a)===range(0,count($a)-1))
+		{
+			$r='[';
+			$e=$p=$s='';
+		}
+		elseif($json)
 		{
 			$r=$json===true ? '{' : $p.$json.'={';
 			$p='"';
@@ -37,29 +42,7 @@ class Html extends Eleanor\BaseClass
 		foreach($a as $k=>$v)
 		{
 			if(is_array($v))
-			{
-				if(!$v)
-					$v='[]';
-				elseif(array_keys($v)===range(0,count($v)-1))
-				{
-					foreach($v as &$av)
-						if(is_array($av))
-							$av=static::JSON($av);
-						elseif(is_bool($av))
-							$av=$av ? 'true' : 'false';
-						elseif($av===null)
-							$av='null';
-						else
-							$av=is_int($av) || is_float($av) || ($av instanceof StringCallback)
-								? (string)$av
-								: '"'.addcslashes($av, "\n\r\t\"\\").'"';
-
-					unset($av);
-					$v='['.join(',',$v).']';
-				}
-				else
-					$v=static::JSON($v);
-			}
+				$v=$v ? static::JSON($v) : '[]';
 			elseif(is_bool($v))
 				$v=$v ? 'true' : 'false';
 			elseif($v===null)
@@ -69,12 +52,15 @@ class Html extends Eleanor\BaseClass
 			else
 				$v=is_int($v) || is_float($v) || ($v instanceof StringCallback) ? (string)$v : '"'.addcslashes($v,"\n\r\t\"\\").'"';
 
-			$r.=$p.$k.$s.$v.$e;
+			if($e)
+				$r.=$p.$k.$s.$v.$e;
+			else
+				$r.=$v.',';
 		}
 
 		if($json)
 		{
-			$r=rtrim($r,',').'}';
+			$r=rtrim($r,',').($e ? '}' : ']');
 
 			if($json===true)
 				return$r;

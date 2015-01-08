@@ -252,10 +252,10 @@ function Pim()
 };
 
 /** Живое превращение строки в URI
- * @param jQuery source Источник
- * @param jQuery uri Получатель URI
- * @param Function Translit Callback транслита
- * @param string rep Замена пробелов */
+ * @param source jQuery Источник
+ * @param uri jQuery Получатель URI
+ * @param Translit Function Callback транслита
+ * @param rep string Замена пробелов */
 function Source2Uri(source,uri,Translit,rep)
 {
 	var olduri=uri.val(),

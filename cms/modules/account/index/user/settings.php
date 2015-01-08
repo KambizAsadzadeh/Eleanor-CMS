@@ -245,23 +245,23 @@ class AccountSettings
 			$values=$C->SaveControls($controls);
 
 			$C->arrname=array('avatar');
-			$oldavatar=Eleanor::$Login->Get(array('avatar_location','avatar_type'),false);
+			$oldavatar=Eleanor::$Login->Get(array('avatar','avatar_type'),false);
 			$atype=isset($_POST['_atype']) ? $_POST['_atype'] : false;
 
 			if($atype=='upload')
-				$av=$C->SaveControl($avatar+array('value'=>$oldavatar['avatar_type']=='upload' && $oldavatar['avatar_location'] ? Eleanor::$uploads.'/avatars/'.$oldavatar['avatar_location'] : ''));
+				$av=$C->SaveControl($avatar+array('value'=>$oldavatar['avatar_type']=='upload' && $oldavatar['avatar'] ? Eleanor::$uploads.'/avatars/'.$oldavatar['avatar'] : ''));
 			else
-				$av=isset($_POST['avatar_location']) ? (string)$_POST['avatar_location'] : '';
+				$av=isset($_POST['avatar']) ? (string)$_POST['avatar'] : '';
 
 			if($atype=='upload' and $av)
 				$atype=strpos($av,'://')===false ? 'upload' : 'url';
 			else
-				$atype=$av ? 'local' : '';
+				$atype=$av ? 'gallery' : '';
 
-			if(($atype=='upload' or $atype=='local') and $av and !is_file(Eleanor::$root.$av))
+			if(($atype=='upload' or $atype=='gallery') and $av and !is_file(Eleanor::$root.$av))
 				$C->errors[]='AVATAR_NOT_EXISTS';
 
-			if($atype=='local' and $av)
+			if($atype=='gallery' and $av)
 				$av=preg_replace('#^images/avatars/#','',$av);
 
 			if($C->errors)
@@ -274,13 +274,13 @@ class AccountSettings
 
 			if($atype=='upload')
 				$av=basename($av);
-			if($oldavatar['avatar_location']!=$av or $oldavatar['avatar_type']!=$atype)
+			if($oldavatar['avatar']!=$av or $oldavatar['avatar_type']!=$atype)
 			{
-				if($oldavatar['avatar_type']=='upload' and $oldavatar['avatar_location'] and $oldavatar['avatar_location']!=$av)
-					Files::Delete(Eleanor::$root.Eleanor::$uploads.'/avatars/'.$oldavatar['avatar_location']);
-				UserManager::Update(array('avatar_location'=>$av,'avatar_type'=>$atype));
+				if($oldavatar['avatar_type']=='upload' and $oldavatar['avatar'] and $oldavatar['avatar']!=$av)
+					Files::Delete(Eleanor::$root.Eleanor::$uploads.'/avatars/'.$oldavatar['avatar']);
+				UserManager::Update(array('avatar'=>$av,'avatar_type'=>$atype));
 				Eleanor::$Login->SetUserValue(array(
-					'avatar_location'=>$av,
+					'avatar'=>$av,
 					'avatar_type'=>$atype,
 				));
 			}
@@ -296,7 +296,7 @@ class AccountSettings
 
 	protected static function Edit($controls,$avatar,$errors=array(),$saved=false)
 	{
-		$names=array('avatar_type','avatar_location');
+		$names=array('avatar_type','avatar');
 		foreach($controls as $k=>&$control)
 			if(is_array($control))
 				$names[]=$k;
@@ -305,22 +305,22 @@ class AccountSettings
 		if($errors)
 		{
 			$values['_aupload']=isset($_POST['_atype']) && $_POST['_atype']=='upload';
-			$values['avatar_location']=isset($_POST['avatar_location']) ? (string)$_POST['avatar_location'] : '';
+			$values['avatar']=isset($_POST['avatar']) ? (string)$_POST['avatar'] : '';
 		}
 		else
 		{
-			if($values['avatar_type']=='local' and $values['avatar_location'])
-				$values['avatar_location']='images/avatars/'.$values['avatar_location'];
-			$values['_aupload']=$values['avatar_type']!='local';
+			if($values['avatar_type']=='gallery' and $values['avatar'])
+				$values['avatar']='images/avatars/'.$values['avatar'];
+			$values['_aupload']=$values['avatar_type']!='gallery';
 
-			$al=$values['avatar_location'] ? ($values['_aupload'] && strpos($values['avatar_location'],'://')===false ? Eleanor::$uploads.'/avatars/' : '').$values['avatar_location'] : '';
+			$al=$values['avatar'] ? ($values['_aupload'] && strpos($values['avatar'],'://')===false ? Eleanor::$uploads.'/avatars/' : '').$values['avatar'] : '';
 			if($values['_aupload'])
 			{
 				$avatar['value']=$al;
-				$values['avatar_location']='';
+				$values['avatar']='';
 			}
 			else
-				$values['avatar_location']=$al;
+				$values['avatar']=$al;
 		}
 
 		foreach($values as $k=>&$v)

@@ -13,7 +13,7 @@ trait Editor
 	public static
 		/** @var array Перечень всех возможных редакторов */
 		$editors=[
-			'no'=>'textarea',
+			'no'=>'Textarea',
 			'bb'=>'Eleanor BB Editor',
 			'ckeditor'=>'CKEditor',
 			'tinymce'=>'TinyMCE',

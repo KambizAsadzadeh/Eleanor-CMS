@@ -1,71 +1,77 @@
 <?php
-/*
-	Элемент шаблона. Интерфейс выбора автора материала
-
-	@var имя автора. Возможен формат array('input name'=>'имя автора'). По умолчанию input name для имени автора "author"
-	@var ID автора. Возможен формат array('input name'=>'ID автора'). По умолчанию input name для имени автора "author_id"
-	@var tabindex для инпутов выбора автора. Всего шаблон выдает 2 инпута, tabindex-ы которых будут равны переданному параметру и переданному параметру + 1
+/**
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 */
+namespace CMS\Templates\Admin;
+use Eleanor\Classes\Html;
+
 defined('CMS\STARTED')||die;
-global$Eleanor;
-$a=isset($var_0) ? $var_0 : false;
-$aid=isset($var_1) ? $var_1 : false;
-$ti=isset($v_2) ? (int)$v_2 : false;
+/** Элемент шаблона. Интерфейс выбора автора материала. Обязательно должен быть размещен внутри
+ * <div class="form-group has-feedback author">...</div> !
+ * @var string|array $var_0 Значение поля: имя автора и [имя автора] (пользователя нет), [имя автора, id, ссылка на автора]
+ * @var array $var_1 extra поля выбора автора. Внимание! Генерируется 2 <input>. ID пользователя хранится в data-id.
+ * По умолчанию name="author" Имя <input>-a с ID образуется путем добавления окончания _id name="author_id" */
 
-$GLOBALS['scripts'][]='addons/autocomplete/jquery.autocomplete.js';
-$GLOBALS['head']['autocomplete']='<link rel="stylesheet" type="text/css" href="addons/autocomplete/style.css" />';
-$GLOBALS['head']['author']='<script>//<![CDATA[
-var SAI=[];
-function AuthorSelected(name,id,wn)
-{
-	if(SAI[wn])
-	{
-		SAI[wn].val(name).next().val(id);
-		delete SAI[wn];
-	}
-}
+$value=isset($var_0) ? (array)$var_0 : [];
+$extra=isset($var_1) ? (array)$var_1 : [];
 
-$(function(){
-	$("div.author").on("clone",function(){
-		$(this).find("a").click(function(){
-			var h=380,
-				w=360,
-				wn=$(this).data("wn")||Math.random(),
-				win=window.open("'.$Eleanor->Url->file.'?section=management&module=users&do=userlist",wn,"height="+h+",width="+w+",toolbar=no,menubar=no,location=no,scrollbars=no,focus=yes,top="+Math.round((screen.height-h)/2)+",left="+Math.round((screen.width-w)/2));
-			SAI[wn]=$(this).data("wn",wn).closest(".author").find("input:first");
-			return false;
-		}).end()
-		.find("input:first").autocomplete({
-			serviceUrl:CORE.ajax_file,
-			minChars:2,
-			delimiter:null,
-			params:{
-				direct:"'.Eleanor::$service.'",
-				file:"autocomplete",
-				goal:"users"
+$GLOBALS['scripts'][]='//cdn.rawgit.com/bassjobsen/Bootstrap-3-Typeahead/master/bootstrap3-typeahead.min.js';
+$GLOBALS['head']['author']=<<<'HTML'
+<script>$(function(){
+	var cache={};
+	$(".author").on("clone",function(){
+		var div=$(this),
+			id=$("input[type=hidden]",this),
+			name=$("input:text",this),
+			a=$("a",this);
+
+		if(id.val() && name.val() && a.prop("href")!="#")
+		{
+			div.addClass("has-success");
+			a.css("pointer-events","auto").removeClass("text-muted");
+		}
+
+		$('input:text',this).typeahead({
+			source:function(query,cb){
+				if(query in cache)
+					cb(cache[query]);
+				else
+					$.post(location.href,{"do":"author-autocomplete",query:query},function(json){
+						cache[query]=json;
+						cb(json);
+					},"json");
 			},
-			onSelect: function(value,data,el){ el.next().val(data) }
+			afterSelect:function(item){
+				id.val(item.id);
+				div.addClass("has-success");
+				a.css("pointer-events","auto").attr("href",item._a.replace(/&amp;/g,'&')).removeClass("text-muted");
+			},
+			showHintOnFocus: true
+		}).on("input",function(){
+			div.removeClass("has-success");
+			id.val("");
+			a.css("pointer-events","").addClass("text-muted");
 		});
-	}).addClass("cloneable").trigger("clone");
-});//]]></script>';
+	}).trigger("clone");
+})</script>
+HTML;
 
-if(is_array($a))
-{
-	$an=key($a);
-	if(count($a)>1)
-		$aid=array_splice($a,1,1);
-	$a=reset($a);
-}
-else
-	$an='author';
+$value+=['',''];
+$name=isset($extra['name']) ? (string)$extra['name'] : 'author';
+$name_id=substr($name,-1)==']' ? substr_replace($name,'_id',-1,0) : $name.'_id';
 
-if(is_array($aid))
-{
-	$aidn=key($aid);
-	$aid=reset($aid);
-}
-else
-	$aidn='author_id';
+if(!isset($value[2]))
+	$value[2]=$value[0] && $value[1] ? \CMS\UserLink($value[1],$value[0],'admin') : '#';
 
-return'<div class="author">'.Eleanor::Input($an==='' ? false : $an,$a,array('style'=>'width:100px','tabindex'=>$ti ? $ti : false)).Eleanor::Input($aidn,$aid,array('title'=>'ID','style'=>'width:25px','tabindex'=>$ti ? ++$ti : false))
-	.'<a href="#" title="'.T::$lang['select_user'].'"> <img src="'.Eleanor::$Template->default['theme'].'images/select_users.png" alt="" /></a></div>';
+if(!isset($extra['class']))
+	$extra['class']='form-control';
+
+if(!isset($extra['autocomplete']))
+	$extra['autocomplete']='off';
+
+return Html::Input($name_id,$value[1],['type'=>'hidden']).Html::Input($name,$value[0],$extra)
+	.<<<HTML
+<a href="{$value[2]}" class="glyphicon glyphicon-user form-control-feedback text-muted" aria-hidden="true" target="_blank"></a>
+HTML;

@@ -2,9 +2,15 @@
 namespace Eleanor\Classes\Language;
 defined('CMS\STARTED')||die;
 
+$newpass='<span class="alert-link">{site}</span> - название сайта<br />
+<span class="alert-link">{name}</span> - имя пользователя<br />
+<span class="alert-link">{fullname}</span> - полное имя пользователя<br />
+<span class="alert-link">{userlink}</span> - ссылка на пользователя<br />
+<span class="alert-link">{pass}</span> - пароль пользователя<br />
+<span class="alert-link">{link}</span> - ссылка на Ваш сайт';
+
 return[
 	#Для шаблона UsersOnline.php
-	'user_info'=>'Информация о посетителе',
 	'users'=>function($n){
 		return$n.Russian::Plural($n,[' пользователь:',' пользователя:',' пользователей:']);
 	},
@@ -27,22 +33,72 @@ return[
 	'ips'=>'IP дополнительные',
 	'session_nf'=>'Сессия не найдена',
 	'go'=>'Перейти',
-	'icq_error'=>'Номер ICQ должен содержать как минимум 5 цифр',
 
 	#Для шаблона Classes/Users.php
-	'add'=>'Создать пользователя',
+	'username'=>'Имя пользователя',
+	'groups'=>'Группы',
+	'last_visit'=>'Дата последнего визита',
+	'create'=>'Создать пользователя',
 	'save'=>'Сохранить пользователя',
+	'not_found'=>'Пользователи не найдены',
+	'delete-text-span'=>'Вы действительно хотите удалить "<span id="delete-title"></span>"?',
+	'delete-text%'=>'Вы действительно хотите удалить "%s"?',
+	'form-errors'=>'Допущены ошибки при заполнении формы',
+	'name-placeholder'=>'Укажите имя пользователя',
+	'by-id'=>'по ID',
+	'by-username'=>'по имени',
+	'by-full-name'=>'по полному имени',
+	'by-group'=>'по группе',
+	'by-last-visit'=>'по последнему визиту',
+	'by-register'=>'по дате регистрации',
+	'by-ip'=>'по ip',
+	'by-offline'=>'по офлайну',
+	'by-email'=>'по e-mail',
+	'applied-by%'=>'Применен фильтр %s',
+	'filter-by-id'=>'Укажите id',
+	'filter-by-ip'=>'Укажите ip полностью',
+	'filter-by-name'=>'Укажите имя пользователя',
+	'filter-by-email'=>'Укажите e-mail или его часть',
+	'filter-by-user'=>'По пользователя',
+	'http-code'=>'HTTP статус-код ошибки',
+	'save-success'=>'Успешно сохранено',
+	'letters-save'=>'Сохранить',
+	'from'=>'от',
+	'to'=>'до',
+	'full-name'=>'Полное имя',
+	'group'=>'Группа',
+	'register'=>'Дата регистрации',
+	'vars-created'=>$newpass,
+	'vars-newpass'=>$newpass,
+	'vars-renamed'=>'<span class="alert-link">{site}</span> - название сайта<br />
+<span class="alert-link">{oldname}</span> - старое имя пользователя<br />
+<span class="alert-link">{name}</span> - новое имя пользователя<br />
+<span class="alert-link">{fullname}</span> - полное имя пользователя<br />
+<span class="alert-link">{userlink}</span> - ссылка на пользователя<br />
+<span class="alert-link">{link}</span> - ссылка на Ваш сайт',
+	'who'=>'Кто',
+	'enter'=>'Дата входа',
+	'location'=>'Адрес страницы',
+	'guest'=>'Гость',
+	'only'=>'Исключительно',
+	'include'=>'Отображать',
+	'session_not_found'=>'Сессии не найдены',
+	'offline'=>'Офлайн',
+	'name'=>'Имя',
+	'details'=>'Подробности',
+
+
+
+
+	'add'=>'Создать пользователя',
 	'not_imp'=>'-Не важно-',
 	'begins'=>'Начинается с',
 	'contains'=>'Содержит',
 	'match'=>'Совпадает',
 	'endings'=>'Заканчивается на',
-	'name'=>'Имя пользователя',
 	'fullname'=>'Полное имя',
-	'group'=>'Группа',
+
 	'agroups'=>'Дополнительные группы',
-	'last_visit'=>'Последний визит',
-	'register'=>'Регистрация',
 	'from-to'=>'от - до ГГГГ-ММ-ДД ЧЧ:ММ:СС',
 	'unf'=>'Пользователи не найдены',
 	'upp'=>'Пользователей на страницу: %s',
@@ -86,10 +142,7 @@ return[
 	'alls'=>'всех',
 	'allg'=>'всех, кто заходил',
 	'sshow'=>'Отображать',
-	'who'=>'Кто',
 	'ets'=>'Вход на сайт',
-	'pl'=>'Адрес страницы',
-	'guest'=>'Гость',
 	'expire'=>'Истекает %s',
 	'expired'=>'Истекла %s',
 	'spp'=>'Сессий на страницу: %s',

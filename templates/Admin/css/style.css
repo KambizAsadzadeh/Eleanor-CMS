@@ -551,3 +551,7 @@ span + label.group-checkbox { display: table-cell; border: 1px dashed #d4d4d4; b
 .input-group.disabled > *:first-child { text-decoration: line-through; }
 /* Пустая шапка в таблице */
 thead.empty th { padding:0 !important; border:0 !important; }
+/* h1-h6 в таблице */
+.block h1, .block h2, .block h3, .block h4, .block h5, .block h6 { margin-top:-10px; }
+
+.ellipsis { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 500px; }

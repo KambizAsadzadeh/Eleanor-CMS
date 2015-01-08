@@ -9,7 +9,7 @@ return[
 	'delete-text%'=>'Ви дійсно хочете видалити "%s"?',
 	'delete-draft%'=>'Дані завантажено із чернетки. <a href="%s" class="alert-link">Выдалити чернетку</a>?',
 	'form-errors'=>'Допущені помилки при заповненні форми',
-	'letters-vars'=>'<span class="alert-link">{site}</span> - назва сайту<br />
+	'vars-error'=>'<span class="alert-link">{site}</span> - назва сайту<br />
 <span class="alert-link">{name}</span> - імя користувача<br />
 <span class="alert-link">{fullname}</span> - повне ім&apos;я користувача<br />
 <span class="alert-link">{userlink}</span> - посилання на користувача<br />

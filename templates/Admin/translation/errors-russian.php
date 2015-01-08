@@ -9,7 +9,7 @@ return[
 	'delete-text%'=>'Вы действительно хотите удалить "%s"?',
 	'delete-draft%'=>'Данные загружены из черновика. <a href="%s" class="alert-link">Удалить черновик</a>?',
 	'form-errors'=>'Допущены ошибки при заполнении формы',
-	'letters-vars'=>'<span class="alert-link">{site}</span> - название сайта<br />
+	'vars-error'=>'<span class="alert-link">{site}</span> - название сайта<br />
 <span class="alert-link">{name}</span> - имя пользователя<br />
 <span class="alert-link">{fullname}</span> - полное имя пользователя<br />
 <span class="alert-link">{userlink}</span> - ссылка на пользователя<br />
@@ -28,7 +28,7 @@ return[
 	'notification'=>'Уведомления',
 	'enable_log'=>'Включить логирование',
 	'email'=>'E-mail для обратной связи',
-	'save-success'=>'Успешно сохранео',
+	'save-success'=>'Успешно сохранено',
 	'letters-save'=>'Сохранить',
 	'log_language'=>'Язык логов',
 ];

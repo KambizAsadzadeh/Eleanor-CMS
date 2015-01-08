@@ -185,10 +185,10 @@ HTML;
 			return[($a ? '<a href="'.$a.'"' : '<i').' title="'.$title.'" class="istatus"'.$extra.'>'.$title.($a ? '</a>' : '</i>'),'class'=>'col_status'];
 		},
 
-		/** @param string $title
+		/** Основной элемент таблицы
+		 * @param string $title
 		 * @param array $links Формат ссылок [href,title,is_main (является ли главной)]
-		 * @param string|null $thumb
-		 */
+		 * @param string|null $thumb */
 		'main'=>function($title,array$links,$thumb=false)
 		{
 			$menu=$href=$extra='';
@@ -211,6 +211,9 @@ HTML;
 					$href=$v[0];
 					$extra=$v[2];
 				}
+
+				if(!isset($v[1]))
+					continue;
 
 				$extra_=isset($v['extra']) ? ' '.Html::TagParams($v['extra']) : '';
 				$menu.=<<<HTML

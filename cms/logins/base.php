@@ -62,7 +62,7 @@ class Base extends \Eleanor\BaseClass implements CMS\Interfaces\Login
 		{
 			$R=Eleanor::$Db->Query('SELECT `id`,`u`.`full_name`,`u`.`name`,`banned_until`,`ban_explain`,`u`.`language`,
 `u`.`timezone`,`integration`,`email`,`groups`,`groups_overload`,`login_keys`,`ip`,`s`.`last_visit`,`theme`,
-`avatar_location`,`avatar_type`,`editor` FROM `'.CMS\USERS_TABLE.'` `u` LEFT JOIN `'.CMS\P.'users_extra` USING(`id`)
+`avatar`,`avatar_type`,`editor` FROM `'.CMS\USERS_TABLE.'` `u` LEFT JOIN `'.CMS\P.'users_extra` USING(`id`)
 LEFT JOIN `'.CMS\P.'users_site` `s` USING(`id`) WHERE `id`='.(int)$id.' LIMIT 1');
 			if(!$user=$R->fetch_assoc())
 				throw new EE('NOT_FOUND',EE::UNIT);
@@ -72,7 +72,7 @@ LEFT JOIN `'.CMS\P.'users_site` `s` USING(`id`) WHERE `id`='.(int)$id.' LIMIT 1'
 			{
 				UserManager::Sync($user['id']);
 				$R=Eleanor::$Db->Query('SELECT `integration`,`email`,`groups`,`groups_overload`,`login_keys`,
-`last_visit`,`theme`,`avatar_location`,`avatar_type`,`editor` FROM `'.CMS\P.'users_extra`
+`last_visit`,`theme`,`avatar`,`avatar_type`,`editor` FROM `'.CMS\P.'users_extra`
 INNER JOIN `'.CMS\P.'users_site` `s`USING(`id`) WHERE `id`='.$user['id'].' LIMIT 1');
 				$user=$R->fetch_assoc()+$user;
 			}
@@ -87,7 +87,7 @@ INNER JOIN `'.CMS\P.'users_site` `s`USING(`id`) WHERE `id`='.$user['id'].' LIMIT
 			UserManager::Sync([$user['id']=>['full_name'=>$user['full_name'],'register'=>$user['register'],
 				'name'=>$user['name'],'language'=>$user['language']]]);
 			$R=Eleanor::$Db->Query('SELECT `id`,`integration`,`email`,`groups`,`groups_overload`,`login_keys`,`ip`,
-`theme`,`avatar_location`,`avatar_type`,`editor` FROM `'.CMS\P.'users_site` INNER JOIN `'.CMS\P.'users_extra` USING(`id`)
+`theme`,`avatar`,`avatar_type`,`editor` FROM `'.CMS\P.'users_site` INNER JOIN `'.CMS\P.'users_extra` USING(`id`)
 WHERE `id`='.$user['id'].' LIMIT 1');
 			$user+=$R->fetch_assoc();
 		}
@@ -204,7 +204,7 @@ WHERE `id`='.$user['id'].' LIMIT 1');
 		{
 			$R=Eleanor::$Db->Query("SELECT `id`, `u`.`full_name`, `u`.`name`, `password_hash`, `banned_until`,
 `ban_explain`, `u`.`language`, `u`.`timezone`, `integration`, `email`, `groups`, `groups_overload`, `login_keys`,
-`failed_logins`, `s`.`last_visit`, `theme`, `avatar_location`, `avatar_type`, `editor` FROM `{$table}` `u`
+`failed_logins`, `s`.`last_visit`, `theme`, `avatar`, `avatar_type`, `editor` FROM `{$table}` `u`
 LEFT JOIN `{$table_ex}` USING(`id`) LEFT JOIN `{$table_si}` `s` USING(`id`) WHERE `u`.`name`={$q_name} LIMIT 1");
 			if(!$user=$R->fetch_assoc())
 				throw new EE('NOT_FOUND',EE::UNIT);
@@ -214,7 +214,7 @@ LEFT JOIN `{$table_ex}` USING(`id`) LEFT JOIN `{$table_si}` `s` USING(`id`) WHER
 			{
 				UserManager::Sync($user['id']);
 				$R=Eleanor::$Db->Query("SELECT `integration`, `email`, `groups`, `groups_overload`, `login_keys`,
-`failed_logins`, `last_visit`, `theme`, `avatar_location`, `avatar_type`, `editor` FROM `{$table_ex}`
+`failed_logins`, `last_visit`, `theme`, `avatar`, `avatar_type`, `editor` FROM `{$table_ex}`
 INNER JOIN `{$table_si}` `s` USING(`id`) WHERE `id`={$user['id']} LIMIT 1");
 				$user+=$R->fetch_assoc();
 			}
@@ -230,7 +230,7 @@ INNER JOIN `{$table_si}` `s` USING(`id`) WHERE `id`={$user['id']} LIMIT 1");
 			UserManager::Sync([$user['id']=>['full_name'=>$user['full_name'],'name'=>$user['name'],
 				'register'=>$user['register'],'language'=>$user['language']]]);
 			$R=Eleanor::$Db->Query("SELECT `id`, `integration`, `email`, `groups`, `groups_overload`, `failed_logins`,
-`login_keys`, `ip`, `theme`, `avatar_location`, `avatar_type`, `editor` FROM `{$table_si}`
+`login_keys`, `ip`, `theme`, `avatar`, `avatar_type`, `editor` FROM `{$table_si}`
 INNER JOIN `{$table_ex}` USING(`id`) WHERE `id`={$user['id']} LIMIT 1");
 			$user+=$R->fetch_assoc();
 		}
@@ -342,7 +342,7 @@ INNER JOIN `{$table_ex}` USING(`id`) WHERE `id`={$user['id']} LIMIT 1");
 		{
 			$R=Eleanor::$Db->Query("SELECT `id`, `u`.`full_name`, `u`.`name`, `banned_until`, `ban_explain`,
 `u`.`language`, `u`.`timezone`, `integration`, `email`, `groups`, `groups_overload`, `login_keys`, `s`.`last_visit`,
-`theme`, `avatar_location`, `avatar_type`, `editor`
+`theme`, `avatar`, `avatar_type`, `editor`
 FROM `{$table}` `u` LEFT JOIN `{$table_ex}` USING(`id`) LEFT JOIN `{$table_si}` `s` USING(`id`)
 WHERE `id`={$id} LIMIT 1");
 
@@ -355,7 +355,7 @@ WHERE `id`={$id} LIMIT 1");
 				UserManager::Sync($user['id']);
 
 				$R=Eleanor::$Db->Query("SELECT `integration`, `email`, `groups`, `groups_overload`, `login_keys`,
-`last_visit`, `theme`, `avatar_location`, `avatar_type`, `editor` FROM `{$table_ex}`
+`last_visit`, `theme`, `avatar`, `avatar_type`, `editor` FROM `{$table_ex}`
 INNER JOIN `{$table_si}` `s` USING(`id`) WHERE `id`={$user['id']} LIMIT 1");
 				$user+=$R->fetch_assoc();
 			}
@@ -372,7 +372,7 @@ INNER JOIN `{$table_si}` `s` USING(`id`) WHERE `id`={$user['id']} LIMIT 1");
 				'register'=>$user['register'],'language'=>$user['language']]]);
 
 			$R=Eleanor::$Db->Query("SELECT `id`, `integration`, `email`, `groups`, `groups_overload`, `login_keys`,
-`theme`, `avatar_location`, `avatar_type`, `editor` FROM `{$table_si}`
+`theme`, `avatar`, `avatar_type`, `editor` FROM `{$table_si}`
 INNER JOIN `{$table_ex}` USING(`id`) WHERE `id`={$user['id']} LIMIT 1");
 			$user+=$R->fetch_assoc();
 		}

@@ -42,8 +42,8 @@ class Comments
 				_group - идентификатор группы автора
 				name - имя автора (не безопасный HTML)
 				signature - подпись автора
-				avatar_location - местоположения аватара
-				avatar_type - тип аватара (uploaded,url,local)
+				avatar - местоположения аватара
+				avatar_type - тип аватара (uploaded,url,gallery)
 				_online - флаг наличия пользователя онлайн
 			groups - массив групп авторов всех комментариев. Формат id=>array(), ключи внутреннего массива:
 				title - название группы
@@ -254,16 +254,16 @@ class Comments
 		if(!$author)
 			$avatar='images/avatars/guest.png';
 		else
-			switch($author['avatar_location'] ? $author['avatar_type'] : '')
+			switch($author['avatar'] ? $author['avatar_type'] : '')
 			{
-				case'local':
-					$avatar='images/avatars/'.$author['avatar_location'];
+				case'gallery':
+					$avatar='images/avatars/'.$author['avatar'];
 				break;
 				case'upload':
-					$avatar=Eleanor::$uploads.'/avatars/'.$author['avatar_location'];
+					$avatar=Eleanor::$uploads.'/avatars/'.$author['avatar'];
 				break;
 				case'url':
-					$avatar=$author['avatar_location'];
+					$avatar=$author['avatar'];
 				break;
 				default:
 					$avatar='images/avatars/user.png';

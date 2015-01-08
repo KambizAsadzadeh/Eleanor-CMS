@@ -1047,7 +1047,7 @@ $(function(){
 			)
 			->item(
 				$lang['amanage'],
-				Eleanor::Input('avatar_location',$values['avatar_location'],array('type'=>'hidden','id'=>'avatar-input'))
+				Eleanor::Input('avatar',$values['avatar'],array('type'=>'hidden','id'=>'avatar-input'))
 				.'<div id="avatar-local">
 					<div id="avatar-select"></div>
 					<div id="avatar-view">
@@ -1223,21 +1223,21 @@ $(function(){
 				$ogr.='<a href="'.$v['_a'].'">'.$v['style'].$v['title'].'</a>, ';
 
 		$sname=htmlspecialchars($user['name'],ELENT,CHARSET);
-		if($user['avatar_location'])
+		if($user['avatar'])
 		{
 			switch($user['avatar_type'])
 			{
 				case'upload':
 					$a=Eleanor::$uploads.'/avatars/';
 				break;
-				case'local':
+				case'gallery':
 					$a='images/avatars/';
 				break;
 				default:
 					$a='';
 			}
 			list($w,$h)=explode(' ',Eleanor::$vars['avatar_size']);
-			$avatar='<img src="'.$a.$user['avatar_location'].'" style="'.($w ? 'max-width:'.$w.'px;' : '').($h ? 'max-height:'.$h.'px;' : '').'" alt="'.$sname.'" title="'.$sname.'" />';
+			$avatar='<img src="'.$a.$user['avatar'].'" style="'.($w ? 'max-width:'.$w.'px;' : '').($h ? 'max-height:'.$h.'px;' : '').'" alt="'.$sname.'" title="'.$sname.'" />';
 		}
 		else
 			$avatar='<img src="images/avatars/user.png" alt="'.$user['name'].'" title="'.$user['name'].'" />';

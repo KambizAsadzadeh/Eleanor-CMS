@@ -73,7 +73,7 @@ class AccountExternals
 				if(isset($loginza['photo']))
 					$uadd+=array(
 						'avatar_type'=>'url',
-						'avatar_location'=>(string)$loginza['photo'],
+						'avatar'=>(string)$loginza['photo'],
 					);
 				if(isset($loginza['biography']))
 					$uadd['bio']=(string)$loginza['biography'];

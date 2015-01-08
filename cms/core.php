@@ -962,7 +962,7 @@ function SetSession()
 		'extra'=>Eleanor::$extra,
 	]);
 	$table=P.'sessions';
-	$date=date('Y-m-d');
+	$date=date('Y-m-d H:i:s');
 
 	Eleanor::$Db->Query("INSERT INTO `{$table}` {$insert} ON DUPLICATE KEY UPDATE `enter`=GREATEST(`enter`,'{$date}'), `hits`=`hits`+1,
 `expire`=VALUES(`expire`), `info`=VALUES(`info`), `browser`=VALUES(`browser`), `location`=VALUES(`location`),

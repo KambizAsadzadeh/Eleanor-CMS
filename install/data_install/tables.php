@@ -771,8 +771,8 @@ CREATE TABLE `{$prefix}users_extra` (
 	`gender` TINYINT NOT NULL DEFAULT '-1',
 	`location` VARCHAR(100) NOT NULL DEFAULT '',
 	`signature` TEXT NOT NULL DEFAULT '',
-	`avatar_type` ENUM('gallery','upload','link') NOT NULL,
 	`avatar` TINYTEXT NOT NULL DEFAULT '',
+	`avatar_type` ENUM('gallery','upload','link') NOT NULL,
 	PRIMARY KEY (`id`),
 	FOREIGN KEY (`id`) REFERENCES `{$prefix}users_site`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET={$charset}

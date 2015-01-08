@@ -79,7 +79,9 @@ function UserLink($id=0,$name='',$service='index')
 
 	if(!$admin and $id>0 and !$name)
 	{
-		$R=Eleanor::$UsersDb->Query('SELECT `name` FROM `'.USERS_TABLE.'` WHERE `id`='.$id.' LIMIT 1');
+		$table=USERS_TABLE;
+		$R=Eleanor::$UsersDb->Query("SELECT `name` FROM `{$table}` WHERE `id`={$id} LIMIT 1");
+
 		if($R->num_rows==0)
 			return'';
 
@@ -92,7 +94,7 @@ function UserLink($id=0,$name='',$service='index')
 	{
 		$ma=array_keys(GetModules()['uri2section'],'user');
 
-		if($ma)
+		if(!$ma)
 			return'';
 
 		$ma=reset($ma);
@@ -152,7 +154,7 @@ if(AJAX or ANGULAR)
 		OutPut::SendHeaders('application/json');
 
 		if(ANGULAR)
-			echo json_encode($out,JSON);
+			echo json_encode($out,JSON^JSON_PRETTY_PRINT);
 		else
 			Output::Gzip(Html::JSON($out));
 	}

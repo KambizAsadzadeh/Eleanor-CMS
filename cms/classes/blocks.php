@@ -169,7 +169,7 @@ class Blocks extends BaseClass
 }
 
 /** Специальная строка для передачи */
-class BlocksArray extends BaseClass implements \ArrayAccess, \Countable, \Iterator, \IteratorAggregate
+class BlocksArray extends BaseClass implements \ArrayAccess, \Countable, \IteratorAggregate
 {
 	use \Eleanor\Traits\AutoJoin;
 }

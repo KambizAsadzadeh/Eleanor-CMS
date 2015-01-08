@@ -17,17 +17,17 @@ $Url=new Url(false);
 $Url->prefix.=Url::$base.Url::Encode(reset($ma)).'/';
 
 if(Eleanor::$Login->IsUser()):
-	$user=Eleanor::$Login->Get(['name','avatar_type','avatar_location']);
-	switch($user['avatar_location'] ? $user['avatar_type'] : '')
+	$user=Eleanor::$Login->Get(['name','avatar_type','avatar']);
+	switch($user['avatar'] ? $user['avatar_type'] : '')
 	{
-		case'local':
-			$avatar=Template::$http['static'].'images/avatars/'.$user['avatar_location'];
+		case'gallery':
+			$avatar=Template::$http['static'].'images/avatars/'.$user['avatar'];
 		break;
 		case'upload':
-			$avatar=Template::$http['uploads'].'avatars/'.$user['avatar_location'];
+			$avatar=Template::$http['uploads'].'avatars/'.$user['avatar'];
 		break;
 		case'url':
-			$avatar=$user['avatar_location'];
+			$avatar=$user['avatar'];
 		break;
 		default:
 			$avatar=Template::$http['static'].'images/avatars/user.png';

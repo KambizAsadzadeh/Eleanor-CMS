@@ -9,7 +9,7 @@ return[
 	'delete-text%'=>'Are you sure to delete "%s"?',
 	'delete-draft%'=>'Data was loaded from draft. <a href="%s" class="alert-link">Want to delete draft</a>?',
 	'form-errors'=>'Mistakes while filling form',
-	'letters-vars'=>'<span class="alert-link">{site}</span> - site name<br />
+	'vars-error'=>'<span class="alert-link">{site}</span> - site name<br />
 <span class="alert-link">{name}</span> - user name<br />
 <span class="alert-link">{fullname}</span> - full name<br />
 <span class="alert-link">{userlink}</span> - link to user<br />

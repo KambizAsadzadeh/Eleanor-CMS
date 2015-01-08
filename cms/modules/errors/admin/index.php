@@ -77,7 +77,7 @@ if(isset($_GET['do'])) switch($_GET['do'])
 		$controls=[
 			$lang['letter_error'],
 			'error_t'=>[
-				'title'=>$lang['lettertitle'],
+				'title'=>$lang['letter-title'],
 				'type'=>'input',
 				'multilang'=>Eleanor::$vars['multilang'],
 				'post'=>$post,
@@ -87,7 +87,7 @@ if(isset($_GET['do'])) switch($_GET['do'])
 				],
 			],
 			'error'=>[
-				'title'=>$lang['letterdescr'],
+				'title'=>$lang['letter-descr'],
 				'type'=>'editor',
 				'multilang'=>Eleanor::$vars['multilang'],
 				'post'=>$post,
@@ -95,7 +95,7 @@ if(isset($_GET['do'])) switch($_GET['do'])
 					'checkout'=>false,
 					'ownbb'=>false,
 					'smiles'=>false,
-					'extra'=>['class'=>'need-tabindex','rows'=>16],
+					'extra'=>['class'=>'need-tabindex','rows'=>14],
 				],
 			],
 		];
@@ -338,9 +338,10 @@ elseif(isset($_GET['edit']))
 		if($errors)
 			goto EditForm;
 
+		#Флаг загруженной миниатюры
 		$miniature=false;
 
-		#Миниатюра, здесь многи хитрости: если картинка не изменялась - она не должна передаваться
+		#Миниатюра, здесь есть хитрость: если картинка не изменялась - она не должна передаваться
 		if(isset($_POST['miniature'],$_POST['miniature']['type'],$_POST['miniature']['src']) and is_array($_POST['miniature']))
 			switch($_POST['miniature']['type'])
 			{
@@ -350,7 +351,7 @@ elseif(isset($_GET['edit']))
 
 					if(is_file($path))
 						$miniature=$path;
-					break;
+				break;
 				case'gallery':
 					$src=(string)$_POST['miniature']['src'];
 					$path=realpath($config['gallery-path'].$src);
@@ -367,7 +368,7 @@ elseif(isset($_GET['edit']))
 							'miniature_type'=>'gallery',
 							'miniature'=>substr($path,strlen($gallery)),
 						];
-					break;
+				break;
 				case'link':
 					$values+=[
 						'miniature_type'=>'link',
@@ -463,7 +464,7 @@ elseif(isset($_GET['edit']))
 
 			if(rename($miniature,$newfile))
 				Eleanor::$Db->Update($config['t'],['miniature_type'=>'upload','miniature'=>basename($newfile)],
-					'`id`='.$id.' LIMIT 1');
+					"`id`={$id} LIMIT 1");
 		}
 
 		Eleanor::$Cache->Engine->DeleteByTag($config['n']);

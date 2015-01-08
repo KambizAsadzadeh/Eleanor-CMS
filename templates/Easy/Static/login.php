@@ -7,17 +7,17 @@ if(!defined('CMS'))die;
 $ma=array_keys($Eleanor->modules['sections'],'account');
 $ma=reset($ma);
 if(Eleanor::$Login->IsUser()):
-	$user=Eleanor::$Login->Get(array('name','avatar_type','avatar_location'));
-	switch($user['avatar_location'] ? $user['avatar_type'] : '')
+	$user=Eleanor::$Login->Get(array('name','avatar_type','avatar'));
+	switch($user['avatar'] ? $user['avatar_type'] : '')
 	{
-		case'local':
-			$avatar='images/avatars/'.$user['avatar_location'];
+		case'gallery':
+			$avatar='images/avatars/'.$user['avatar'];
 		break;
 		case'upload':
-			$avatar=Eleanor::$uploads.'/avatars/'.$user['avatar_location'];
+			$avatar=Eleanor::$uploads.'/avatars/'.$user['avatar'];
 		break;
-		case'url':
-			$avatar=$user['avatar_location'];
+		case'link':
+			$avatar=$user['avatar'];
 		break;
 		default:
 			$avatar=$theme.'images/avatar-no.png';

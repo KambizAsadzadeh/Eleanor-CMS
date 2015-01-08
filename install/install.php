@@ -173,7 +173,7 @@ HTML;
 						'_password'=>$pass,
 						'email'=>$email,
 						'groups'=>1,
-						'avatar_location'=>'av-1.png',
+						'avatar'=>'av-1.png',
 						'avatar_type'=>'upload',
 					]);
 				}

@@ -52,7 +52,8 @@ function ItemAvatar($name)
 
 	$code=abs(crc32($name)) % count($colours);
 
-	return'<div class="icon-letter" style="background-color:#'.$colours[$code].'">'.mb_substr($name,0,1).'</div>';
+	return'<div class="icon-letter" style="background-color:#'.$colours[$code].'">'.mb_substr(strip_tags($name),0,1)
+		.'</div>';
 }
 
 $name=basename(__DIR__);

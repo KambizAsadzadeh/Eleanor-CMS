@@ -367,7 +367,7 @@ class Comments extends BaseClass
 		if($authors)
 		{
 			$lcl=get_class(Eleanor::$Login);
-			$R=Eleanor::$Db->Query('SELECT `id`,`groups` `_group`,`login_keys`,`name`,`signature`,`avatar_location`,`avatar_type` FROM `'.P.'users_site` INNER JOIN `'.P.'users_extra` USING (`id`) WHERE `id`'.Eleanor::$Db->In($authors));
+			$R=Eleanor::$Db->Query('SELECT `id`,`groups` `_group`,`login_keys`,`name`,`signature`,`avatar`,`avatar_type` FROM `'.P.'users_site` INNER JOIN `'.P.'users_extra` USING (`id`) WHERE `id`'.Eleanor::$Db->In($authors));
 			$authors=array();
 			$t=time();
 			while($a=$R->fetch_assoc())
