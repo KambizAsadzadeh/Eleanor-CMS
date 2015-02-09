@@ -223,7 +223,7 @@ elseif(isset($_GET['edit']))
 		}
 
 	$parents=!$id || !$orig['protected'] ? UserManager::GroupsOpts($values['parent'],$id) : '';
-	$Controls2Html=function($controls)use($values){
+	$Controls2Html=function()use($values,$controls){
 		foreach($values as $k=>$v)
 			if(isset($controls[$k]))
 				$controls[$k]['value']=$v;

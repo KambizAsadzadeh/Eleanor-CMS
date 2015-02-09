@@ -27,11 +27,11 @@ class Uploader
 	 * @return string */
 	public static function Uploader($query,$commands,$maxupload,$maxfiles,$types,$sid,$current,$uniq)
 	{
-		$GLOBALS['head']['fancybox.css']='<link rel="stylesheet" href="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.css" type="text/css" media="screen" />';
+		$GLOBALS['head']['fancybox.css']='<link rel="stylesheet" href="//cdn.jsdelivr.net/fancybox/2/jquery.fancybox.css" type="text/css" media="screen" />';
 
 		array_push($GLOBALS['scripts'],
 			T::$http['static'].'js/uploader.js',
-			'//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.pack.js'
+			'//cdn.jsdelivr.net/fancybox/2/jquery.fancybox.pack.js'
 		);
 
 		$c_lang=static::$lang;
@@ -49,10 +49,7 @@ class Uploader
 
 		return<<<HTML
 <!-- Загрузчик -->
-<div class="block-t expand">
-	<p class="btl" data-toggle="collapse" data-target="#uploader{$uniq}">Uploader - временно тут пока не подключены окна</p>
-	<div id="uploader{$uniq}" class="collapse in">
-		<div class="bcont el-uploader ng-cloak" data-ng-module="Admin" data-ng-controller="UploaderFiles">
+		<div id="uploader{$uniq}" class="el-uploader ng-cloak" data-ng-module="Admin" data-ng-controller="UploaderFiles">
 			<div class="upl-loadframe" data-ng-show="can_upload">
 				<div class="text-right small" data-ng-show="progress>0"><a href="#" data-ng-click="Cancel();\$event.preventDefault()">{$t_lang['cancel']}</a></div>
 				<progressbar class="progress-striped active" data-ng-show="progress>0" value="progress" type="success"><b>{{progress}}%</b></progressbar>
@@ -86,7 +83,7 @@ class Uploader
 								<!-- edit -->
 								<div class="min-edit" data-ng-if="dir.commands.length>0">
 									<button class="dropdown-toggle" data-toggle="dropdown" type="button"><i class="ico-setting"></i></button>
-									<ul class="dropdown-menu">
+									<ul class="dropdown-menu menu-fix-1">
 										<li data-ng-if="dir.commands.indexOf('rename')>-1"><a href="#" data-ng-click="Rename(dir,\$index);\$event.preventDefault()">{$c_lang['rename']}</a></li>
 										<li data-ng-if="dir.commands.indexOf('delete')>-1"><a href="#" data-ng-click="Delete(dir,\$index);\$event.preventDefault()">{$c_lang['delete']}</a></li>
 									</ul>
@@ -102,7 +99,7 @@ class Uploader
 								<!-- edit -->
 								<div class="min-edit" data-ng-if="file.commands.length>0">
 									<button class="dropdown-toggle" data-toggle="dropdown" type="button"><i class="ico-setting"></i></button>
-									<ul class="dropdown-menu">
+									<ul class="dropdown-menu menu-fix-1">
 										<li data-ng-if="file.commands.indexOf('attach')>-1"><a href="#" data-ng-click="Insert(file,true,\$index,\$event);\$event.preventDefault()">{$c_lang['as-object']}</a></li>
 										<li data-ng-if="_preview"><a href="{{file.http||file.download}}" class="uploader-fancybox" data-fancybox-group="uploader" data-fancybox-title="{{file.name}}">{$c_lang['preview']}</a></li>
 										<li data-ng-if="!_preview"><a href="#" data-ng-click="Download(file,\$index);\$event.preventDefault()">{$c_lang['download']}</a></li>
@@ -120,8 +117,6 @@ class Uploader
 			</div>
 			<pagination data-ng-show="total>pp" data-total-items="total" data-ng-model="page" data-items-per-page="pp" data-max-size="7" data-num-pages="pages" data-ng-change="Go()" direction-links="false" class="pagination-sm"></pagination>
 		</div>
-	</div>
-</div>
 <script>$(function(){
 	angular.element( $("#uploader{$uniq} :file")[0] ).scope().Constructor({
 		query:"{$query}",

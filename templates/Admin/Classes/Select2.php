@@ -10,13 +10,14 @@ use CMS\Language, CMS\Eleanor, Eleanor\Classes\Html;
 /** Поддержка селектов типа SELECT 2 */
 class Select2
 {
-	/** T::нициализатор Select2: прописывание стилей и скриптов */
+	/** Инициализатор Select2: прописывание стилей и скриптов */
 	public static function Init()
 	{
 		if(!isset($GLOBALS['head']['select2']))
 		{
-			$GLOBALS['head']['select2']='<link href="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.css" rel="stylesheet"/>';
-			$GLOBALS['scripts'][]='//cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.min.js';
+			$GLOBALS['head']['select2']='<link href="//cdn.jsdelivr.net/select2/3/select2.css" rel="stylesheet"/>
+<link href="//cdn.jsdelivr.net/select2/3/select2-bootstrap.css" rel="stylesheet"/>';
+			$GLOBALS['scripts'][]='//cdn.jsdelivr.net/select2/3/select2.min.js';
 
 			if(Language::$main!='english')
 				$GLOBALS['scripts'][]=T::$http['3rd'].'static/select2/select2_locale_'.Eleanor::$langs[ Language::$main ]['d'].'.js';

@@ -369,6 +369,44 @@ function InitTableSubitems(sync_n)
 
 };
 
+/** Реализация перетаскиваемого неблокирующего модального окна
+ * @param jQuery modal Модальное окно в стиле Bootstrap
+ * @return callback Функция открытия модального окна */
+function DraggableModal(modal)
+{
+	var modal_dialog=modal.find(".modal-dialog");
+
+	modal.hide().find(".modal-header button").click(function(){
+		modal.removeClass("in");
+		setTimeout(function(){
+			modal.hide();
+		},200);
+	});
+
+	return function(){
+		if(modal.hasClass("in"))
+		{
+			modal.removeClass("in");
+			setTimeout(function(){
+				modal.hide();
+			},200);
+		}
+		else
+		{
+			modal.show();
+			setTimeout(function(){
+				if(!modal_dialog.hasClass("moved"))
+					modal_dialog.css({
+						left:Math.round($(window).width()/2-modal_dialog.width()/2)+$("body").scrollLeft()+"px",
+						top:Math.round($(window).height()/2-modal_dialog.height()/2)+$("body").scrollTop()+"px"
+					});
+
+				modal.addClass("in");
+			},100);
+		}
+	};
+}
+
 $(function(){
 	//Автоматическое проставление tabindex
 	$(".need-tabindex").prop("tabindex",function(i){
@@ -562,12 +600,99 @@ $(function(){
 		setTimeout(function(){ th.val(""); },500);
 	});
 
+	//Упрощение клика по input-group
+	$(document).on("click",".input-group-addon > input",function(e){
+		e.stopPropagation();
+	}).on("click",".input-group-addon:has(input)",function(){
+		$("input",this).click();
+	});
+
 	//Предотвращение многократного нажатия на кнопку
 	$(".once:submit",this).click(function(){
 		setTimeout(function(){
 			$(this).prop("disabled",true);
 		}.bind(this),100);
 	});
+
+	//Перетаскивание dragabble модального окна
+	$(document).on("mousedown",".modal.draggable .modal-header",function(ed){
+		var th=$(this),
+			modal=th.closest(".modal-dialog"),
+			header=th.find(".modal-title").addBack().css("cursor","move"),
+			site=$("body"),
+			maxleft=site.width()-modal.width(),
+			maxtop=site.height()-modal.height(),
+			baseleft=modal.offset().left,
+			basetop=modal.offset().top;
+
+		if($(ed.target).is("button"))
+			return;
+
+		$(document).off(".modal-drag").on("mousemove.modal-drag",function(em){
+			em.stopPropagation();
+			em.preventDefault();
+
+			var left=baseleft+em.pageX-ed.pageX,
+				top=basetop+em.pageY-ed.pageY;
+
+			if(left<0)
+				left=0;
+
+			if(left>maxleft)
+				left=maxleft;
+
+			if(top<0)
+				top=0;
+
+			if(top>maxtop)
+				top=maxtop;
+
+			modal.css({left:left,top:top}).addClass("moved");
+		}).one("mouseup",function(){
+			$(document).off(".modal-drag");
+			header.css("cursor","");
+		});
+	});
+
+	$("body").toggleClass("foot_submit_form",$(".submit-pane").size()>0);
+
+	//Верхнее меню
+	var attached=false;
+
+	$("#main-menu > li.dropdown").click(function(e1){
+		if(attached)
+			return;
+
+		attached=true;
+
+		e1.stopPropagation();
+		$("#main-menu").add(this).addClass("open");
+
+		var ul=$("> ul",this);
+
+		$(document).click(function(e){
+			if($(e.target).closest(ul).size()==0)
+			{
+				$("#main-menu, #main-menu > li.dropdown").removeClass("open");
+
+				attached=false;
+				$(this).off(e);
+			}
+		});
+
+	}).mouseenter(function(){
+		if(attached)
+			$(this).addClass("open").siblings("li.dropdown").removeClass("open");
+	});
+
+	//Предотвращение клика по главным меню
+	$("#main-menu > li.dropdown > a").click(function(e){
+		e.preventDefault();
+	});
+
+	//Добавление "стрелочек" подменюшкам
+	$("#main-menu > li > ul li:has(ul)").addClass("dropmenu-in");
+	//[E] Верхнее меню
 });
 
 /*function ProgressList(m,cron)

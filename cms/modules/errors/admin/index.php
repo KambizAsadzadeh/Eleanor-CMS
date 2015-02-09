@@ -225,7 +225,7 @@ elseif(isset($_GET['edit']))
 	if($id)
 	{
 		$R=Eleanor::$Db->Query("SELECT * FROM `{$config['t']}` WHERE `id`={$id} LIMIT 1");
-		if(!$old=$R->fetch_assoc())
+		if(!$orig=$R->fetch_assoc())
 			return GoAway(true);
 	}
 
@@ -399,8 +399,8 @@ elseif(isset($_GET['edit']))
 				goto EditForm;
 			}
 
-			if($old['miniature_type']=='upload' and isset($values['miniature']) and is_file($f=$config['uploads-path'].$old['miniature'])
-				 and ($values['miniature']!=$old['miniature'] or $values['miniature_type']!='upload'))
+			if($orig['miniature_type']=='upload' and isset($values['miniature']) and is_file($f=$config['uploads-path'].$orig['miniature'])
+				 and ($values['miniature']!=$orig['miniature'] or $values['miniature_type']!='upload'))
 				Files::Delete($f);
 
 			Eleanor::$Db->Update($config['t'],$values,'id='.$id.' LIMIT 1');
@@ -477,10 +477,10 @@ elseif(isset($_GET['edit']))
 
 	if($id)
 	{
-		$values=$old;
+		$values=$orig;
 		$dirpath=$config['uploads-path'].$id;
 		$values['language']=[];
-		$values['miniature']=Miniature($old);
+		$values['miniature']=Miniature($orig);
 
 		if(is_dir($dirpath))
 		{

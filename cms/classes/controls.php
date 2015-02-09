@@ -222,7 +222,7 @@ class Controls extends \Eleanor\BaseClass
 						{
 							ob_end_clean();
 							$error=error_get_last();
-							throw new EE('Error #'.$error['type'].' in load eval ('.$name.'): '.$error['message'],EE::DEV,$error);
+							throw new EE("Error #{$error['type']} in load eval ({$name}): {$error['message']}",EE::DEV,$error);
 						}
 
 						$loaded=$f($lctrl+$control+['value'=>[]],$this);

@@ -176,7 +176,7 @@ angular.module("Uploader",['ui.bootstrap.pagination','ui.bootstrap.progressbar',
 			if(!attach && item.http.match(/\.(jpe?g|bmp|gif|ico|png)$/))
 				EDITOR.Embed("image",{src:item.http},$scope.editor);
 			else
-				EDITOR.Insert(attach ? "[attach="+item.http+"]" : item.http,$scope.editor);
+				EDITOR.Insert(attach ? "[attach="+item.http+"]" : item.http,null,null,$scope.editor);
 		}
 		else
 			prompt(CORE.Lang("copy-and-paste"),attach ? "[attach="+item.http+"]" : item.http);

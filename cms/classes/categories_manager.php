@@ -1,8 +1,8 @@
 <?php
-/*
-	Copyright © Eleanor CMS, developed by Alexander Sunvas*, interface created by Rumin Sergey.
-	For details, visit the web site http://eleanor-cms.ru, emails send to support@eleanor-cms.ru .
-	*Pseudonym
+/**
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 */
 defined('CMS')||die;
 class Categories_Manager extends Categories

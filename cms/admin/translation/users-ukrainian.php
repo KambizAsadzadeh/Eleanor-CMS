@@ -1,6 +1,6 @@
 <?php
 return array(
-	#Для /addons/admin/modules/users.php
+	#Для /addons/admin/modules/extra.php
 	'personal'=>'Особисте',
 	'gender'=>'Стать',
 	'nogender'=>'Невідомо',

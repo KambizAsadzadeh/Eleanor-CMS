@@ -17,7 +17,7 @@ return[
 	'letter-descr'=>'Текст письма',
 	'online-list'=>'Кто онлайн',
 
-	#Для /cms/admin/modules/users/users.php
+	#Для /cms/admin/modules/users/extra.php
 	'personal'=>'Личное',
 	'gender'=>'Пол',
 	'no-gender'=>'Неизвестно',

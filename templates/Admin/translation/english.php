@@ -20,6 +20,7 @@ return[
 	'to-root'=>'To root',
 	'parent'=>'Parent',
 	'options'=>'Options',
+	'uploader'=>'File manager',
 
 	'all'=>'all',
 	'update'=>'Refresh',

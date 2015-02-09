@@ -433,17 +433,17 @@ EDITOR=
 	active:null,
 	editors:[],
 
-	//Вставка текста, возможно с обрамлением pre[,after][,F][,id]
+	//Вставка текста, возможно с обрамлением pre
 	Insert:function(pre,after,F,id)
 	{
-		if(typeof id=="undefined")
+		if(!id)
 			id=this.active;
+
 		if(id && this.editors[id])
 			try
 			{
-				return this.editors[id].Insert(pre,after||"",F||0);
+				return this.editors[id].Insert(pre,after,F||0);
 			}catch(e){}
-		return false;
 	},
 
 	//Вставка объектов
@@ -451,12 +451,12 @@ EDITOR=
 	{
 		if(!id)
 			id=this.active;
+
 		if(id && this.editors[id])
 			try
 			{
 				return this.editors[id].Embed(type,data,id);
 			}catch(e){}
-		return false;
 	},
 
 	//Получение значения
@@ -464,12 +464,12 @@ EDITOR=
 	{
 		if(!id)
 			id=this.active;
+
 		if(id && this.editors[id])
 			try
 			{
 				return this.editors[id].Get();
 			}catch(e){}
-		return false;
 	},
 
 	//Установка значения
@@ -477,9 +477,9 @@ EDITOR=
 	{
 		if(!id)
 			id=this.active;
+
 		if(id && this.editors[id])
 			return this.editors[id].Set(text);
-		return false;
 	},
 
 	//Получение выделения
@@ -487,9 +487,10 @@ EDITOR=
 	{
 		if(!id)
 			id=this.active;
+
 		if(id && this.editors[id])
 			return this.editors[id].Selection();
-		return false;
+
 	},
 
 	//Служебные функции: новый редактор

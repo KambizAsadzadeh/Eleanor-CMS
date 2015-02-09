@@ -294,8 +294,8 @@ HTML;
 		return T::$T->Alert(static::$lang['not_found'],'info');
 	}
 
-	/** Страница добавления/редактирования статической страницы
-	 * @param int $id ID редактируемой страницы, если равно 0, значит страница добавляется
+	/** Страница создания/редактирования статической страницы
+	 * @param int $id ID редактируемой страницы, если равно 0, значит страница создается
 	 * @param array $values Значения полей формы:
 	 *  [string|array title] Название
 	 *  [string|array uri] URI
@@ -480,7 +480,20 @@ HTML;
 							{$input['text']}
 						</div>
 					</div>
-					{$Uploader}
+
+					<div class="modal fade draggable" id="modal-uploader" tabindex="-1">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title" id="myModalLabel">{$t_lang['uploader']}</h4>
+								</div>
+								<div class="modal-body">
+									{$Uploader}
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 				<div id="rightbar">
 					<div class="block-t expand">
@@ -524,10 +537,13 @@ HTML;
 				<div class="submit-pane">
 					{$back}<button type="submit" class="btn btn-success need-tabindex"><b>{$success}</b></button>
 					<select name="status" class="form-control pim">{$stopts}</select>{$delete}{$draft}
+					<button type="button" class="btn btn-primary pull-right" id="modal-uploader-trigger">{$t_lang['uploader']}</button>
 				</div>
 				<!-- FootLine [E] -->
 			</form>
-		<script>$(function(){ ParentsWithPos();{$pim}{$uri} })</script>
+		<script>$(function(){
+$("#modal-uploader-trigger").click(DraggableModal($("#modal-uploader")));
+ParentsWithPos();{$pim}{$uri} })</script>
 HTML;
 	}
 

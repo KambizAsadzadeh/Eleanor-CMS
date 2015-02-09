@@ -1,6 +1,6 @@
 <?php
 return array(
-	#For /addons/admin/modules/users.php
+	#For /addons/admin/modules/extra.php
 	'personal'=>'Personal',
 	'gender'=>'Gender',
 	'nogender'=>'Unknown',

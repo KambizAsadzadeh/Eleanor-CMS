@@ -292,7 +292,7 @@ class SafeHtml extends \Eleanor\BaseClass
 							}
 
 							if(static::$checkup and ($k=='href' or $k=='src') and $v!='#')
-								if(filter_var($v,FILTER_VALIDATE_URL))
+								if(filter_var($v,FILTER_VALIDATE_URL) or strpos($v,'://')===false and filter_var('http://eleanor-cms.ru/'.$v,FILTER_VALIDATE_URL))
 									$v=htmlspecialchars($v,$ent,\Eleanor\CHARSET,false);
 								else
 								{

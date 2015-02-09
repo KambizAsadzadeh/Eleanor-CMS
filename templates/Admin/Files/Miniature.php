@@ -7,17 +7,18 @@ namespace CMS\Templates\Admin;
  * @var array|string $var_1 Галерея, либо ссылка на загрузку галереи
  * @var string $var_2 Имя элемента, по умолчанию - miniature
  * @var string $var_3 Максимально допустимый размер файла для загрукзи
+ * @var string $var_4 Название элемента
  * @var string $css Пусть к каталогу css
  * @var string $images Путь к каталогу images
  * @var string $js Путь к каталогу js
  * @var string $ico Путь к каталогу ico */
-use CMS\Language, Eleanor\Classes\Html, Eleanor\Classes\EE;
+use CMS\Language, Eleanor\Classes\Html;
 
 defined('CMS\STARTED')||die;
 
-$GLOBALS['head']['fancybox.css']='<link rel="stylesheet" href="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.css" type="text/css" media="screen" />';
+$GLOBALS['head']['fancybox.css']='<link rel="stylesheet" href="//cdn.jsdelivr.net/fancybox/2/jquery.fancybox.css" type="text/css" media="screen" />';
 array_push($GLOBALS['scripts'],
-	'//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.pack.js',
+	'//cdn.jsdelivr.net/fancybox/2/jquery.fancybox.pack.js',
 	$js.'miniature.js',
 	$js.'miniature-'.Language::$main.'.js');
 
@@ -30,10 +31,7 @@ if(isset($var_1) and $var_1)
 	$loadlink=is_string($var_1) ? ',"'.$var_1.'"' : '';
 }
 else
-{
-	$gallery='';
-	$loadlink='';
-}
+	$loadlink=$gallery='';
 #/Параметры галереи
 
 #Параметры скрытх полей type и src
@@ -70,10 +68,11 @@ $src=Html::TagParams($src);
 $type=Html::TagParams($type);
 $lang=\CMS\Eleanor::$Language->Load(__DIR__.'/../translation/miniature-*.php',false);
 $t_lang=T::$lang;
+$title=isset($var_4) ? $var_4 : $lang['miniature'];
 echo<<<HTML
 <!-- Миниатюра -->
 <div class="block-t expand">
-	<p class="btl" data-toggle="collapse" data-target="#{$name}">{$lang['miniature']}</p>
+	<p class="btl" data-toggle="collapse" data-target="#{$name}">{$title}</p>
 	<div id="{$name}" class="collapse in">
 		<input type="file" accept="image/gif,image/png,image/jpg,image/jpeg" style="display:none" />
 		<input type="hidden" name="{$name}[type]"{$type} />

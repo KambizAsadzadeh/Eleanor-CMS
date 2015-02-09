@@ -85,7 +85,7 @@ format_tags:'p;h1;h2;h3;pre',
 removeDialogTabs:'image:advanced;link:advanced'*/
 
 				$language=substr(Language::$main,0,2);
-				$ckeditor='//cdn.ckeditor.com/4.4.3/full/';
+				$ckeditor='//cdn.ckeditor.com/4.4.6/full/';
 				$GLOBALS['head']['ckeditor']=<<<HTML
 <script>window.CKEDITOR_BASEPATH="{$ckeditor}";</script><script src="{$ckeditor}ckeditor.js"></script><script>
 var CKEDITOR_CONFIG={
@@ -181,7 +181,7 @@ HTML;
 				$html=Html::Text($name,$value,$extra);
 			break;
 			case'codemirror':
-				$cm='//cdn.jsdelivr.net/codemirror/4.3.0/';
+				$cm='//cdn.jsdelivr.net/codemirror/4/';
 				array_push($GLOBALS['scripts'],$cm.'codemirror.js',
 					$cm.'addon/selection/active-line.js',/* styleActiveLine:true, lineNumbers:true, ineWrapping: true */
 					$cm.'addon/edit/closebrackets.js',/* autoCloseBrackets: true */
@@ -222,11 +222,12 @@ HTML;
 					/* showTrailingSpace: true */
 					$cm.'addon/edit/trailingspace.js'
 				);
-				$GLOBALS['head']['codemirror']='<link rel="stylesheet" href="'.$cm
-					.'codemirror.css" /><link rel="stylesheet" href="'.$cm
-					.'addon/fold/foldgutter.css" /><link rel="stylesheet" href="'.$cm
-					.'addon/display/fullscreen.css" /><link rel="stylesheet" href="'.$cm
-					.'addon/dialog/dialog.css" /><style type="text/css">
+				$GLOBALS['head']['codemirror']=<<<HTML
+<link rel="stylesheet" href="{$cm}codemirror.css" />
+<link rel="stylesheet" href="{$cm}addon/fold/foldgutter.css" />
+<link rel="stylesheet" href="{$cm}addon/display/fullscreen.css" />
+<link rel="stylesheet" href="{$cm}addon/dialog/dialog.css" />
+<style type="text/css">
 .CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black; font-size:12px; }
 .CodeMirror-focused .cm-matchhighlight {
 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVQI12NgYGBgkKzc8x9CMDAwAAAmhwSbidEoSQAAAABJRU5ErkJggg==);
@@ -248,7 +249,8 @@ dt {font-family: monospace; color: #666;}
 	background-position: right;
 	background-repeat: no-repeat;
 }
-</style>';
+</style>
+HTML;
 				$syntax=isset($settings['syntax']) ? preg_replace('#[^a-z0-9]+#','',(string)$settings['syntax']) : '';
 				$params=$extrakeys='';
 

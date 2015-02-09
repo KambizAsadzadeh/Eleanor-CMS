@@ -48,7 +48,7 @@ if($modules===false)
 		}
 
 		$modules.=<<<HTML
-<li><a href="{$module['_a']}" title="{$module['descr']}"><span><img src="{$image}" alt="" />{$module['title']}</span></a></li>
+<li><a href="{$module['_a']}" title="{$module['descr']}"><img src="{$image}" alt="" />{$module['title']}</a></li>
 HTML;
 	}
 
@@ -57,7 +57,7 @@ HTML;
 #/Список модулей для верхнего меню
 
 #Список управления для верхнего меню
-$manage=[];
+$manage='';
 $info=\Eleanor\AwareInclude(DIR.'admin/modules.php');
 
 foreach($info as $name=>$module)
@@ -70,13 +70,22 @@ foreach($info as $name=>$module)
 	if($module['image'])
 	{
 		$module['image']='images/modules/'.str_replace('*','16x16',$module['image']);
+
 		if(is_file(T::$path['static'].$module['image']))
 			$image=$module['image'];
 	}
 
-	$manage[]='<li><a href="'.DynUrl::$base.DynUrl::Query(['section'=>'management','module'=>$name])
-		.'" title="'.$module['descr'].'"><span>'.($image ? '<img src="'.T::$http['static'].$image.'" alt="" />' : '')
-		.$module['title'].'</span></a></li>';
+	$url=DynUrl::$base.DynUrl::Query(['section'=>'management','module'=>$name]);
+	$image=$image ? '<img src="'.T::$http['static'].$image.'" alt="" />' : '';
+
+	/*$submenu=$manage ? '' : '<ul class="dropdown-menu">
+<li><a title="" href="#"><img alt="" src="static/images/modules/account-16x16.png">Аккаунт пользователя</a></li>
+<li><a title="" href="#"><img alt="" src="static/images/modules/account-16x16.png">Аккаунт пользователя</a></li>
+</ul>';*/
+
+	$manage.=<<<HTML
+<li><a href="{$url}" title="{$module['descr']}">{$image}{$module['title']}</a>{$submenu}</li>
+HTML;
 }
 #/Список управления для верхнего меню
 
@@ -107,7 +116,10 @@ if(isset(T::$data['speedbar']))
 	foreach(T::$data['speedbar'] as $item)
 		if(is_array($item) and isset($item[0],$item[1]))
 		{
-			$speedbar.='<li><a href="'.$item[0].'">'.$item[1].'</a></li>';
+			$speedbar.=<<<HTML
+<li><a href="{$item[0]}">{$item[1]}</a></li>
+HTML;
+
 			$back=$item[0];
 		}
 		elseif(is_string($item))
@@ -149,9 +161,12 @@ if(isset(T::$data['navigation']))
 					$extra=isset($item['submenu-extra']) ? (array)$item['submenu-extra'] : [];
 					$extra+=['class'=>'dropdown-menu','rol'=>'menu','aria-labelledby'=>'top-menu-'.$k];
 					$extra=$extra ? Html::TagParams($extra) : '';
+					$active=$active ? ' active' : '';
 
-					$submenu='<a href="#" class="dropdown-toggle'.($active ? ' active' : '').'" id="top-menu-'.$k
-						.'" data-toggle="dropdown"><span class="caret"></span></a><ul'.$extra.'>'.$submenu.'</ul>';
+					$submenu=<<<HTML
+<a href="#" class="dropdown-toggle{$active}" id="top-menu-{$k}" data-toggle="dropdown"><span class="caret"></span></a><ul{$extra}>{$submenu}</ul>
+HTML;
+
 					$liextra+=['class'=>'dropdown'];
 				}
 			}
@@ -185,10 +200,14 @@ if(isset(T::$data['navigation']))
 			else
 			{
 				$extra=$extra ? Html::TagParams($extra) : '';
-				$li='<a href="'.$item[0].'"'.$extra.'>'.$item[1].'</a>';
+				$li=<<<HTML
+<a href="{$item[0]}"{$extra}>{$item[1]}</a>
+HTML;
 			}
 
-			$topmenu.='<li'.$liextra.'>'.$li.$submenu.'</li>';
+			$topmenu.=<<<HTML
+<li{$liextra}>{$li}{$submenu}</li>
+HTML;
 		}
 #/Верхнее меню
 
@@ -201,6 +220,7 @@ array_push($GLOBALS['scripts'],'https://cdn.socket.io/socket.io-1.2.0.js',T::$ht
 	<link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.min.css" type="text/css">
 	<link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap-theme.css" type="text/css">
 	<script src="//cdn.jsdelivr.net/g/angularjs,angular.bootstrap(ui-bootstrap.min.js+ui-bootstrap-tpls.min.js),jquery,bootstrap@3"></script>
+	<meta name="viewport" content="width=1140">
 
 	<?=Templates\GetHead(true,false)?>
 	<!--[if lt IE 9]><script src="//cdn.jsdelivr.net/html5shiv/3.7.2/html5shiv.min.js"></script><![endif]-->
@@ -212,12 +232,12 @@ array_push($GLOBALS['scripts'],'https://cdn.socket.io/socket.io-1.2.0.js',T::$ht
 <!-- TopBar -->
 <header id="topbar" class="darkgrad topbar-fix">
 	<a class="el-logo" target="_blank" href="http://eleanor-cms.ru"><span class="ico-logo"></span><span class="thd">Eleanor CMS</span></a>
-	<ul class="el-menu">
-		<li class="dropdown">
+	<ul class="el-menu" id="main-menu">
+		<li>
 			<a href="" class="nav-ico" title="<?=T::$lang['view site']?>"><span class="i-sel ico-view"></span><span class="thd"><?=T::$lang['view site']?></span></a>
 		</li>
 		<li class="dropdown">
-			<a data-toggle="dropdown" href="<?=$file?>?section=options" class="nav-ico" title="Основные настройки"><span class="i-sel ico-setting"></span><span class="thd"><?=$lang['options']?></span></a>
+			<a href="<?=$file?>?section=options" class="nav-ico" title="Основные настройки"><span class="i-sel ico-setting"></span><span class="thd"><?=$lang['options']?></span></a>
 			<ul class="dropdown-menu">
 				<li><a href="#">Основные настройки</a></li>
 				<li><a href="#">Шаблоны</a></li>
@@ -225,22 +245,22 @@ array_push($GLOBALS['scripts'],'https://cdn.socket.io/socket.io-1.2.0.js',T::$ht
 			</ul>
 		</li>
 		<li class="active dropdown">
-			<a href="<?=$file?>?section=modules" class="dropdown-toggle" data-toggle="dropdown"><?=$lang['modules']?></a>
-			<ul class="dropdown-menu">
+			<a href="<?=$file?>?section=modules" class="dropdown-toggle"><?=$lang['modules']?></a>
+			<ul class="dropdown-menu menu_icons">
 				<?=$modules?>
 			</ul>
 		</li>
 		<li class="dropdown">
-			<a href="<?=$file?>?section=management" class="dropdown-toggle" data-toggle="dropdown"><?=$lang['management']?></a>
-			<ul class="dropdown-menu">
-				<?=join('',$manage)?>
+			<a href="<?=$file?>?section=management" class="dropdown-toggle"><?=$lang['management']?></a>
+			<ul class="dropdown-menu menu_icons">
+				<?=$manage?>
 			</ul>
 		</li>
 		<li>
-			<a href="<?=$file?>?section=statistic" class="dropdown-toggle" data-toggle="dropdown"><?=$lang['statistic']?></a>
+			<a href="<?=$file?>?section=statistic" class="dropdown-toggle"><?=$lang['statistic']?></a>
 		</li>
 		<li class="dropdown">
-			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Магазин</a>
+			<a href="#" class="dropdown-toggle">Магазин</a>
 			<ul class="dropdown-menu">
 				<li><a href="#">Топ бесплатных</a></li>
 				<li><a href="#">Топ платных</a></li>
@@ -248,7 +268,7 @@ array_push($GLOBALS['scripts'],'https://cdn.socket.io/socket.io-1.2.0.js',T::$ht
 			</ul>
 		</li>
 		<li class="dropdown">
-			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Помощь</a>
+			<a href="#" class="dropdown-toggle">Помощь</a>
 			<ul class="dropdown-menu">
 				<li><a href="#">Справка Eleanor CMS</a></li>
 				<li class="divider"></li>

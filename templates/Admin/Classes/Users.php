@@ -470,7 +470,7 @@ HTML;
 
 						$ips=rtrim($ips,', ');
 						$value=$ips;
-						break;
+					break;
 					case'r':
 						$value=<<<HTML
 <a href="{$value}" target="_blank" title="{$s_lang['go']}">{$value}</a>
@@ -798,56 +798,61 @@ HTML;
 HTML;
 	}
 
-	/*
-		Страница добавления/редактирования пользователя
-		$id - идентификатор редактируемого пользователя, если $id==0 значит пользователь добавляется
-		$values - массив значений полей для правки. Ключи:
-			name - имя пользователя
-			full_name - полное имя пользователя
-			_slname - только при редактировании, флаг отправки письма пользователю о новом имени
-			pass - поле для изменения пароля
-			pass2 - повтор пароля для его изменения
-			_slpass - только при редактировании, флаг отправки письма пользователю о новом пароле
-			_slnew - только при добавлении: флаг отправки письма пользователю о создании ему аккаунта на сайте
-			email - e-mail пользователя
-			_group - основная группа пользователя
-			groups - массив дополнительных групп пользователя
-			language - язык пользователя
-			timezone - часовая зона пользователя
-			_atype - тип аватара пользователя: загруженный или локальный (из галереи)
-			avatar - расположение аватара
-			banned_until - дата снятия бана
-			ban_explain - описание причин бана
-			_overskip - данные для перезагрузки параметров разрешений групп
-			_externalauth - массив внешних авторизаций. Ключи внутреннего массива:
-				provider - идентификатор внешнего сервиса
-				provider_uid - идентификатор пользователя на внешнем сервисе
-				identity - ссылка на пользователя на внешнем сервисе
-			_sessions - массив открытых сессий пользователя, формат: LoginClass=>Ключ=>array(), ключи внутреннего массива:
-				0 - TIMESTAMP истечения активности
-				1 - IP адрес
-				2 - USER AGENT браузера
-				_candel - флаг возможности удаления сессии
-
-			не для правки, для информации:
-			failed_logins - массив массивов неудачных попыток авторизации. Ключи внутренних массивов:
-				0 - дата попытки
-				1 - сервис
-				2 - браузер
-				3 - IP
-		$overload - перечень контролов для перезагрузки разрешений групп в соответствии с классом контролов. Если какой-то элемент массива не является массивом, значит это заголовок подгруппы контролов
-		$ovv - результирующий HTML код контролов перезагрузки разрешений групп, который необходимо вывести на странице. Ключи данного массива совпадают с ключами $overload
-		$upavatar - результирующий HTML код для загрузки аватара
-		$extra - перечень контролов дополнительных полей пользователя. Если какой-то элемент массива не является массивом, значит это заголовок подгруппы контролов
-		$exv - результирующий HTML код дополнительных полей пользователя, который необходимо вывести на странице. Ключи данного массива совпадают с ключами $overload
-		$bypost - признак того, что данные нужно брать из POST запроса
-		$errors - массив ошибок
-		$back - URL возврата
-		$links - перечень необходимых ссылок, массив с ключами:
-			delete - ссылка на удаление пользователя или false
-	*/
-	public static function CreateEdit($id,$values,$Editor,$Uploader,$errors,$back,$draft,$links,$maxupload)
+	/** Страница создания/редактирования пользователя
+	 * @param int $id IDредактируемого пользователя, если $id==0 значит пользователь создается
+	 * @param array $values Значения полей формы:
+	 *  [string name] Имя пользователя (логин)
+	 *  [string full_name] Полное имя пользователя (ФИО)
+	 *  [string email] E-mail пользователя
+	 *  [string _password] Пароль пользователя
+	 * 		_slname - только при редактировании, флаг отправки письма пользователю о новом имени
+	 * 		_slpass - только при редактировании, флаг отправки письма пользователю о новом пароле
+	 * _slnew - только при добавлении: флаг отправки письма пользователю о создании ему аккаунта на сайте
+	 * 		email - e-mail пользователя
+	 * 		_group - основная группа пользователя
+	 * 		groups - массив дополнительных групп пользователя
+	 * 		language - язык пользователя
+	 * 		timezone - часовая зона пользователя
+	 * 		_atype - тип аватара пользователя: загруженный или локальный (из галереи)
+	 * 		avatar - расположение аватара
+	 * 		banned_until - дата снятия бана
+	 * 		ban_explain - описание причин бана
+	 * 		_overskip - данные для перезагрузки параметров разрешений групп
+	 * 		_externalauth - массив внешних авторизаций. Ключи внутреннего массива:
+	 * 			provider - идентификатор внешнего сервиса
+	 * 			provider_uid - идентификатор пользователя на внешнем сервисе
+	 * 			identity - ссылка на пользователя на внешнем сервисе
+	 * 		_sessions - массив открытых сессий пользователя, формат: LoginClass=>Ключ=>array(), ключи внутреннего массива:
+	 * 			0 - TIMESTAMP истечения активности
+	 * 			1 - IP адрес
+	 * 			2 - USER AGENT браузера
+	 * 			_candel - флаг возможности удаления сессии
+	 * 		не для правки, для информации:
+	 * 		failed_logins - массив массивов неудачных попыток авторизации. Ключи внутренних массивов:
+	 * 			0 - дата попытки
+	 * 			1 - сервис
+	 * 			2 - браузер
+	 * 			3 - IP
+	 * @param callback $GroupsOpts Генератор перечня группы в виде <option>...</option>:
+	 * @param array $groups Перечень элементов формы для перезагрузки параметров групп, вероятные ключи:
+	 *  [string type] Тип элемента: check - флажок, input - поле и т.п.
+	 *  [string label-for] Идентификатор свойства for для label-а
+	 * @param callback $Groups2Html Генератор html из $groups
+	 * @param array $extra Перечень элементов формы экстрапараметров пользователя, вероятные ключи:
+	 *  [string type] Тип элемента: check - флажок, input - поле и т.п.
+	 *  [string label-for] Идентификатор свойства for для label-а
+	 * @param callback $Extra2Html Генератор html из $users
+	 * @param array $errors Ошибки формы
+	 * @param string $back URL возврата
+	 * @param array $links Перечень ссылок:
+	 *  [string|null delete] Ссылка на удаление
+	 * @param int $maxupload Максимально доспустимый размер файла для загрузки
+	 * @return string */
+	public static function CreateEdit($id,$values,$GroupsOpts,$groups,$Groups2Html,$extra,$Extra2Html,$errors,$back,$links,$maxupload)
 	{
+		#Select2
+		include __DIR__.'/Select2.php';
+
 		#SpeedBar
 		T::$data['speedbar']=[
 			[Eleanor::$services['admin']['file'].'?section=modules',Eleanor::$Language['main']['modules']],
@@ -860,80 +865,39 @@ HTML;
 
 		static::Menu($id ? 'edit' : 'create');
 
-		if(Eleanor::$vars['multilang'])
-		{
-			$input=[];
-
-			foreach(Eleanor::$langs as $lng=>$v)
-			{
-				$input['title'][$lng]=Html::Input('title['.$lng.']',$values['title'][$lng],
-					['class'=>'form-control need-tabindex input-lg pim','id'=>'title-'.$lng,'placeholder'=>static::$lang['title-placeholder']]);
-				$input['uri'][$lng]=Html::Input('uri['.$lng.']',$values['uri'][$lng],
-					['class'=>'form-control need-tabindex pim','id'=>'uri-'.$lng]);
-				$input['text'][$lng]=$Editor('text['.$lng.']',$values['text'][$lng],
-					['class'=>'form-control need-tabindex pim','id'=>'text-'.$lng,'rows'=>20]);
-				$input['document_title'][$lng]=Html::Input('document_title['.$lng.']',$values['document_title'][$lng],
-					['class'=>'form-control need-tabindex pim','id'=>'docuemnt-title-'.$lng]);
-				$input['meta_descr'][$lng]=Html::Input('meta_descr['.$lng.']',$values['meta_descr'][$lng],
-					['class'=>'form-control need-tabindex pim','id'=>'meta-descr-'.$lng]);
-			}
-
-			$input['title']=T::$T->LangEdit($input['title'],'title');
-			$input['uri']=T::$T->LangEdit($input['uri'],'uri');
-			$input['text']=T::$T->LangEdit($input['text'],'text');
-			$input['document_title']=T::$T->LangEdit($input['document_title'],'document-title');
-			$input['meta_descr']=T::$T->LangEdit($input['meta_descr'],'meta-descr');
-			$input['language']=T::$T->LangChecks($values['single-lang'],$values['language']);
-
-			$loglang='';
-			foreach(Eleanor::$langs as $k=>$v)
-				$loglang.=Html::Option($v['name'],$k,$k==$values['log_language']);
-			$loglang=Html::Select('log_language',$loglang,['class'=>'form-control need-tabindex']);
-
-			$input['language']=<<<HTML
-						<div class="block-t expand">
-							<p class="btl" data-toggle="collapse" data-target="#b2">{$t_lang['languages']}</p>
-							<div id="b2" class="collapse in">
-								<div class="bcont">
-									<div class="form-group">
-										{$input['language']}
-									</div>
-									<div class="form-group">
-										<label for="log-langauge">{$c_lang['log_language']}</label>
-										{$loglang}
-									</div>
-								</div>
-							</div>
-						</div>
+		#Подключение скриптов для поля пароля
+		$GLOBALS['head']['passfield']=<<<'HTML'
+<script src="//cdn.rawgit.com/antelle/passfield/master/js/passfield.js"></script>
+<script src="//cdn.rawgit.com/antelle/passfield/master/js/locales.js"></script>
+<link rel="stylesheet" href="//cdn.rawgit.com/antelle/passfield/master/css/passfield.css" />
 HTML;
 
-		}
-		else
-			$input=[
-				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control need-tabindex input-lg pim','placeholder'=>static::$lang['title-placeholder']]),
-				'uri'=>Html::Input('uri',$values['uri'],['id'=>'uri','class'=>'form-control need-tabindex pim']),
-				'text'=>$Editor('text',$values['text'],['class'=>'form-control need-tabindex pim','id'=>'text','rows'=>20]),
-				'document_title'=>Html::Input('document_title',$values['document_title'],['class'=>'form-control need-tabindex pim','id'=>'document-title']),
-				'meta_descr'=>Html::Input('meta_descr',$values['meta_descr'],['class'=>'form-control need-tabindex pim','id'=>'meta-descr']),
-				'language'=>''
-			];
-
-		$input+=[
-			'http_code'=>Html::Input('http_code',$values['http_code'],['id'=>'http-code','class'=>'form-control need-tabindex pim task','type'=>'number']),
-			'email'=>Html::Input('email',$values['email'],['id'=>'email','class'=>'form-control need-tabindex pim','type'=>'email']),
-			'log'=>Html::Check('log',$values['log'],['class'=>'need-tabindex']),
+		#Элементы формы
+		$extra_html=$Extra2Html();
+		$groups_html=$Groups2Html();
+		$input=[
+			'name'=>Html::Input('name',$values['name'],['id'=>'name','class'=>'form-control need-tabindex input-lg pim','placeholder'=>$c_lang['input_name']]),
+			'full_name'=>Html::Input('full_name',$values['full_name'],['id'=>'full_name','class'=>'form-control need-tabindex pim']),
+			'email'=>Html::Input('email',$values['email'],['id'=>'email','type'=>'email','class'=>'form-control need-tabindex pim']),
+			'language'=>'',#ToDo!
+			'_password'=>Html::Input('_password',$values['_password'],['id'=>'password','type'=>'password','class'=>'form-control need-tabindex pim']),
+			'_group'=>Select2::Select('_group',$GroupsOpts($values['_group']),['id'=>'group','class'=>'need-tabindex pim']),
+			'groups'=>Select2::Items('groups',$GroupsOpts($values['groups']),['id'=>'groups','class'=>'need-tabindex pim']),
 		];
-		$uri=T::$T->Uri();
+		#/Элементы формы
 
 		#Pim поля, которые сабмитятся только если изменились
-		$pim=$draft || $errors || $_SERVER['REQUEST_METHOD']=='POST' ? '' : 'Pim();';
+		$pim=$errors || $_SERVER['REQUEST_METHOD']=='POST' ? '' : 'Pim();';
 
 		#Url возврата
 		$back=$back ? Html::Input('back',$back,['type'=>'hidden']) : '';
 
 		#Errors
-		$er_title=$er_text=$er_def='';
+		$er_def='';
+		$er_extra=isset($errors['extra']) ? (array)$errors['extra'] : [];
+		$er_group=isset($errors['groups']) ? (array)$errors['groups'] : [];
 
+		unset($errors['extra'],$errors['groups']);
 		foreach($errors as $type=>$error)
 		{
 			if(is_int($type) and is_string($error))
@@ -945,52 +909,255 @@ HTML;
 
 			$error=T::$T->Alert($error,'danger',true);;
 
-			if(strpos($type,'EMPTY_TITLE')===0)
-				$er_title=$error;
-			elseif(strpos($type,'EMPTY_TEXT')===0)
-				$er_text=$error;
-			else
-				$er_def=$error;
+			$er_def=$error;
 		}
 
 		if($errors and !$er_def)
 			$er_def=T::$T->Alert(static::$lang['form-errors'],'warning',true);
 		#/Errors
 
-		if($draft)
-			$er_def.=T::$T->Alert(sprintf(static::$lang['delete-draft%'],$links['delete-draft']),'info',true);
+		$parts=[
+			'extra'=>[],
+			'groups'=>[],
+		];
+
+		#Формирование блоков с экстра-параметрами
+		$part='';
+
+		foreach($extra as $k=>$control)
+		{
+			if(is_string($control))
+			{
+				$parts['extra'][$k]='';
+				$part=&$parts['extra'][$k];
+				continue;
+			}
+			elseif(!isset($html[$k]))
+				continue;
+
+			$check=$control['type']=='check';
+
+			if($check)
+			{
+				$hint=isset($control['descr']) ? ' title="'.$control['descr'].'"' : '';
+				$part.=<<<HTML
+<label class="group-checkbox"{$hint}>{$html[$k]} {$control['title']}</label>
+HTML;
+
+				continue;
+			}
+
+			$for=isset($control['label-for']) ? ' for="'.$control['label-for'].'"' : '';
+			$hint=isset($control['descr']) ? '<p class="text-muted">'.$control['descr'].'</p>' : '';
+			$part.=<<<HTML
+<div class="form-group">
+	<label{$for}>{$control['title']}</label>
+	{$html[$k]}
+</div>{$hint}
+HTML;
+		}
+
+		#Форматирование непосредственно HTML блоков
+		foreach($parts['extra'] as $k=>&$part)
+			$part=<<<HTML
+<div class="block-t expand">
+	<p class="btl" data-toggle="collapse" data-target="#opts-{$k}">{$extra[$k]}</p>
+	<div id="opts-{$k}" class="collapse in">
+		<div class="bcont">
+			{$part}
+		</div>
+	</div>
+</div>
+HTML;
+		unset($part);
+		#/Формирование блоков с экстра-параметрами
+
+		#Формирование блоков с переопределением параметров групп
+		$part='';
+
+		foreach($groups as $k=>$control)
+		{
+			if(is_string($control))
+			{
+				$parts['groups'][$k]='';
+				$part=&$parts['groups'][$k];
+				continue;
+			}
+			elseif(!isset($groups_html[$k]))
+				continue;
+
+			$check=$control['type']=='check';
+
+			if($check)
+			{
+				$hint=isset($control['descr']) ? ' title="'.$control['descr'].'"' : '';
+				$groups_html[$k]=<<<HTML
+<label class="group-checkbox"{$hint}>{$groups_html[$k]} {$control['title']}</label>
+HTML;
+			}
+
+			$checked=isset($values['_groups_overload_method'][$k]) ? ' checked' : '';
+			$groups_html[$k]=<<<HTML
+<div class="input-group">
+	{$groups_html[$k]}
+	<span class="input-group-addon">
+		<input type="checkbox" name="_inherit[]" value="{$k}"{$checked} title="{$c_lang['inherit']}" class="inherit need-tabindex" />
+	</span>
+</div>
+HTML;
+
+			if($check)
+			{
+				$part.=$groups_html[$k];
+				continue;
+			}
+
+			$for=isset($control['label-for']) ? ' for="'.$control['label-for'].'"' : '';
+			$hint=isset($control['descr']) ? '<p class="text-muted">'.$control['descr'].'</p>' : '';
+			$part.=<<<HTML
+<div class="form-group">
+	<label{$for}>{$control['title']}</label>
+	{$groups_html[$k]}
+</div>{$hint}
+HTML;
+		}
+
+		#Форматирование непосредственно HTML блоков
+		foreach($parts['groups'] as $k=>&$part)
+			$part=<<<HTML
+<h4>{$groups[$k]}</h4>{$part}
+HTML;
+		unset($part);
+		#/Формирование блоков с переопределением параметров групп
+
+		foreach($parts as &$v)
+			$v=join('',$v);
+		unset($v);
 
 		#Кнопки
 		$success=$id ? static::$lang['save'] : static::$lang['create'];
 
-		$delete=$links['delete'] ? '<button type="button" onclick="window.location=\''.$links['delete']
-			.'\'" class="ibtn ib-delete need-tabindex"><i class="ico-del"></i><span class="thd">'
-			.T::$lang['delete'].'</span></button>' : '';
-
-		$draft=T::$T->DraftButton($links['draft'],null)
-			.Html::Input('_draft',$id,['type'=>'hidden']);
+		$delete=$links['delete'] ? <<<HTML
+<button type="button" onclick="window.location='{$links['delete']}'" class="ibtn ib-delete need-tabindex">
+	<i class="ico-del"></i><span class="thd">{$t_lang['delete']}</span>
+</button>
+HTML
+				 : '';
 		#/Кнопки
 
 		#Миниаююра
-		$image=T::$T->Miniature($values['miniature'],null,null,$maxupload);
+		$avatar=T::$T->Miniature($values['avatar'],null,'avatar',$maxupload,static::$lang['avatar']);
+
+		#Чекбоксы с письмами для отправки
+		$letter=[
+			'new'=>'',
+			'name'=>'',
+			'pass'=>'',
+		];
+
+		if($id or true)
+		{
+			$letter['name']=Html::Check('_letter[]',in_array('name',$values['_letter']),['value'=>'name','class'=>'need-tabindex']);
+			$letter['name']=<<<HTML
+<div class="checkbox change-name">
+	<label>
+		{$letter['name']}
+		Уведомить пользователя об изменении имени
+	</label>
+</div>
+HTML;
+
+			$letter['pass']=Html::Check('_letter[]',in_array('pass',$values['_letter']),['value'=>'pass','class'=>'need-tabindex']);
+			$letter['pass']=<<<HTML
+<div class="checkbox change-pass">
+	<label>
+		{$letter['pass']}
+		Уведомить пользователя об изменении пароля
+	</label>
+</div>
+HTML;
+		}
+		else
+		{
+			$letter['new']=Html::Check('_letter[]', in_array('new', $values['_letter']), ['value'=>'new', 'class'=>'need-tabindex']);
+			$letter['new']=<<<HTML
+<div class="checkbox">
+	<label>
+		{$letter['new']}
+		Уведомить пользователя о создании учетной записи
+	</label>
+</div>
+HTML;
+		}
+		#/Чекбоксы с письмами для отправки
 
 		return<<<HTML
 		{$er_def}
 			<form method="post">
 				<div id="mainbar">
 					<div class="block">
-						{$er_title}
-						{$input['title']}
-						<br />
-						<div class="form-group">
-							<label id="label-text" for="text">{$c_lang['text']}</label>
-							{$er_text}
-							{$input['text']}
+						{$input['name']}{$letter['name']}<br />
+						<div class="row">
+							<div class="col-xs-6 form-group">
+								<label id="label-text" for="full_name">{$c_lang['full_name']}</label>
+								{$input['full_name']}
+							</div>
+							<div class="col-xs-6 form-group">
+								<label id="label-text" for="password">{$c_lang['password']}</label>
+								{$input['_password']}{$letter['pass']}
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6 form-group">
+								<label id="label-text" for="email">E-mail</label>
+								{$input['email']}
+							</div>
 						</div>
 					</div>
-					{$Uploader}
 				</div>
 				<div id="rightbar">
+{$avatar}
+					<div class="block-t expand">
+						<p class="btl" data-toggle="collapse" data-target="#rights">Права на сайте</p>
+						<div id="rights" class="collapse in">
+							<div class="bcont">
+								<div class="form-group">
+									<label id="label-text" for="group">{$c_lang['main-group']}</label>
+									{$input['_group']}
+								</div>
+								<div class="form-group">
+									<label id="label-text" for="groups">{$c_lang['other-groups']}</label>
+									{$input['groups']}
+								</div>
+								{$parts['groups']}
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- FootLine -->
+				<div class="submit-pane">
+					{$back}<button type="submit" class="btn btn-success need-tabindex"><b>{$success}</b></button>
+					{$letter['new']}{$delete}
+				</div>
+				<!-- FootLine [E] -->
+			</form>
+		<script>$(function(){ $("#password").passField();
+$(".inherit").click(function(){
+	var th=$(this),
+		dis=th.prop("checked")&&!th.prop("disabled");
+
+	th.closest(".input-group").toggleClass("disabled",dis)
+		.children(":input,:first").find(":input").addBack().prop("disabled",dis);
+}).each(function(){
+	$(this).triggerHandler("click");
+});
+
+
+$(".form-group input:not(:checkbox),textarea").addClass("form-control pim"); {$pim} })</script>
+HTML;
+/*
+
+
 					<div class="block-t expand">
 						<p class="btl" data-toggle="collapse" data-target="#seo">SEO</p>
 						<div id="seo" class="collapse in">
@@ -999,113 +1166,22 @@ HTML;
 									<label id="label-uri" for="uri">URI</label>
 									{$input['uri']}
 								</div>
-								<div class="form-group">
-									<label id="label-document-title" for="document-title">Document title</label>
-									{$input['document_title']}
-								</div>
-								<div class="form-group">
-									<label id="label-meta-descr" for="meta-descr">Meta description</label>
-									{$input['meta_descr']}
-								</div>
-								<div class="form-group">
-									<label for="http-code">{$c_lang['http-code']}</label>
-									{$input['http_code']}
-								</div>
 							</div>
 						</div>
 					</div>
-{$image}
-{$input['language']}
-					<div class="block-t expand">
-						<p class="btl collapsed" data-toggle="collapse" data-target="#notify">{$c_lang['notification']}</p>
-						<div id="notify" class="collapse">
-							<div class="bcont">
-								<div class="checkbox"><label>{$input['log']} {$c_lang['enable_log']}</label></div>
-								<div class="form-group">
-									<label for="email">{$c_lang['email']}</label>
-									{$input['email']}
-								</div>
-							</div>
-						</div>
-					</div>
-
-				</div>
-				<!-- FootLine -->
-				<div class="submit-pane">
-					{$back}<button type="submit" class="btn btn-success need-tabindex"><b>{$success}</b></button>
-					{$draft}{$delete}
-				</div>
-				<!-- FootLine [E] -->
-			</form>
-		<script>$(function(){ {$pim}{$uri} })</script>
-HTML;
+*/
 	}
 	/*public static function AddEditUser($id,$values,$overload,$ovv,$upavatar,$extra,$exv,$bypost,$errors,$back,$links)
 	{
-		static::Menu($id ? '' : 'add');
-		#Весь JS вынесен в отдельный файл, потому что его слишком много, чтобы писать здесь
-		$GLOBALS['scripts'][]='js/admin_users_ae.js';
-
-		$lang=Eleanor::$Language['users'];
-		$ltpl=T::$lang;
-
 		$langs=Eleanor::Option($lang['by_default'],'',!$values['language']);
 		foreach(Eleanor::$langs as $k=>&$v)
 			$langs.=Eleanor::Option($v['name'],$k,$k==$values['language']);
 
-		list($awidth,$aheight)=explode(' ',Eleanor::$vars['avatar_size']);
 
-		$Lst=Eleanor::LoadListTemplate('table-form')
-			->begin()
-			->head(static::$lang['lap'])
-			->item(static::$lang['name'],Eleanor::Input('name',$values['name'],['id'=>'name','tabindex'=>1]))
-			->item(static::$lang['fullname'],Eleanor::Input('full_name',$values['full_name'],['id'=>'full-name','tabindex'=>2]));
-
-		if($id)
-			$Lst->item([static::$lang['slname'],Eleanor::Check('_slname',$values['_slname'],['tabindex'=>3,'id'=>'slname']),'tip'=>static::$lang['slname_']]);
-
-		$Lst->item([static::$lang['pass'],Eleanor::Input('pass',$values['pass'],['type'=>'password','id'=>'pass','tabindex'=>4]),'tip'=>static::$lang['pass_']])
-			->item(static::$lang['passc'],Eleanor::Input('pass2',$values['pass2'],['type'=>'password','id'=>'pass2','tabindex'=>5]));
-
-		if($id)
-			$Lst->item([static::$lang['slpass'],Eleanor::Check('_slpass',$values['_slpass'],['tabindex'=>6,'id'=>'slpass']),'tip'=>static::$lang['slpass_']]);
-		else
-			$Lst->item([static::$lang['slnew'],Eleanor::Check('_slnew',$values['_slnew'],['tabindex'=>6]),'tip'=>static::$lang['slnew_']]);
 
 		$Lst->head(static::$lang['account'])
-			->item('E-mail',Eleanor::Input('email',$values['email'],['tabindex'=>7]))
-			->item(static::$lang['group'],Eleanor::Select('_group',UserManager::GroupsOpts($values['_group']),['tabindex'=>8]))
-			->item(static::$lang['agroups'],Eleanor::Items('groups',UserManager::GroupsOpts($values['groups']),['tabindex'=>9]))
 			->item(static::$lang['lang'],Eleanor::Select('language',$langs,['tabindex'=>10]))
-			->item(static::$lang['timezone'],Eleanor::Select('timezone',Eleanor::Option($lang['by_default'],'',!$values['timezone']).Types::TimeZonesOptions($values['timezone']),['tabindex'=>11]))
-			->head(static::$lang['avatar'])
-			->item(
-				static::$lang['alocation'],
-				Eleanor::Select(
-					'_atype',
-					Eleanor::Option(static::$lang['agallery'],'gallery',!$values['_aupload'])
-					.Eleanor::Option(static::$lang['apersonal'],'upload',$values['_aupload']),
-					['id'=>'atype','tabindex'=>14]
-				)
-			)
-			->item(
-				static::$lang['amanage'],
-				Eleanor::Input('avatar',$values['avatar'],['id'=>'avatar-input','type'=>'hidden'])
-				.'<div id="avatar-local">
-					<div id="avatar-select"></div>
-					<div id="avatar-view">
-						<a class="imagebtn getgalleries" href="#">'.static::$lang['gallery_select'].'</a><div class="clr"></div>
-						<span id="avatar-no" style="width:'.($awidth ? $awidth : '180').'px;height:'.($aheight ? $aheight : '145').'px;text-decoration:none;max-height:100%;max-width:100%;" class="screenblock">
-							<b>'.static::$lang['noavatar'].'</b><br />
-							<span>'.sprintf('<b>%s</b> <small>x</small> <b>%s</b> <small>px</small>',$awidth ? $awidth : '&infin;',$aheight ? $aheight : '&infin;').'</span>
-						</span>
-						<img id="avatar-image" style="border:1px solid #c9c7c3;max-width:'.($awidth>0 ? $awidth.'px' : '100%').';max-height:'.($aheight>0 ? $aheight.'px' : '100%').'" src="images/spacer.png" /><div class="clr"></div>
-						<a id="avatar-delete" class="imagebtn" href="#">'.$ltpl['delete'].'</a>
-					</div>
-				</div>
-				<div id="avatar-upload">'.$upavatar.'</div>
-<script>$(function(){AddEditUser('.($id ? $id : 'false').')})//]]></script>')
-			->end();
+			->item(static::$lang['timezone'],Eleanor::Select('timezone',Eleanor::Option($lang['by_default'],'',!$values['timezone']).Types::TimeZonesOptions($values['timezone']),['tabindex'=>11]));
 
 		$general=(string)$Lst;
 
@@ -1123,26 +1199,6 @@ HTML;
 					$Lst->head($v);
 		$extra=(string)$Lst->end();
 
-		$Lst->begin();
-		foreach($overload as $k=>&$v)
-			if(is_array($v))
-			{
-				$inherited=!isset($values['_overskip'][$k]) || $values['_overskip'][$k]=='inherit';
-				$Lst->item([
-					$v['title'],
-					'<div class="overload"'.($inherited ? ' style="display:none"' : '').'>'.Eleanor::$Template->LangEdit($ovv[$k],null).'</div><div class="inherit"'.($inherited ? '' : ' style="display:none"').'>---<div class="clr"></div></div>',
-					'tip'=>$v['descr'],
-					'descr'=>Eleanor::Select(
-						'_overskip['.$k.']',
-						Eleanor::Option(static::$lang['inherit'],'inherit',$inherited)
-						.Eleanor::Option(static::$lang['replace'],'replace',isset($values['_overskip'][$k]) and $values['_overskip'][$k]=='replace')
-						.Eleanor::Option(static::$lang['addo'],'add',isset($values['_overskip'][$k]) and $values['_overskip'][$k]=='add'),
-						['style'=>'width:100px']
-					),
-				]);
-			}
-			else
-				$Lst->head($v);
 		$special=(string)$Lst->end();
 
 		if($id)
@@ -1217,83 +1273,12 @@ HTML;
 					}
 				}
 
-				$stats=(string)$Lst->head(static::$lang['sessions'])->end().$Ls->end().'<script>//<![CDATA[
-$(function(){
-	$("#sessions").on("click","a[data-key]",function(){
-		var th=$(this);
-		CORE.Ajax({
-				direct:"admin",
-				file:"users",
-				event:"killsession",
-				key:th.data("key"),
-				cl:th.data("cl"),
-				uid:"'.$id.'"
-			},
-			function()
-			{
-				th.closest("tr").remove();
-			}
-		);
-		return false;
-	}).on("click","a[data-ua]",function(){
-		alert($(this).data("ua"));
-		return false;
-	});
-});//]]></script>';
 			}
 			else
 				$stats=(string)$Lst->end();
 		}
 
-		if($back)
-			$back=Eleanor::Input('back',$back,['type'=>'hidden']);
-
-		$Lst->form(['id'=>'form','data-pmm'=>static::$lang['PASSWORD_MISMATCH']])
-			->tabs(
-				[static::$lang['general'],$general],
-				[static::$lang['extra'],$extra],
-				[static::$lang['special'],$special],
-				[static::$lang['block'],$block],
-				$id ? [static::$lang['statistics'],$stats] : false
-			)
-			->submitline($back.Eleanor::Button($id ? static::$lang['save'] : static::$lang['add']).($links['delete'] ? ' '.Eleanor::Button($ltpl['delete'],'button',['onclick'=>'window.location=\''.$links['delete'].'\'']) : ''))
-			->endform();
-
-		if($errors)
-			foreach($errors as $k=>&$v)
-				if(is_int($k) and is_string($v) and isset(static::$lang[$v]))
-					$v=static::$lang[$v];
-		return Eleanor::$Template->Cover((string)$Lst,$errors,'error');
 	}*/
-
-	/*
-		Элемент шаблона: загрузка галерей
-		$galleries - массив галерей, каждый элемент массива - массив с ключами:
-			n - имя галереи
-			i - путь к картинке относительно корня сайта
-			d - описание галереи
-	*/
-	public static function Galleries($galleries)
-	{
-		$c='';
-		foreach($galleries as &$v)
-			$c.='<a href="#" class="gallery" data-gallery="'.$v['n'].'"><b><img src="'.$v['i'].'" alt="" /><span>'.$v['d'].'</span></b></a>';
-		return$c ? '<a class="imagebtn cancelavatar" href="#">'.static::$lang['cancel_avatar'].'</a><div class="clr"></div><div class="galleryavatars">'.$c.'</div>' : '<div class="noavatars cancelavatar">'.static::$lang['no_avatars'].'</div>';
-	}
-
-	/*
-		Элемент шаблона: загрузка аватаров
-		$avatar - массив аватаров, каждый элемент массива - массив с ключами:
-			p - путь к файлу, относительно корня сайта, с закрывающим слешем
-			f - имя файла
-	*/
-	public static function Avatars($avatars)
-	{
-		$c='';
-		foreach($avatars as &$v)
-			$c.='<a href="#" class="applyavatar" title="'.$v['f'].'"><img src="'.join($v).'" /></a>';
-		return$c ? '<a class="imagebtn getgalleries" href="#">'.static::$lang['togals'].'</a><a class="imagebtn cancelavatar" href="#">'.static::$lang['cancel_avatar'].'</a><div class="clr"></div><div class="avatarscover">'.$c.'</div>' : '<div class="noavatars cancelavatar">'.static::$lang['no_avatars'].'</div>';
-	}
 
 	/** Страница удаления пользователя
 	 * @param array $error Данные удаляемого пользователя

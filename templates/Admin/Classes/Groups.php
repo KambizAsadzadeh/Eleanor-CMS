@@ -241,19 +241,19 @@ HTML;
 		return T::$T->Alert(static::$lang['not_found'],'info');
 	}
 
-	/** Страница добавления/редактирования группы
-	 * @param int $id ID редактируемой группы, если равно 0, значит группа добавляется
+	/** Страница создания/редактирования группы
+	 * @param int $id ID редактируемой группы, если равно 0, значит группа создается
 	 * @param array $values Значения полей формы (совпадают с ключами $controls) плюс:
 	 *  [array|string title] Название группы
 	 *  [array|string descr] Описание группы
 	 *  [string style] Стиль группы
 	 *  [array _inherit] Перечень наследуемых свойств
 	 * @param callback $Editor Генератор Editor-a, параметры аналогичны Editor->Area
-	 * @param array $controls Перечень элементов формы, следует передать в $Controls2Html и действовать по ситуации, вероятные ключи:
+	 * @param array $controls Перечень элементов формы вероятные ключи:
 	 *  [string type] Тип элемента: check - флажок, input - поле и т.п.
 	 *  [string label-for] Идентификатор свойства for для label-а
 	 * @param string $parents Перечень возможных родителей группы в виде <option>...</option>:
-	 * @param callback $Controls2Html Преобразователь $controls -> html
+	 * @param callback $Controls2Html Генератор html из $controls
 	 * @param array $errors Ошибки формы
 	 * @param string $back URL возврата
 	 * @param array $links Перечень ссылок:
@@ -276,7 +276,7 @@ HTML;
 		static::Menu($id ? 'edit' : 'create');
 
 		#Элементы формы
-		$html=$Controls2Html($controls);
+		$html=$Controls2Html();
 		$input=[
 			'style'=>Html::Input('style',$values['style'],['id'=>'style','class'=>'form-control need-tabindex pim','placeholder'=>$c_lang['style_plh']]),
 			'style_inherit'=>Html::Check('_inherit[]',in_array('style',$values['_inherit']),['title'=>$c_lang['inherit'],'value'=>'style','class'=>'inherit need-tabindex']),
@@ -465,8 +465,7 @@ $("#parent").change(function(){
 		$(this).triggerHandler("click");
 	});
 }).change();
-$(".form-group input:not(:checkbox),textarea").addClass("form-control pim");
-$(".form-group :text").addClass("form-control"); {$pim} });</script>
+$(".form-group input:not(:checkbox),textarea").addClass("form-control pim"); {$pim} });</script>
 HTML;
 	}
 

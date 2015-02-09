@@ -5,6 +5,7 @@
 	info@eleanor-cms.ru
 */
 namespace CMS;
+use Eleanor\Classes\Files;
 use Eleanor\Classes\Output;
 
 defined('CMS\STARTED')||die;
@@ -354,7 +355,7 @@ WHERE `s`.`expire`>'{$date}' ORDER BY `s`.`expire` DESC LIMIT 30");
 			}
 		}
 
-		$groups=$items=[];
+		$groups=$galleries=[];
 		$where=$where ? ' WHERE '.join(' AND ',$where) : '';
 		$defsort='expire';
 		$deforder='desc';
@@ -414,7 +415,7 @@ ORDER BY `{$sort}` {$order}{$limit}");
 					else
 						$a['type']='guest';
 
-				$items[]=$a;
+				$galleries[]=$a;
 			}
 
 			if($groups)
@@ -457,7 +458,7 @@ ORDER BY `{$sort}` {$order}{$limit}");
 		}
 
 		$links['nofilter']=isset($query['fi']) ? $Url(['fi'=>[]]+$query) : false;
-		$c=Eleanor::$Template->OnlineList($items,$groups,$total>0,$cnt,$pp,$query,$page,$links);
+		$c=Eleanor::$Template->OnlineList($galleries,$groups,$total>0,$cnt,$pp,$query,$page,$links);
 		Response($c);
 	break;
 	case'detail':
@@ -514,78 +515,6 @@ WHERE `s`.`ip_guest`={$ip} AND `s`.`user_id`={$id} AND `s`.`service`={$service} 
 
 		Response( (string)Eleanor::$Template->SessionDetail($session) );
 	break;
-	/*case'remove':
-		if(isset($_POST['provider'],$_POST['pid']))
-		{
-			Eleanor::$Db->Delete(P.'users_external_auth','`provider`='.Eleanor::$Db->Escape((string)$_POST['provider'])
-				.' AND `provider_uid`='.Eleanor::$Db->Escape((string)$_POST['pid']));
-			Response(true);
-		}
-		else
-			Error();
-	break;
-	case'galleries':
-		$galleries=[];
-		$gals=glob(Template::$path['static'].'images/avatars/*',GLOB_MARK | GLOB_ONLYDIR);
-
-		foreach($gals as &$v)
-		{
-			$descr=$name=basename($v);
-			$image=false;
-
-			if(is_file($v.'config.ini'))
-			{
-				$session=parse_ini_file($v.'config.ini',true);
-
-				if(isset($session['title']))
-					$descr=FilterLangValues($session['title'],'',$name);
-
-				if(isset($session['options']['cover']) and is_file($v.$session['options']['cover']))
-					$image="images/avatars/{$name}/".$session['options']['cover'];
-			}
-
-			if(!$image and $temp=glob($v.'*.{jpg,png,jpeg,bmp,gif}',GLOB_BRACE))
-				$image=Template::$http['static']."images/avatars/{$name}/".basename($temp[0]);
-
-			if($image)
-				$galleries[]=['n'=>$name,'i'=>$image,'d'=>$descr];
-		}
-		Response( (string)Eleanor::$Template->Galleries($galleries) );
-		break;
-	case'avatars':
-		$gallery=isset($_POST['gallery']) ? (string)$_POST['gallery'] : false;
-		$files=$gallery
-			? glob(Template::$path['static']."images/avatars/{$gallery}/*.{jpg,png,jpeg,bmp,gif}",GLOB_BRACE)
-			: false;
-
-		if(!$files)
-			return Error();
-
-		foreach($files as &$v)
-			$v=['p'=>Template::$http['static']."images/avatars/{$gallery}/",'f'=>basename($v)];
-
-		Eleanor::$Template->queue[]='Users';
-		Response( (string)Eleanor::$Template->Avatars($files) );
-		break;
-	case'killsession':
-		$key=isset($_POST['key']) ? (string)$_POST['key'] : '';
-		$uid=isset($_POST['uid']) ? (string)$_POST['uid'] : '';
-		$login=isset($_POST['login']) ? (string)$_POST['login'] : '';
-
-		$R=Eleanor::$Db->Query('SELECT `login_keys` FROM `'.P.'users_site` WHERE `id`='.$uid.' LIMIT 1');
-		if($session=$R->fetch_assoc())
-		{
-			$lks=$session['login_keys'] ? (array)unserialize($session['login_keys']) : [];
-			unset($lks[$login][$key]);
-
-			if(empty($lks[$login]))
-				unset($lks[$login]);
-
-			Eleanor::$Db->Update(P.'users_site',['login_keys'=>$lks ? serialize($lks) : ''],'`id`='.$uid.' LIMIT 1');
-		}
-
-		Response(true);
-	break;*/
 	case'author-autocomplete':
 		$q=isset($_REQUEST['query']) ? (string)$_REQUEST['query'] : '';
 		$out=[];
@@ -615,18 +544,149 @@ elseif(isset($_GET['edit']))
 	CreateEdit:
 
 	$errors=[];
+	$maxupload=Eleanor::$Permissions ? Eleanor::$Permissions->MaxUpload() : Files::SizeToBytes(ini_get('upload_max_filesize'));
 	$groups=\Eleanor\AwareInclude(__DIR__.'/users/groups.php');
-	$users=\Eleanor\AwareInclude(__DIR__.'/users/users.php');
+	$extra=\Eleanor\AwareInclude(__DIR__.'/users/extra.php');
 	$table=[
-		#ToDo!
+		'main'=>USERS_TABLE,
+		'us'=>P.'users_site',
+		'ue'=>P.'users_extra',
+		'ea'=>P.'users_external_auth',
 	];
+
+	if(AJAX)
+	{
+		if(isset($_FILES['avatar']) and is_uploaded_file($_FILES['avatar']['tmp_name']) and $_FILES['avatar']['size']<=$maxupload
+			and preg_match('#\.(png|jpe?g|gif)$#',$_FILES['avatar']['name']) and getimagesize($_FILES['avatar']['tmp_name']))
+		{
+			$tempdir="avatar-{$id}-{$uid}".strrchr($_FILES['avatar']['name'],'.');
+			$temppath=Template::$path['uploads'].'temp/';
+
+			if(!is_dir($temppath))
+				Files::MkDir($temppath);
+
+			$temppath.=$tempdir;
+
+			if(is_file($temppath))
+				Files::Delete($temppath);
+
+			if(move_uploaded_file($_FILES['avatar']['tmp_name'],$temppath))
+				Response([
+					'http'=>Template::$http['uploads'].'temp/'.$tempdir,
+					'src'=>$tempdir,
+				]);
+			else
+				Error();
+		}
+		elseif(isset($_POST['avatar-gallery']))
+		{
+			$galleries=$avatars=[];
+			$gallery=(string)$_POST['avatar-gallery'];
+
+			if($gallery)
+				$gallery=preg_replace('#[^a-z\d_\-]+#i','',$gallery);
+
+			if($gallery)
+			{
+				$dirs=[];
+				$files=glob(Template::$path['static']."images/avatars/{$gallery}/*.{jpg,png,jpeg,gif}",GLOB_BRACE);
+			}
+			else
+			{
+				$dirs=glob(Template::$path['static'].'images/avatars/*', GLOB_MARK|GLOB_ONLYDIR);
+				$files=[];
+			}
+
+			if($files) foreach($files as $v)
+			{
+				$bn=basename($v);
+				$avatars[$bn]=[
+					'path'=>$v,
+					'http'=>Template::$http['static']."images/avatars/{$gallery}/{$bn}",
+				];
+			}
+
+			if($dirs) foreach($dirs as $v)
+			{
+				$title_=$bn=basename($v);
+				$image=false;
+
+				if(is_file($v.'config.ini'))
+				{
+					$session=parse_ini_file($v.'config.ini',true);
+
+					if(isset($session['title']))
+						$title_=FilterLangValues($session['title'],'',$bn);
+
+					if(isset($session['options']['cover']) and is_file($v.$session['options']['cover']))
+						$image=$bn.'/'.$session['options']['cover'];
+				}
+
+				if(!$image and $temp=glob($v.'*.{jpg,png,jpeg,gif}',GLOB_BRACE))
+					$image=$bn.'/'.basename($temp[0]);
+
+				if($image)
+					$galleries[$bn]=[
+						'title'=>$title_,
+						'path'=>Template::$path['static'].'images/avatars/'.$image,
+						'http'=>Template::$http['static'].'images/avatars/'.$image,
+					];
+			}
+
+			Response( (string)Eleanor::$Template->MiniatureGallery($avatars,$galleries,$avatars ? '' : null) );
+		}
+		elseif(isset($_POST['kill_login_key'],$_POST['login']))
+		{#Удаление сессии пользователя
+			$key=(string)$_POST['kill_login_key'];
+			$login=(string)$_POST['login'];
+			$R=Eleanor::$Db->Query("SELECT `login_keys` FROM `{$table['us']}` WHERE `id`={$id} LIMIT 1");
+			if($a=$R->fetch_assoc())
+			{
+				$lks=$a['login_keys'] ? json_decode($a['login_keys'],true) : [];
+				unset($lks[$login][$key]);
+
+				if(empty($lks[$login]))
+					unset($lks[$login]);
+
+				Eleanor::$Db->Update($table['us'],['login_keys'=>$lks ? json_encode($lks,JSON) : ''],"`id`={$uid} LIMIT 1");
+			}
+
+			Response(true);
+		}
+		elseif(isset($_POST['kill_provider'],$_POST['provider_uid']))
+		{#Удаление внешний авторизации
+			$provider=Eleanor::$Db->Escape((string)$_POST['provider']);
+			$pid=Eleanor::$Db->Escape((string)$_POST['provider_uid']);
+
+			Eleanor::$Db->Delete($table['ea'],"`provider`={$provider} AND `provider_uid`={$pid}");
+
+			Response(true);
+		}
+		else
+			Error();
+
+		return;
+	}
 
 	if($id)
 	{
-		$R=Eleanor::$Db->Query("SELECT * FROM `{$table}` WHERE `id`={$id} LIMIT 1");
+		$R=Eleanor::$UsersDb->Query("SELECT * FROM `{$table['main']}` WHERE `id`={$id} LIMIT 1");
 		if(!$orig=$R->fetch_assoc())
 			return GoAway();
+
+		$R=Eleanor::$Db->Query("SELECT * FROM `{$table['us']}` WHERE `id`={$id} LIMIT 1");
+		if($R->num_rows)
+			$orig+=$R->fetch_assoc();
+		else
+			return GoAway();
+
+		$R=Eleanor::$Db->Query("SELECT * FROM `{$table['ue']}` WHERE `id`={$id} LIMIT 1");
+		if($R->num_rows)
+			$orig+=$R->fetch_assoc();
+		else
+			return GoAway();
 	}
+
 	/*	if($post)
 	{
 		$C=new Controls;
@@ -722,44 +782,101 @@ elseif(isset($_GET['edit']))
 			return Response( Eleanor::$Template->IframeResponse((string)$Url) );
 
 		return GoAway(empty($_POST['back']) ? true : (string)$_POST['back']);
-	}
+	}*/
 
 	EditForm:
 
+	$groups_overload=[];
+
 	if($id)
 	{
-		$values=$orig;
-		$values['title']=$values['title_l'] ? json_decode($values['title_l'],true) : [''=>''];
-		$values['descr']=$values['descr_l'] ? json_decode($values['descr_l'],true) : [''=>''];
-		$values['_inherit']=$orig['parent'] ? [] : ['style'];
-
-		foreach($orig as $k=>$v)
-			if($v===null or !$orig['parent'] and isset($controls[$k]))
-				$values['_inherit'][]=$k;
-
-		if(!Eleanor::$vars['multilang'])
-		{
-			$values['title']=FilterLangValues($values['title']);
-			$values['descr']=FilterLangValues($values['descr']);
-		}
-
 		$title[]=$lang['editing'];
+
+		$values=$orig;
+		$values['miniature']=Avatar($orig);
+		$values+=[
+			#Письма на отправку
+			'_letter'=>['name','pass'],
+			#Очистка попыток неудачных логинов
+			'_clean_logins'=>false,
+
+			#Перезагрузка групп: метод перезагрузки и значение
+			'_groups_overload_method'=>[],
+
+			'_external_auth'=>[],
+			'_sessions'=>$orig['login_keys'] ? json_decode($orig['login_keys'],true) : [],
+			'_password'=>'',
+		];
+
+		#Активные сессии пользователя
+		$lk=Eleanor::$Login->Get('login_key');
+
+		foreach($values['_sessions'] as $ks=>&$sess)
+			foreach($sess as $k=>&$v)
+				$v['_del']=$uid!=$id || $k!=$lk;
+
+		#Неудачные попытки входа
+		$values['failed_logins']=$values['failed_logins'] ? json_decode($values['failed_logins'],true) : [];
+
+		#Внешние сервисы авторизаций (через VK, Яндекс, Гугль)
+		$R=Eleanor::$Db->Query("SELECT `provider`, `provider_uid`, `identity` FROM `{$table['ea']}` WHERE `id`={$id}");
+		while($a=$R->fetch_assoc())
+			$values['_external_auth'][]=$a;
+
+		#Группы пользователя: основная и вторичные
+		$values['groups']=$values['groups'] ? explode(',,',trim($values['groups'],',')) : [];
+
+		if($values['groups'])
+		{
+			$values['_group']=reset($values['groups']);
+			$k=key($values['groups']);
+
+			unset($values['groups'][$k]);
+		}
+		else
+			$values['_group']=UserManager::GROUP_USER;
+
+		#Перезагрузка прав групп
+		$values['groups_overload']=$values['groups_overload'] ? json_decode($values['groups_overload'],true) : [];
+
+		if(isset($values['groups_overload']['method']) and is_array($values['groups_overload']['method']))
+			$values['_groups_overload_method']=$values['groups_overload']['method'];
+
+		if(isset($values['groups_overload']['value']) and is_array($values['groups_overload']['value']))
+			$groups_overload=$values['groups_overload']['value'];
 	}
 	else
 	{
-		$def=Eleanor::$vars['multilang'] ? [] : '';
+		$title[]=$lang['creating'];
+
 		$values=[
-			'parent'=>isset($_GET['parent']) ? (int)$_GET['parent'] : 0,
-			'title'=>$def,
-			'descr'=>$def,
-			'style'=>'',
-			'_inherit'=>['style'],
+			'full_name'=>'',
+			'name'=>'',
+			'email'=>'',
+			'timezone'=>'',
+			'groups'=>[],
+			'language'=>'',
+			'banned_until'=>'',
+			'ban_explain'=>'',
+			'avatar'=>false,
+
+			#Письма на отправку
+			'_letter'=>['new','name','pass'],
+			#Очистка попыток неудачных логинов
+			'_clean_logins'=>false,
+
+			#Перезагрузка групп: метод перезагрузки и значение
+			'_groups_overload_method'=>[],
+
+			#Дополнительные поля
+			'_external_auth'=>[],
+			'_sessions'=>[],
+			'_password'=>'',
+			'_group'=>UserManager::GROUP_USER,
 		];
 
-		foreach($controls as $k=>$v)
-			$values['_inherit'][]=$k;
-
-		$title[]=$lang['creating'];
+		foreach($groups as $k=>$v)
+			$values['_groups_overload_method'][$k]='replace';
 	}
 
 	if($errors)
@@ -768,27 +885,80 @@ elseif(isset($_GET['edit']))
 			$errors=[];
 
 		$data=[
-			'_inherit'=>'array',
-			'parent'=>'int',
-			'style'=>'string',
 		];
-
-		if(Eleanor::$vars['multilang'])
-			$data+=[
-				'title'=>'array',
-				'descr'=>'array',
-			];
-		else
-			$data+=[
-				'title'=>'string',
-				'descr'=>'string',
-			];
+		/*		$values['full_name']=isset($_POST['full_name']) ? (string)$_POST['full_name'] : '';
+		$values['name']=isset($_POST['name']) ? (string)$_POST['name'] : '';
+		$values['email']=isset($_POST['email']) ? (string)$_POST['email'] : '';
+		$values['_group']=isset($_POST['_group']) ? (int)$_POST['_group'] : '';
+		$values['groups']=isset($_POST['groups']) ? (array)$_POST['groups'] : array();
+		$values['banned_until']=isset($_POST['banned_until']) ? (string)$_POST['banned_until'] : '';
+		$values['ban_explain']=isset($_POST['ban_explain']) ? (string)$_POST['ban_explain'] : '';
+		$values['language']=isset($_POST['language']) ? (string)$_POST['language'] : '';
+		$values['timezone']=isset($_POST['timezone']) ? (string)$_POST['timezone'] : '';
+		$values['_slnew']=isset($_POST['_slnew']);
+		$values['_slname']=isset($_POST['_slname']);
+		$values['_slpass']=isset($_POST['_slpass']);
+		$values['_cleanfla']=isset($_POST['_cleanfla']);
+		$values['_overskip']=isset($_POST['_overskip']) ? (array)$_POST['_overskip'] : array();
+		$values['pass']=isset($_POST['pass']) ? (string)$_POST['pass'] : '';
+		$values['avatar']=isset($_POST['avatar']) ? (string)$_POST['avatar'] : '';*/
 
 		PostValues($values,$data);
+
+		#Автара, здесь есть хитрость: если картинка не изменялась - она не должна передаваться
+		if(isset($_POST['miniature'],$_POST['miniature']['type'],$_POST['miniature']['src']) and is_array($_POST['miniature']))
+			switch($_POST['miniature']['type'])
+			{
+				case'upload':
+					$src=basename((string)$_POST['avatar']['src']);
+					$path=Template::$path['uploads'].'temp/'.$src;
+
+					if(is_file($path))
+						$values['avatar']=[
+							'post'=>true,
+							'type'=>'upload',
+							'path'=>$path,
+							'http'=>Template::$http['uploads'].'temp/'.$src,
+							'src'=>$src,
+						];
+					else
+						$values['avatar']=false;
+				break;
+				case'gallery':
+					$gallery=Template::$path['static'].'images/avatars/';
+					$src=(string)$_POST['avatar']['src'];
+					$path=realpath($gallery.$src);
+
+					if(\Eleanor\W)
+					{
+						$gallery=str_replace('\\','/',$gallery);
+						$path=str_replace('\\','/',$path);
+					}
+
+					if(is_file($path) and strpos($path,$gallery)===0)
+						$values['avatar']=[
+							'post'=>true,
+							'type'=>'gallery',
+							'path'=>$path,
+							'http'=>Template::$http['static'].'images/avatars/'.$src,
+							'src'=>$src,
+						];
+					else
+						$values['avatar']=false;
+				break;
+				case'link':
+					$values['avatar']=[
+						'post'=>true,
+						'type'=>'link',
+						'http'=>$_POST['avatar']['src'],
+					];
+				default:
+					$values['avatar']=[];
+			}
 	}
 
 	$links=[
-		'delete'=>$id && !$orig['protected'] ? $Url(['delete'=>$id,'noback'=>1,'iframe'=>isset($_GET['iframe']) ? 1 : null]) : false,
+		'delete'=>$id && $uid!=$id ? $Url(['delete'=>$id,'noback'=>1,'iframe'=>isset($_GET['iframe']) ? 1 : null]) : false,
 	];
 
 	if(isset($_GET['noback']) or isset($_GET['iframe']))
@@ -796,31 +966,30 @@ elseif(isset($_GET['edit']))
 	else
 		$back=isset($_POST['back']) ? (string)$_POST['back'] : getenv('HTTP_REFERER');
 
-	if(Eleanor::$vars['multilang'])
-		foreach(Eleanor::$langs as $lng=>$_)
-		{
-			if(!isset($values['title'][$lng]))
-				$values['title'][$lng]='';
-
-			if(!isset($values['descr'][$lng]))
-				$values['descr'][$lng]='';
-		}
-
-	$parents=!$id || !$orig['protected'] ? UserManager::GroupsOpts($values['parent'],$id) : '';
-	$Controls2Html=function($controls)use($values){
-		foreach($values as $k=>$v)
-			if(isset($controls[$k]))
-				$controls[$k]['value']=$v;
+	$Groups2Html=function()use($groups_overload,$groups){
+		foreach($groups_overload as $k=>$v)
+			if(isset($groups[$k]))
+				$groups[$k]['value']=$v;
 
 		$C=new Controls;
-		return$C->DisplayControls($controls);
+		$C->name=['groups_overload'];
+		return$C->DisplayControls($groups);
 	};
-	$Editor=function()use($Eleanor){
-		return call_user_func_array([$Eleanor->Editor,'Area'],func_get_args());
+	$Extra2Html=function()use($values,$extra){
+		foreach($values as $k=>$v)
+			if(isset($groups[$k]))
+				$groups[$k]['value']=$v;
+
+		$C=new Controls;
+		$C->name=['extra'];
+		return$C->DisplayControls($extra);
+	};
+	$GroupsOpts=function($selected,$optgroup=true){
+		return UserManager::GroupsOpts($selected,[],$optgroup);
 	};
 
-	$c=Eleanor::$Template->CreateEdit($id,$values,$Editor,$controls,$parents,$Controls2Html,$errors,$back,$links);
-	Response($c);*/
+	$c=Eleanor::$Template->CreateEdit($id,$values,$GroupsOpts,$groups,$Groups2Html,$extra,$Extra2Html,$errors,$back,$links,$maxupload);
+	Response($c);
 }
 elseif(isset($_GET['delete']))
 {
@@ -853,7 +1022,7 @@ else
 {
 	$title[]=$lang['list'];
 	$page=isset($_GET['page']) ? (int)$_GET['page'] : 1;
-	$where=$query=$items=$groups=[];
+	$where=$query=$galleries=$groups=[];
 
 	if(isset($_REQUEST['fi']) and is_array($_REQUEST['fi']))
 	{
@@ -934,9 +1103,9 @@ else
 		switch($_POST['event'])
 		{
 			case'delete':
-				$items=array_diff((array)$_POST['items'],[$uid]);
+				$galleries=array_diff((array)$_POST['items'],[$uid]);
 
-				UserManager::Delete($items);
+				UserManager::Delete($galleries);
 		}
 
 	$defsort='id';
@@ -975,7 +1144,7 @@ else
 			$a['_adel']=$uid==$a['id'] ? null : $Url(['delete'=>$a['id']]);
 
 			$a['avatar']=Avatar($a);
-			$items[$a['id']]=array_slice($a,1);
+			$galleries[$a['id']]=array_slice($a,1);
 		}
 
 		if($groups)
@@ -1017,185 +1186,11 @@ else
 	}
 
 	$links['nofilter']=isset($query['fi']) ? $Url(['fi'=>[]]+$query) : false;
-	$c=Eleanor::$Template->ShowList($items,$groups,$cnt,$pp,$query,$page,$links);
+	$c=Eleanor::$Template->ShowList($galleries,$groups,$cnt,$pp,$query,$page,$links);
 	Response($c);
 }
 
-/*function AddEdit($id,$error='')
-{global$Eleanor,$title;
-	$uid=Eleanor::$Login->Get('id');
-	$overload=$values=array();
-	$lang=Eleanor::$Language['users'];
-	if($id)
-	{
-		$R=Eleanor::$UsersDb->Query('SELECT * FROM `'.USERS_TABLE.'` WHERE `id`='.$id.' LIMIT 1');
-		if(!$values=$R->fetch_assoc())
-			return GoAway(true);
-		$R=Eleanor::$Db->Query('SELECT * FROM `'.P.'users_site` WHERE `id`='.$id.' LIMIT 1');
-		$values+=$R->fetch_assoc();
-		$values+=array(
-			'_slnew'=>false,
-			'_slname'=>true,
-			'_slpass'=>true,
-			'_cleanfla'=>false,
-			'_overskip'=>array(),
-			'_externalauth'=>array(),
-			'_sessions'=>array(),
-			'pass'=>'',
-			'pass2'=>'',
-		);
-		$values['failed_logins']=$values['failed_logins'] ? (array)unserialize($values['failed_logins']) : array();
-
-		$R=Eleanor::$Db->Query('SELECT `provider`,`provider_uid`,`identity` FROM `'.P.'users_external_auth` WHERE `id`='.$id);
-		while($a=$R->fetch_assoc())
-			$values['_externalauth'][]=$a;
-
-		$R=Eleanor::$Db->Query('SELECT `login_keys` FROM `'.P.'users_site` WHERE `id`='.$id.' LIMIT 1');
-		if($a=$R->fetch_assoc())
-		{
-			$cl=get_class(Eleanor::$Login);
-			$lk=Eleanor::$Login->Get('login_key');
-			$values['_sessions']=$a['login_keys'] ? (array)unserialize($a['login_keys']) : array();
-			foreach($values['_sessions'] as $cl=>&$sess)
-				foreach($sess as $k=>&$v)
-					$v['_candel']=$uid!=$id || $k!=$lk;
-		}
-
-		if(!$error)
-		{
-			$values['groups']=$values['groups'] ? explode(',,',trim($values['groups'],',')) : array();
-			if($values['groups'])
-			{
-				$values['_group']=reset($values['groups']);
-				$k=key($values['groups']);
-				unset($values['groups'][$k]);
-			}
-			else
-				$values['_group']=GROUP_USER;
-
-			$values['groups_overload']=$values['groups_overload'] ? (array)unserialize($values['groups_overload']) : array();
-			if(!isset($values['groups_overload']['value']) or !is_array($values['groups_overload']['value']))
-				$values['groups_overload']['value']=array();
-			foreach($Eleanor->gp as &$gpv)
-				foreach($values['groups_overload']['value'] as $k=>&$v)
-					if(isset($gpv[$k]))
-					{
-						$overload[$k]['value']=$v;
-						unset($values['groups_overload']['value'][$k]);
-						continue;
-					}
-			if(!isset($values['groups_overload']['method']) or !is_array($values['groups_overload']['method']))
-				$values['groups_overload']['method']=array();
-			$values['_overskip']=$values['groups_overload']['method'];
-			unset($values['groups_overload']);
-
-			$R=Eleanor::$Db->Query('SELECT * FROM `'.P.'users_extra` WHERE `id`='.$id.' LIMIT 1');
-			if(!$a=$R->fetch_assoc())
-				return GoAway(true);
-			if($a['avatar_type']=='gallery' and $a['avatar'])
-				$a['avatar']='images/avatars/'.$a['avatar'];
-			foreach($a as $k=>&$v)
-				if(isset($Eleanor->us[$k]))
-					$values[$k]['value']=$v;
-				else
-					$values[$k]=$v;
-			$values['_aupload']=$a['avatar_type']!='gallery';
-		}
-		$title[]=$lang['editing'];
-	}
-	else
-	{
-		$title[]=$lang['adding'];
-		$values=array(
-			'full_name'=>'',
-			'name'=>'',
-			'email'=>'',
-			'_group'=>GROUP_USER,
-			'groups'=>array(),
-			'language'=>'',
-			'banned_until'=>'',
-			'ban_explain'=>'',
-			'last_visit'=>'',
-			'_slnew'=>true,
-			'_slname'=>true,
-			'_slpass'=>true,
-			'_cleanfla'=>false,
-			'_overskip'=>array(),
-			'_aupload'=>false,
-			'_sessions'=>array(),
-			'pass'=>'',
-			'pass2'=>'',
-			'timezone'=>'',
-			'failed_logins'=>array(),
-			'avatar'=>false,
-		);
-		foreach($Eleanor->gp as $k=>&$v)
-			if(is_array($v))
-				$values['_overskip'][]=$k;
-		$values['register']=date('Y-m-d H:i:s');
-	}
-
-	if($error)
-	{
-		if($error===true)
-			$error='';
-		$Eleanor->us_post=$bypost=true;
-		$values['full_name']=isset($_POST['full_name']) ? (string)$_POST['full_name'] : '';
-		$values['name']=isset($_POST['name']) ? (string)$_POST['name'] : '';
-		$values['email']=isset($_POST['email']) ? (string)$_POST['email'] : '';
-		$values['_group']=isset($_POST['_group']) ? (int)$_POST['_group'] : '';
-		$values['groups']=isset($_POST['groups']) ? (array)$_POST['groups'] : array();
-		$values['banned_until']=isset($_POST['banned_until']) ? (string)$_POST['banned_until'] : '';
-		$values['ban_explain']=isset($_POST['ban_explain']) ? (string)$_POST['ban_explain'] : '';
-		$values['language']=isset($_POST['language']) ? (string)$_POST['language'] : '';
-		$values['timezone']=isset($_POST['timezone']) ? (string)$_POST['timezone'] : '';
-		$values['_slnew']=isset($_POST['_slnew']);
-		$values['_slname']=isset($_POST['_slname']);
-		$values['_slpass']=isset($_POST['_slpass']);
-		$values['_cleanfla']=isset($_POST['_cleanfla']);
-		$values['_overskip']=isset($_POST['_overskip']) ? (array)$_POST['_overskip'] : array();
-		$values['_atype']=isset($_POST['_atype']) ? $_POST['_atype']=='upload' : false;
-		$values['pass']=isset($_POST['pass']) ? (string)$_POST['pass'] : '';
-		$values['pass2']=isset($_POST['pass2']) ? (string)$_POST['pass2'] : '';
-		$values['_aupload']=isset($_POST['_atype']) && $_POST['_atype']=='upload';
-		$values['avatar']=isset($_POST['avatar']) ? (string)$_POST['avatar'] : '';
-	}
-	else
-	{
-		$al=$values['avatar'] ? ($values['_aupload'] && strpos($values['avatar'],'://')===false ? Eleanor::$uploads.'/avatars/' : '').$values['avatar'] : '';
-		if($values['_aupload'])
-		{
-			$Eleanor->avatar['value']=$al;
-			$values['avatar']='';
-		}
-		else
-			$values['avatar']=$al;
-		$bypost=false;
-	}
-
-	$Eleanor->Controls->arrname=array('avatar');
-	$upavatar=$Eleanor->Controls->DisplayControl($Eleanor->avatar);
-
-	$Eleanor->Controls->arrname=array('extra');
-	$extra=$Eleanor->Controls->DisplayControls($Eleanor->us,$values);
-
-	$Eleanor->Controls->arrname=array('overload');
-	$overload=$Eleanor->Controls->DisplayControls($Eleanor->gp,$values);
-
-	if(isset($_GET['noback']))
-		$back='';
-	else
-		$back=isset($_POST['back']) ? (string)$_POST['back'] : getenv('HTTP_REFERER');
-
-	$links=array(
-		'delete'=>$id && $id!=$uid ? $Eleanor->Url->Construct(array('delete'=>$id,'noback'=>1)) : false,
-	);
-	$c=Eleanor::$Template->AddEditUser($id,$values,$Eleanor->gp,$overload,$upavatar,$Eleanor->us,$extra,$bypost,$error,$back,$links);
-	Start();
-	echo$c;
-}
-
-function Save($id)
+/*function Save($id)
 {global$Eleanor;
 	$lang=Eleanor::$Language['users'];
 	$C=new Controls;
