@@ -1,3 +1,0 @@
-<filesmatch "\.(php|inc)$">
-deny from all
-</filesmatch>

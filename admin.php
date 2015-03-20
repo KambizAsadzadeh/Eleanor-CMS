@@ -1,291 +1,136 @@
 <?php
-/**
-	Eleanor CMS © 2014
-	http://eleanor-cms.ru
-	info@eleanor-cms.ru
+/*
+	Copyright © Eleanor CMS
+	URL: http://eleanor-cms.ru, http://eleanor-cms.com
+	E-mail: support@eleanor-cms.ru
+	Developing: Alexander Sunvas*
+	Interface: Rumin Sergey
+	=====
+	*Pseudonym
 */
-namespace CMS;
-use Eleanor\Classes\EE, \Eleanor\Classes\OutPut, Eleanor\Classes\EE_DB;
+$start=microtime();
+define('CMS',true);
 
-define('CMS\STARTED',microtime(true));
-
-require __DIR__.'/cms/core.php';
-
-$Eleanor=new Eleanor(true);
-
-LoadOptions(['site','users-on-site']);
-SetService('admin');
-Eleanor::$Language->queue['main']=DIR.'translation/admin-*.php';
-
-include DIR.'functions.php';
-
-/** Генерация нового URL после перехода на новый язык
- * @param string|null $url Старый URL, в случае NULL берется текущий запрос
- * @param string $newlang Название нового языка
- * @param string|null Идентификатор старого языка
- * @return string */
-function LangNewUrl($url,$newlang,$oldlang=null)
-{
-	$Url=new DynUrl;
-
-	if(Eleanor::$vars['multilang'])
-		$Url->prefix.='lang='.urlencode(Eleanor::$langs[ $newlang ]['uri']).'&amp;';
-
-	if(!$url)
-	{
-		Prefix:
-		return \Eleanor\SITEDIR.(string)$Url;
-	}
-
-	#Если запрос пришел с чужого домена - считаем такой запрос некорректным
-	if(strpos($url,'://')!==false and strpos($url,\Eleanor\PROTOCOL.\Eleanor\PUNYCODE.\Eleanor\SITEDIR)!==0)
-		goto Prefix;
-
-	if(strpos($url,'?')===false)
-		goto Prefix;
-
-	$url=substr(strchr($url,'?'),1);
-	parse_str($url,$query);
-
-	#Возможно, старый URL содержал в себе идентификатор языка
-	if(!$oldlang and isset($query['lang']))
-		foreach(Eleanor::$langs as $k=>$v)
-			if($v['uri']==$query['lang'])
-			{
-				$oldlang=$k;
-				unset($query['lang']);#В новом запросе не дложно быть старого языка
-				break;
-			}
-
-	if(!isset($query['section'],$query['module']) or $query['section']!='modules')
-		return\Eleanor\SITEDIR.$Url($query);
-
-	$Url->prefix.='section=modules&amp;';
-
-	$modules=GetModules(null,$oldlang);
-
-	if(!isset($modules['uri2id'][ $query['module'] ]))
-		return\Eleanor\SITEDIR.$Url($query);
-
-	$id=(int)$modules['uri2id'][ $query['module'] ];
-	$section=$modules['uri2section'][ $query['module'] ];
-
-	$modules=GetModules(null,$newlang);
-
-	if(!isset($modules['id2module'][$id]))
-		return\Eleanor\SITEDIR.$Url($query);
-
-	$module=$modules['id2module'][$id];
-	$prefix=array_keys($modules['uri2id'],$id);
-	$Url->prefix.='module='.Url::Encode( reset($prefix) ).'&amp;';
-
-	if($module['api'])
-	{
-		$api=DIR.$module['path'].$module['api'];
-		$class='Api'.basename($module['path']);
-
-		if(!class_exists($class,false))
-			if(is_file($api))
-			{
-				$retapi=\Eleanor\AwareInclude($api);
-
-				if(is_string($retapi))
-					$class=$retapi;
-
-				if(!class_exists($class,false))
-					goto Bad;
-			}
-			else
-				goto Bad;
-
-		if(is_a($class,'CMS\Interfaces\NewLangUrl',true))
-		{
-			/** @var Interfaces\NewLangUrl $Api */
-			$Api=new$class([
-				'uris'=>$module['uris'],
-				'id'=>$id,
-			]);
-
-			unset($query['section'],$query['module']);
-			if($r=$Api->GetNewLangUrl($section,[],$query,$oldlang,$newlang,$Url))
-				return\Eleanor\SITEDIR.$r;
-		}
-	}
-
-	Bad:
-
-	return\Eleanor\SITEDIR.$Url($query);
-}
-
-/** Отображение страницы с ошибкой
- * @param int $code Код ошибки
- * @return mixed */
-function ExitPage($code=404)
-{
-	$Url=new Url(false);
-
-	if(Eleanor::$vars['multilang'])
-		$Url->prefix=Url::Encode(Eleanor::$langs[ Language::$main ]['uri']).'/';
-
-	$errors=array_keys(GetModules('index')['uri2section'],'errors');
-	GoAway($Url([reset($errors),$code]),301);
-
-}
+require __dir__.'/core/core.php';
+$Eleanor=Eleanor::getInstance();
+Eleanor::$service='admin';#ID сервиса
+Eleanor::LoadOptions(array('site','users-on-site'));
+Eleanor::InitService();
+Eleanor::$Language->queue['main']='langs/admin-*.php';
 
 if(Eleanor::$vars['multilang'])
 {
-	$isu=Eleanor::$Login->IsUser();
-
-	if(isset($_GET['language']) and is_string($_GET['language']) and isset(Eleanor::$langs[ $_GET['language'] ]) and
-		count($_GET)==1)
+	if(isset($_GET['language']) and is_string($_GET['language']) and isset(Eleanor::$langs[$_GET['language']]))
 	{
-		if($isu)
-			UserManager::Update([ 'language'=>$_GET['language'] ]);
+		if(Eleanor::$Login->IsUser())
+			UserManager::Update(array('language'=>$_GET['language']));
 		else
-			SetCookie('lang',$_GET['language']);
-
+			Eleanor::SetCookie('lang',$_GET['language']);
 		return GoAway(html_entity_decode(LangNewUrl(getenv('HTTP_REFERER'),$_GET['language'])));
 	}
-
-	$mislang=true;
-
-	if(isset($_GET['lang']))
-		foreach(Eleanor::$langs as $l=>$lang)
-			if($lang['uri']===$_GET['lang'])
-			{
-				if($l!=Language::$main)
-					Eleanor::$Language->Change($l);
-
-				$mislang=false;
-				break;
-			}
-
-	if($mislang and (!$isu or !Eleanor::$Login->Get('language')))
+	if(!Eleanor::$Login->IsUser() and $l=Eleanor::GetCookie('lang') and isset(Eleanor::$langs[$l]) and $l!=LANGUAGE)
 	{
-		$syslang=Language::$main;
-
-		if($l=GetCookie('lang') and isset(Eleanor::$langs[$l]) and $l!=Language::$main)
-			Eleanor::$Language->Change($l);
-
-		#Попробуем определить основной язык пользователя
-		elseif(isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
-		{
-			$ua_lang=[];
-
-			foreach(explode(',',$_SERVER['HTTP_ACCEPT_LANGUAGE']) as $ur)
-			{
-				$ur=trim($ur);
-
-				if(false===$p=strpos($ur,';q='))
-				{
-					$ua_lang=[$ur=>1];
-					break;
-				}
-				else
-					$ua_lang[ substr($ur,0,$p) ]=(float)substr($ur,$p+3);
-			}
-
-			arsort($ua_lang,SORT_NUMERIC);
-			$ua_lang=substr(key($ua_lang),0,2);
-
-			foreach(Eleanor::$langs as $l=>$lang)
-				if($lang['d']==$ua_lang and $l!=Language::$main)
-				{
-					Eleanor::$Language->Change($l);
-					break;
-				}
-		}
-
-		#Автоматическое прописывание языкового префикса к URL
-		if($syslang!=Language::$main)
-			return GoAway(html_entity_decode(LangNewUrl(null,Language::$main,$syslang)));
+		Language::$main=$l;
+		Eleanor::$Language->Change($l);
 	}
 
-	$lang=Eleanor::$langs[ Language::$main ];
-	DynUrl::$base.='lang='.urlencode($lang['uri']).'&amp;';
-	Url::$base=Url::Encode($lang['uri']).'/';
 
-	foreach(Eleanor::$lvars as $lk=>$lv)
-		Eleanor::$vars[$lk]=FilterLangValues($lv);
+	foreach(Eleanor::$lvars as $k=>&$v)
+		Eleanor::$vars[$k]=Eleanor::FilterLangValues($v);
 }
 else
+	Eleanor::$lvars=array();
+
+#Три предустановленные переменные
+$title=$head=$jscripts=array();
+$Eleanor->started=$Eleanor->error=false;
+Eleanor::InitTemplate(Eleanor::$services[Eleanor::$service]['theme']);
+
+if(Eleanor::$Login->IsUser())
 {
-	Eleanor::$lvars=[];
-	$Eleanor->Url=new DynUrl();
-}
-
-SetTemplate(Eleanor::$services[Eleanor::$service]['theme']);
-
-if(isset($_GET['direct']) and key($_GET)=='direct'
-	and is_file($f=DIR.'direct/'.preg_replace('#[^a-z0-9\-_]+#i','',(string)$_GET['direct']).'.php'))
-	include$f;
-elseif(Eleanor::$Login->IsUser())
-{
-	$section=isset($_REQUEST['section']) ? (string)$_REQUEST['section'] : false;
-
+	$section=isset($_REQUEST['section']) ? $_REQUEST['section'] : '';
 	if(!$section and isset($_GET['logout']))
 	{
 		Eleanor::$Login->LogOut();
-		return GoAway(html_entity_decode($Eleanor->DynUrl->Prefix()));
+		GoAway(Eleanor::$filename);
 	}
-
-	$lang=Eleanor::$Language['main'];
-	$title[]=$lang['admin'];
-	$Eleanor->Url=$Eleanor->DynUrl;
-
+	$l=Eleanor::$Language['main'];
+	$title[]=$l['adminka'];
 	switch($section)
 	{
 		case'options':
+			$Eleanor->module=array(
+				'stitle'=>$l['options'],
+				'name'=>'options',
+				'image'=>'setting-*.png',
+			);
+			$Eleanor->Url->SetPrefix(array('section'=>'options'));
+			$title[]=$l['options'];
+			Modules::Load(Eleanor::$root.'addons/admin/modules/',false,'section_options.php');
+		break;
 		case'management':
+			$Eleanor->module=array(
+				'stitle'=>$l['management'],
+				'name'=>'management',
+			);
+			$Eleanor->Url->SetPrefix(array('section'=>'management'));
+			$title[]=$l['management'];
+			Modules::Load(Eleanor::$root.'addons/admin/modules/',false,'section_management.php');
+		break;
 		case'modules':
-		case'statistic':
-			$title[]=$lang[$section];
-			$Eleanor->DynUrl->prefix.='section='.$section.'&amp;';
-			\Eleanor\AwareInclude(DIR.'admin/modules/section_'.$section.'.php');
+			$Eleanor->module=array(
+				'stitle'=>$l['modules'],
+				'name'=>'modules',
+				'image'=>'modules-*.png',
+			);
+			$Eleanor->Url->SetPrefix(array('section'=>'modules'));
+			$title[]=$l['modules'];
+			Modules::Load(Eleanor::$root.'addons/admin/modules/',false,'section_modules.php');
 		break;
 		default:
-			$title[]=$lang['modules'];
-			\Eleanor\AwareInclude(DIR.'admin/modules/section_general.php');
+			$Eleanor->module=array(
+				'stitle'=>$l['main page'],
+				'name'=>'general',
+				'general'=>true,
+			);
+			$Eleanor->Url->SetPrefix(array('section'=>'general'));
+			$title[]=$l['main page'];
+			Modules::Load(Eleanor::$root.'addons/admin/modules/',false,'section_general.php');
 	}
 }
 else
 {
-	$lang=Eleanor::$Language->Load(DIR.'translation/admin_enter-*.php','enter');
+	$l=Eleanor::$Language->Load('langs/admin_enter-*.php','enter');
 	$login=isset($_POST['login']['name']) ? (string)$_POST['login']['name'] : '';
 	$password=isset($_POST['login']['password']) ? (string)$_POST['login']['password'] : '';
-	$errors=[];
-	$Captcha=isset(Eleanor::$Login->BeforeLogin()['captcha']) ? Captcha(true) : false;
+	$errors=array();
+	$captcha=Eleanor::$vars['antibrute']==2 && (isset($_POST['check']) || $ct=Eleanor::GetCookie('Captcha_'.get_class(Eleanor::$Login)) && $ct>time());
 
-	if($Captcha)
+	if($captcha)
 	{
 		if($_SERVER['REQUEST_METHOD']=='POST')
-			if($Captcha->Check())
-				$check=true;
+		{
+			$Eleanor->Captcha->disabled=false;
+			if(isset($_POST['check']))
+			{
+				$cach=$Eleanor->Captcha->Check((string)$_POST['check']);
+				$Eleanor->Captcha->Destroy();
+				if(!$cach)
+					$errors[]='WRONG_CAPTCHA';
+			}
 			else
-				$errors[]='WRONG_CAPTCHA';
+				$errors[]='CAPTCHA';
+		}
+		$Eleanor->Captcha->disabled=false;
+		$Eleanor->Captcha->Destroy();
+		$captcha=$Eleanor->Captcha->GetCode();
 	}
-
-	if($login and $password==='')
-		$errors[]='EMPTY_PASSWORD';
 
 	if(!$errors and isset($_POST['login']))
 		try
 		{
-			Eleanor::$Login->Login((array)$_POST['login'],$Captcha ? ['captcha'=>true] : []);
-
-			if($_SERVER['QUERY_STRING'])
-			{
-				parse_str($_SERVER['QUERY_STRING'],$query);
-				unset($query['lang']);
-			}
-			else
-				$query='';
-
-			return GoAway(basename(__FILE__).($query ? '?'.DynUrl::Query($query) : ''));
-		}
-		catch(EE_DB$E)
-		{
-			throw$E;
+			Eleanor::$Login->Login((array)$_POST['login'],array('captcha'=>$captcha));
+			return GoAway(Eleanor::$filename.($_SERVER['QUERY_STRING'] ? '?'.$_SERVER['QUERY_STRING'] : ''));
 		}
 		catch(EE$E)
 		{
@@ -293,28 +138,251 @@ else
 			switch($error)
 			{
 				case'TEMPORARILY_BLOCKED':
-					$errors['TEMPORARILY_BLOCKED']=$lang['TEMPORARILY_BLOCKED'](
-						htmlspecialchars($login,ENT,\Eleanor\CHARSET),round($E->extra['remain']/60)
-					);
+					$errors['TEMPORARILY_BLOCKED']=$l['TEMPORARILY_BLOCKED'](htmlspecialchars($login,ELENT,CHARSET),round($E->extra['remain']/60));
 				break;
 				case'CAPTCHA':
-					$Captcha=Captcha(true);
+					$captcha=true;
 					$errors[]='CAPTCHA';
 				break;
-				default:
+				case'WRONG_PASSWORD':
 					$password='';
+				default:
 					$errors[]=$error;
 			}
 		}
-	$title[]=$lang['enter_to'];
-
-	$out=(string)Eleanor::$Template->Enter([
-		'errors'=>$errors,'login'=>$login,'password'=>$password,'captcha'=>$Captcha ? $Captcha->GetCode() : false,
-	]);
-
-	OutPut::SendHeaders('html');
-	Output::Gzip($out);
+	$title[]=$l['enter_to'];
+	Start(array('Enter',array('errors'=>$errors,'login'=>$login,'password'=>$password,'captcha'=>$captcha)));
 }
 
-if(!AJAX and !ANGULAR)
-	SetSession();
+#Предопределенные функции.
+function Start($tpl='index',$code=200)
+{global$Eleanor,$jscripts,$head,$title,$tcover,$thead;
+	if($Eleanor->started)
+		return;
+	if($code==200)
+		Eleanor::AddSession();
+	Eleanor::HookOutPut('Finish',$code);
+	$Eleanor->started=true;
+	if(!$tpl)
+		return$tcover='';
+
+	$ms=include Eleanor::$root.'addons/config_multisite.php';
+	if($ms)
+	{
+		$hms=array(
+			'msisuser'=>Eleanor::$Login->IsUser(),
+			'msservice'=>Eleanor::$service,
+		);
+		foreach($ms as $sn=>&$sd)
+			$hms['mssites'][$sn]=array(
+				'address'=>$sd['address'],
+				'title'=>Eleanor::FilterLangValues($sd['title']),
+				'secret'=>(bool)$sd['secret'],
+			);
+		$Eleanor->multisite=true;
+	}
+	else
+	{
+		$hms=array();
+		$Eleanor->multisite=false;
+	}
+	$tcover=(string)(is_array($tpl) ? call_user_func_array(array(Eleanor::$Template,$tpl[0]),array_slice($tpl,1)) : Eleanor::$Template->$tpl());
+
+	try
+	{
+		$Lst=Eleanor::LoadListTemplate('headfoot')
+			->metahttp('text/html; charset='.DISPLAY_CHARSET)
+			->base(PROTOCOL.getenv('HTTP_HOST').Eleanor::$site_path)
+			->title(is_array($title) ? join(' &laquo; ',array_reverse($title)) : $title)
+			->meta('robots','noindex, nofollow');
+
+		array_unshift($jscripts,'js/jquery.min.js','js/core.js','js/lang-'.Language::$main.'.js');
+		$jscripts=array_unique($jscripts);
+		foreach($jscripts as &$v)
+			$Lst->script($v);
+	}
+	catch(EE$E)
+	{
+		$Lst='<!-- '.$E->getMessage().' -->';
+	}
+
+	$thead=$Lst.Eleanor::JsVars(array(
+		'c_domain'=>Eleanor::$vars['cookie_domain'],
+		'c_prefix'=>Eleanor::$vars['cookie_prefix'],
+		'c_time'=>Eleanor::$vars['cookie_save_time'],
+		'ajax_file'=>Eleanor::$services['ajax']['file'],
+		'site_path'=>Eleanor::$site_path,
+		'language'=>Language::$main,
+		'!head'=>$head ? '["'.join('","',array_keys($head)).'"]' : '[]',
+	)+$hms,true,false,'CORE.').join($head);
+}
+
+function Finish($s)
+{global$Eleanor,$start,$tcover,$thead;
+	if($Eleanor->error)
+		return$s;
+	$r=array(
+		'debug'=>'',
+		'page status'=>'',
+	);
+	$l=Eleanor::$Language['main'];
+	if(Eleanor::$vars['show_status']==2 or (Eleanor::$vars['show_status']==1 and Eleanor::$Permissions->IsAdmin()))
+		$r['page status']=isset($l['page_status']) ? sprintf(
+			$l['page_status'],
+			round(array_sum(explode(' ',microtime()))-array_sum(explode(' ',$start)),3),
+			Eleanor::$Db->queries,
+			round(memory_get_usage()/1048576,3),
+			round(memory_get_peak_usage()/1048576,3)
+		) : '';
+
+	if(DEBUG and Eleanor::$debug)
+	{
+		$Lst=Eleanor::LoadListTemplate('headfoot');
+		foreach(Eleanor::$debug as $v)
+		{
+			if(!isset($v['f']))
+				$v['f']='?';
+			$r['debug'].=$Lst->debug($v['t'],$v['f'].(isset($v['l']) ? '['.$v['l'].']' : ''),$v['e']);
+		}
+	}
+	return$tcover ? Eleanor::ExecBBLogic($tcover,$r+array('head'=>$thead,'module'=>$s)) : $s;
+}
+
+function GoAway($info=false,$code=301,$hash='')
+{global$Eleanor;
+	$ref=getenv('HTTP_REFERER');
+	$current=PROTOCOL.Eleanor::$punycode.$_SERVER['REQUEST_URI'];
+	if(!$ref or $ref==$current or $info)
+	{
+		if(is_bool($info))
+			$info=PROTOCOL.Eleanor::$punycode.Eleanor::$site_path.($info ? $Eleanor->Url->Prefix() : '');
+		elseif(is_array($info))
+			$info=PROTOCOL.Eleanor::$punycode.Eleanor::$site_path.$Eleanor->Url->Construct($info);
+		else
+		{
+			$d=parse_url($info);
+			if(isset($d['host'],$d['scheme']))
+			{
+				if(preg_match('#^[a-z0-9\-\.]+$#',$d['host'])==0)
+					$info=preg_replace('#^'.$d['scheme'].'://'.preg_quote($d['host']).'#',$d['scheme'].'://'.Punycode::Domain($d['host']),$info);
+			}
+			elseif(strpos($info,'/')!==0)
+				$info=Eleanor::$site_path.$info;
+		}
+
+		if($info==$current and $_SERVER['REQUEST_METHOD']=='GET')
+			die('.');
+		$ref=$info;
+	}
+	if($hash)
+		$ref=preg_replace('%#.*$%','',$ref).'#'.$hash;
+	header('Cache-Control: no-store');
+	header('Location: '.rtrim(html_entity_decode($ref),'&?'),true,$code);
+	die;
+}
+
+function Error($e='',$extra=array())
+{global$Eleanor;
+	$csh=!headers_sent();
+	$l=Eleanor::$Language['errors'];
+	if(!empty($extra['lang']) and isset($l[$e]))
+		$e=$l[$e];
+	if(empty($extra['ban']))
+	{
+		$e=Eleanor::LoadFileTemplate(
+			Eleanor::$root.'templates/error.html',
+			array(
+				'title'=>$l['happened'],
+				'error'=>$e,
+				'extra'=>$extra,
+			)
+		);
+		if($csh)
+			header('Retry-After: 7200');
+	}
+	else
+		$e=Eleanor::LoadFileTemplate(
+			Eleanor::$root.'templates/ban.html',
+			array(
+				'title'=>$l['you_are_banned'],
+				'message'=>$e ? OwnBB::Parse($e) : Eleanor::$vars['blocked_message'],
+				'extra'=>$extra,
+			)
+		);
+
+	if(isset($Eleanor,$Eleanor->started) and $Eleanor->started)#Ошибка могла вылететь и в момент создания объекта $Eleanor
+	{
+		$Eleanor->error=true;
+		if($csh)
+			header('Content-Type: text/html; charset='.Eleanor::$charset,true,isset($extra['httpcode']) ? (int)$extra['httpcode'] : 503);
+		while(ob_get_contents()!==false)
+			ob_end_clean();
+		ob_start();ob_start();ob_start();#Странный глюк PHP... Достаточно сделать Parse error в index.php темы (или Template index was not found!) и Core::FinishOutPut будет получать пустое значение
+		echo$e;
+	}
+	else
+	{
+		Eleanor::$content_type='text/html';
+		Eleanor::HookOutPut(false,isset($extra['httpcode']) ? (int)$extra['httpcode'] : 503,$e);
+		die;
+	}
+}
+
+function LangNewUrl($url,$l)
+{global$Eleanor;
+	#Определим отправную точку, куда мы в любом случае отправим клиента
+	$base=PROTOCOL.Eleanor::$punycode.Eleanor::$site_path;
+
+	#Если запрос пришел с чужого домена - считаем такой запрос некорректным
+	if(strpos($url,'://')!==false and strpos($url,$base)!==0)
+		$url='';
+	$url=preg_replace('#^'.preg_quote($base,'#').'('.preg_quote(Eleanor::$filename,'#').'\??)?#i','',$url);
+
+	if($url=='')
+		return$base.$Eleanor->Url->Construct(array(),true);
+
+	$special=Eleanor::$filename.'?';
+	parse_str($url,$q);
+	if(!isset($q['section'],$q['module']) or $q['section']!='modules')
+		return$base.$special.$url;
+
+	$modules=Modules::GetCache();
+	if(!isset($modules['ids'][$q['module']]))
+		return$base.$special.$url;
+
+	$mid=(int)$modules['ids'][$q['module']];
+	$s=$modules['sections'][$q['module']];
+
+	$R=Eleanor::$Db->Query('SELECT `sections`,`path`,`api` FROM `'.P.'modules` WHERE `id`='.$mid.' AND `active`=1 LIMIT 1');
+	if(!$a=$R->fetch_assoc())
+		return$base.$special.$url;
+
+	$path=Eleanor::FormatPath($a['path']).DIRECTORY_SEPARATOR;
+	if(!$a['api'] or !is_file($path.$a['api']))
+		return$base.$special.$url;
+
+	$sections=unserialize($a['sections']);
+	foreach($sections as &$v)
+		if(Eleanor::$vars['multilang'] and isset($v[$l]))
+			$v=reset($v[$l]);
+		else
+			$v=isset($v[LANGUAGE]) ? reset($v[LANGUAGE]) : reset($v['']);
+	$modules=Modules::GetCache(false,$l);
+	$m=array_keys($modules['ids'],$mid);
+	$q['module']=reset($m);
+
+	$c='Api'.basename($a['path']);
+	if(!class_exists($c,false))
+		include$path.$a['api'];
+	$Plug=new$c;
+	$Plug->module=array(
+		'sections'=>$sections,
+		'path'=>$path,
+		'name'=>$m,
+		'section'=>$s,
+		'id'=>$mid,
+	);
+	if(method_exists($Plug,'LangUrl') and $r=$Plug->LangUrl($q,$l))
+		return$base.$r;
+	return$base.$special.$url;
+}

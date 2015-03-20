@@ -1,0 +1,217 @@
+﻿+1. Обфускация JS, CSS, картинок - пихание всего этого в тело документа. Плагин для минификации css - http://code.google.com/p/cssmin/ https://github.com/promatik/PHP-JS-CSS-Minifier https://code.google.com/p/minify/, для js - http://dean.edwards.name/packer/
+2. Быстрое редактирование новостей и вообще быстрое редактиривание всего, что есть inline.
+3. Панель модератора
+4. Инсталлер дополнительных модов
+5. Дополнительные поля разработаны
+6. Конвертеры DLE -> Eleanor, ucoz -> Eleanor, WP -> Eleanor.
+-7. Фреймворк
+-8. site_path ->sitepath, our_query -> ourquery
+Этих переменных больше нет
+9. Список пользователей
++10. Отказаться от "окончания" html, все страницы это ?page=
++11. Настроечные файлы перенести в каталог шаблона.
+12. Отказаться от пользователя с ID 0. Все поля переименовать в user_name и user_id (NULL).
+13. Комментарии сделать так: 5 последних комментариев отображается с новостью, остальные - на отдельных страницах без текста основной новости.
+14. Примитивная статистика: в базе уже достаточно данных в таблице сессий, чтобы определять, сколько было хостов и хитов.
++15. После [/quote] обычно остается <br />, который нафик никому не нужен. Его нужно убрать. Воспользоваться идеей с <!-- NOBR --> ?
++16. Все if(!defined('CMS'))die; заменить на defined('CMS')||die;
+17. На странице создания контрола, нельзя создать select с двумя одинаковыми значениями.
+18. Rel=canonical для страниц с пользователями
++19. Ко всем ссылкам и элементам форм нужно прописывать на скриптах tabindex и убрать прописывание табиндекса из PHP
+20. Проверка правописания http://api.yandex.ru/speller/doc/dg/tasks/how-to-spellcheck-web.xml
++21. Каталог Eleanor::$uploads преобразовать в 2 каталога. $uploadsroot и $uploadspath для того, чтобы заливать можно было в разные места.
+22. Все swap поменять на toggle.
+23. Как-то нужно решить конфликты. Представим, что модуль news вынесен на главную (без префикса) и у него (у этого модуля, есть категория) news. Как себя повести?
+24. Удалить размер аватарок. Размер рисунков - это прерогатива шаблона.
+25. Переработать подход к паролям: убрать 2 поля пароля, использовать либу http://antelle.github.io/passfield/demo.html , http://habrahabr.ru/post/171383/
+26. Переботать sitemaps. Оставить только поля priority и loc, остальные удалить ради того, чтобы поисковики сами определяли предпочитаемый режим индексирования. Для категорий в sitemap оставить только первую страницу. Пример можно взять из форума.
+27. Sitemap изменить ключ: per_time -> limit
++28. csel -> marker
++29. У каждого модуля один файл запуска - index.php, это позволит сделать содержимое каждой папки модуля по его усмотрению. Сюда стоит перенести его конфигурации, здесь подключать шаблоны и т.п.
++30. Упразднить сервис upload.php Все загруку перенести на AJAX.
++31. В интерфес менеджера задач добавить "Запустить сейчас".
+-32. В классе URL prefix переименовать на base. Потому что к базе добавляются ссылки.
+Base воспринимается, как база. А префикс - это то, что слева.
++33. Где это можно использовать? http://habrahabr.ru/company/lamoda/blog/199096/
+-34. В ajax после BeAs херятся все Eleanor::$Template->paths, которые ведут к модулным шаблонам по-умолчанию.
+Я отказался от ajax.php, следовательно, функции BeAs больше не нужны. В остальных случаях фичи BeAs не нужны (ссылки можно генерить и так, а на остальное пофик)
+
++35. Keycaptcha http://forum.eleanor-cms.ru/index.php?showtopic=3811
+36. В модуле рассылок добавить возможность расылать просто по списку мыл.
++37. Бекапер о самом протоколе: http://ru.wikipedia.org/wiki/WebDAV вариант реализации http://habrahabr.ru/post/206752/
+38. modules/account/users/user/guest/settings.php GoAway(true); перенаправляет на account/.html
++39. Сделать, чтобы в $_POST запросах неизмененные параметры не передавались зря.
+Добавить к полю класс pim (Post If Modified)
+
+-40. Замена {head} -> insert after <head> (перенос js/Eleanor.js и core.js в шаблоны), остальное вставлять переменными
+41. В модуле news, а также в других модулях, где можно разместить один контент в нескольких категориях, для каждой категории сделать свою копию новости. Копии новостей должны представлять собой такой интересный формат, в котором будет просто ссылка на оригинальную новость и не будет никаких данных. Это уже реализовано в модуле Nark-у d2p.
++42. Отказаться от "НЕ ЧПУ"
+43. Когда остается всего один язык - вкладки все-равно показываются.
++44. Новое хеширование паролей! http://habrahabr.ru/post/194972/ http://habrahabr.ru/post/184220/
+45. http://eleanor-cms.ru/forum/find-post-41094
+46. Сделать предпросмотр новостей и прочего. http://eleanor-cms.ru/forum/find-post-41099 + сделать из админки ссылку в пользовательскую часть при правке
++47. Поля parent в категориях и прочих иерархических полях сделать NULL
+
++48. От site_domain пришла мысль отказаться. Вместо этого, пусть будет настройка trusted_domains , запросы из которых будут считаться "своими". Access-Control-Allow-Origin
++49. Сервис user переименовать в index
++50. Настройку bots_enable удалить
++51. forum_id переименовать в integration, кроме этого, поле integration сделать строковым.
++52. eval_url удалить из модуля меню и контекстных ссылок
++53. В таблице ownbb в у поля "handler" прибить все .php , оставив только имя файла. Этоже касаается и таблицы tasks: прибить все .php у поля "task".
++54. В таблице modules поле path содержит пусть с закрывающим слешем ДО каталога с модулем относительно каталога CMS.
++55. Предопределенное число секций должны содержать модули. Эти секции должны выводится в админке
++56. Языковая приставка автоматически присваивается к URL
++57. Убрать возможность отображения нескольких модулей на главной и сам модуль mainpage удалить.
++58. В таблице модулей переименовать sections на uris
++59. Удалить staticip, привязывать только конкретную сессию к IP адресу
+60. Перенести "Защиты от прямых ссылок" перенести в основные опиции сайта.
++61. OwnBB::Parse должно быть только в шаблоне, для того, чтобы шаблон мог настроить нужные переменные (размер видео, например).
+-62. ID в таблице модулей сделать tinyint
+На перспективу оставим smallint
++63. Сделать кнопку удаления папки install в админке.
+- 64. Олег предлагает сделать JSON сервис для получения данных меню, новостей...
+Оставим на потом
+65. Удалить настройки 4, 5, 6, 9, 19, 21, 22, 23, 82, 83, 84, 85, 86, 87, 89
++ 66. Когда пользователь добавляет или изменяет и вдруг нечаянно нажал на ссылку какую то в меню. Давай так. Для каких то простых вещей типа очистить кэш или подобную то кнопки синие. Если сохранение то зеленое
++67. Сделать в кроне поддержку "каждую секунду", но не многопоточно.
+68. Сделать поддержку ImageMagic
+
+==
+[суббота, 29 ноября 2014 г. 13:48] You: Во-первых нужно как-то указать, какие шаблоны доступны, а какие установлены.
+[суббота, 29 ноября 2014 г. 13:50] You: Во-вторых надо как-то сделать, чтобы все-таки было понятно, что мы находимся именно в интерфейсе шаблонов.
+[суббота, 29 ноября 2014 г. 13:50] You: Там по админке еще уйма работы (smiley) Поэтому, предлагаю начать либо с блоков, либо с главной.
+[суббота, 29 ноября 2014 г. 13:56] You: А так еще есть (помимо стороны сайта):
+-Верхнее меню (доработать)
+-Пункты "Магазин" в меню (проработать).
+-Файловый менеджер засунуть во всплывающее окно
+-Список меню и категорий (от других списков оно отличается тем, что там доступна вложенность).
+-Установщик системы (переделать)
+==
+
+
+SQL запросы обновления
+ALTER TABLE `el_users`
+	ADD `password_hash` TINYTEXT NOT NULL AFTER `pass_hash`,
+	DROP `staticip`,
+	CHANGE `updated` `updated` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE `el_users_site` CHANGE `forum_id` `integration` VARCHAR( 32 ) NULL DEFAULT NULL ;
+UPDATE `el_users_site` SET `integration`=NULL WHERE `integration`='0';
+ALTER TABLE `el_users_site`
+	DROP INDEX `forum_id`,
+	ADD UNIQUE `integration` (`integration`),
+	CHANGE `ip` `ip` VARBINARY(16) NOT NULL;
+
+ALTER TABLE `el_sitemaps` CHANGE `per_time` `limit` MEDIUMINT UNSIGNED NOT NULL ;
+UPDATE `el_ownbb` SET `handler`=REPLACE(`handler`,'.php','');
+ALTER TABLE `el_modules` CHANGE `active` `status` TINYINT NOT NULL DEFAULT '1';
+UPDATE `el_modules` SET `path`=CONCAT(`path`,'/');
+DROP TABLE `el_mainpage`;
+DROP TABLE `el_qmenu`;
+ALTER TABLE `el_modules` DROP `multiservice`, DROP `files`;
+
+ALTER TABLE `el_static`
+	ADD `parent` SMALLINT UNSIGNED NULL DEFAULT NULL AFTER `id`,
+	ADD INDEX (`parent`),
+	ADD FOREIGN KEY ( `parent` ) REFERENCES `el_static` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `el_modules` CHANGE `sections` `uris` TEXT NOT NULL;
+
+UPDATE `el_blocks` SET `file` = 'modules/news/block_archive.php' WHERE `id` =3;
+UPDATE `el_blocks` SET `file`=REPLACE(`file`,'addons/','');
+UPDATE `el_tasks` SET `task`=REPLACE(`task`,'.php','');
+UPDATE `el_services` SET `theme`='Admin' WHERE `name`='admin';
+DELETE FROM `el_services` WHERE `name` IN('ajax','upload');
+UPDATE `el_services` SET `name`='index' WHERE `name`='user';
+UPDATE `el_services` SET `login`='' WHERE `login`='no';
+UPDATE `el_config_l` SET `value`='a:4:{s:5:"Admin";i:900;s:4:"Base";i:900;s:5:"Moder";i:300;s:2:"No";i:10;}',
+		`default`='a:4:{s:5:"Admin";i:900;s:4:"Base";i:900;s:5:"Moder";i:300;s:2:"No";i:10;}' WHERE `id` =33;
+
+ALTER TABLE `el_ownbb` CHANGE `active` `status` TINYINT NOT NULL ;
+UPDATE `el_ownbb` SET `handler`='marker', `tags`='marker' WHERE `handler`='csel';
+
+UPDATE `el_config` SET `group`='2' WHERE `id`=74;
+DELETE FROM `el_ownbb` WHERE `id`=1;
+
+ALTER TABLE `el_comments`
+	CHANGE `contid` `content_id` VARCHAR( 15 ) NOT NULL,
+	CHANGE `parent` `parent` MEDIUMINT( 8 ) UNSIGNED NULL DEFAULT NULL,
+	CHANGE `author_id` `author_id` MEDIUMINT( 8 ) UNSIGNED NULL,
+	CHANGE `ip` `ip` VARBINARY(16) NOT NULL,
+	ADD INDEX (`parent`),
+	ADD FOREIGN KEY (`parent`) REFERENCES `el_comments` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+	DROP FOREIGN KEY `el_comments_ibfk_1`,
+	`approved` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `date`,
+	`changed` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `approved`;
+
+ALTER TABLE `el_comments`
+	ADD FOREIGN KEY (`author_id`) REFERENCES `el_users_site` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+	ADD FOREIGN KEY (`module`) REFERENCES `el_modules` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+TRUNCATE TABLE `el_sessions`;
+ALTER TABLE `el_sessions`
+	CHANGE `ip_guest` `ip_guest` VARBINARY(16) NOT NULL,
+	CHANGE `ip_user` `ip_user` VARBINARY(16) NOT NULL,
+	ADD `hits` SMALLINT UNSIGNED NOT NULL AFTER `enter`,
+	ADD `added2statics` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+	DROP FOREIGN KEY `el_sessions_ibfk_1`;
+
+ALTER TABLE `el_news_categories` CHANGE `parent` `parent` SMALLINT( 5 ) UNSIGNED NULL DEFAULT NULL ;
+UPDATE `el_news_categories` SET `parent`=NULL WHERE `parent`=0;
+ALTER TABLE `el_news_categories` ADD FOREIGN KEY ( `parent` ) REFERENCES `eleanor-1`.`el_news_categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE ;
+
+UPDATE `el_config_groups` SET `keyword`=CONCAT(',',REPLACE(`keyword`,',',',,'),',');
+UPDATE `el_config` SET `name`='trusted_domains' WHERE `id`=1;
+UPDATE `el_config` SET `name`='link_lost_pass' WHERE `id`=32;
+
+DELETE FROM `el_config` WHERE `id`=2;
+DELETE FROM `el_config_l` WHERE `id`=2;
+
+ALTER TABLE `el_config_l`
+	ENGINE = INNODB,
+	ADD FOREIGN KEY (`id`) REFERENCES `el_config` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+	CHANGE `serialized` `json` TINYINT NOT NULL;
+
+ALTER TABLE `el_errors_l` CHANGE `meta_title` `document_title` TINYTEXT NOT NULL;
+ALTER TABLE `el_news_l` CHANGE `meta_title` `document_title` TINYTEXT NOT NULL;
+ALTER TABLE `el_static_l` CHANGE `meta_title` `document_title` TINYTEXT NOT NULL;
+ALTER TABLE `el_news_categories_l` CHANGE `meta_title` `document_title` TINYTEXT NOT NULL;
+
+ALTER TABLE `el_modules` ADD `config` VARCHAR(50) NOT NULL;
+ALTER TABLE `el_timecheck`
+	DROP FOREIGN KEY `el_timecheck_ibfk_1`,
+	CHANGE `contid` `content_id` VARCHAR(25) NOT NULL,
+	CHANGE `mid` `module_id` SMALLINT(5) UNSIGNED NOT NULL,
+	CHANGE `ip` `ip` VARBINARY(16) NOT NULL,
+	ADD FOREIGN KEY (`module_id`) REFERENCES `el_modules` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `el_tasks` DROP `run_year`, DROP `ondone`, DROP `maxrun`, DROP `alreadyrun`;
+ALTER TABLE `el_blocks` CHANGE `ctype` `type` ENUM('text','file') NOT NULL DEFAULT 'text';
+ALTER TABLE `el_context_links_l` DROP `eval_url`;
+ALTER TABLE `el_menu_l` DROP `eval_url`;
+
+ALTER TABLE `el_errors`
+	CHANGE `image` `miniature` TINYTEXT NOT NULL,
+	ADD `miniature_type` ENUM('gallery', 'upload', 'link') NOT NULL AFTER `http_code`,
+	CHANGE `mail` `email` VARCHAR( 50 ) NOT NULL;
+
+ALTER TABLE `el_errors_l` CHANGE `meta_title` `document_title` TINYTEXT NOT NULL;
+
+ALTER TABLE `el_modules` CHANGE `image` `miniature` TINYTEXT NOT NULL,
+	ADD `miniature_type` ENUM( 'gallery', 'upload', 'link' ) NOT NULL AFTER `file`;
+
+ALTER TABLE `el_errors` ADD `log_language` ENUM( 'russian', 'english', 'ukrainian' ) NOT NULL ;
+
+ALTER TABLE `el_errors`
+	ADD `title_l` TEXT NOT NULL AFTER `status`;
+
+ALTER TABLE `el_groups` ADD `parent` SMALLINT UNSIGNED NULL AFTER `id`,
+	ADD INDEX (`parent`),
+	DROP `html_end`,
+	CHANGE `html_pref` `style` TINYTEXT NULL DEFAULT NULL,
+	CHANGE `access_cp` `is_admin` TINYINT UNSIGNED NULL DEFAULT NULL,
+	CHANGE `sh_cls` `closed_site_access` TINYINT NULL DEFAULT NULL,
+	ADD FOREIGN KEY (`parent`) REFERENCES `el_groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `el_users_extra`
+	CHANGE `avatar_location` `avatar` TINYTEXT NOT NULL,
+	CHANGE `avatar_type` `avatar_type` ENUM('upload','gallery','link') NOT NULL;

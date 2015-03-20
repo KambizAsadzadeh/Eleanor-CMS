@@ -1,9 +1,52 @@
-AddDefaultCharset UTF-8
+Options All -Indexes -Includes +FollowSymLinks
+DirectoryIndex index.php
+ServerSignature Off
+
+#{full}index.php?module=errors&code=400 - пример без ЧПУ
+#Bad Rquest
+#[-]ErrorDocument 400 {full}errors/400
+#Authorization Required
+#[-]ErrorDocument 401 {full}errors/401
+#Forbidden
+#[-]ErrorDocument 403 {full}errors/403
+#Not found
+#ErrorDocument 404 {full}errors/404
+#Method Not Allowed
+#[-]ErrorDocument 405 {full}errors/405
+#Request Timed Out
+#[-]ErrorDocument 408 {full}errors/408
+#Request URI Too Long
+#[-]ErrorDocument 414 {full}errors/414
+#Internal Server Error
+#[-]ErrorDocument 500 {full}errors/500
+#Not Implemented
+#[-]ErrorDocument 501 {full}errors/501
+#Bad Gateway
+#[-]ErrorDocument 502 {full}errors/502
+#Service Unavailable
+#[-]ErrorDocument 503 {full}errors/503
+#Gateway Timeout
+#[-]ErrorDocument 504 {full}errors/504
+
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 
-	#������� ��� ����������: ������ ����� ������� ������ ����� ������
-	#�� �������� � �� ������������� ������ ����!!!! ��� ������� �������!!!
-	RewriteCond %{REQUEST_URI} !\.(css|js|jpe?g|gif|png|bmp)$
+	#Редирект для чужих доменов
+	#[-]RewriteCond %{HTTP_HOST} !^{shost}$
+	#[-]RewriteRule ^(.*)$ {full}$1 [R=301,L]
+
+	#Редиректы с index.php и index.html
+	RewriteCond %{THE_REQUEST} ^GET\ .*/index\.(php|html?)\ HTTP
+	RewriteRule ^index\.(php|html?)$ {full} [R=301,L]
+
+	#Правила для скачивания: отдаем любой контент только через скрипт
+	#НЕ УДАЛЯЙТЕ И НЕ КОММЕНТИРУЙТЕ СТРОКУ НИЖЕ!!! ЭТО ЧРЕВАТО ВЗЛОМОМ!!!
 	RewriteRule ^uploads/(.*)$ download.php?download=$1 [L]
+
+	#Если запрашиваемый ресурс не папка и не файл - это ЧПУ
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	#Если файл - картинка. Нафик надо сообщать об этом системе... Это ж целую страницу придется генерить из-за случайной глупости, что тяжело для сервера...
+	RewriteCond %{REQUEST_URI} !\.(css|js|jpe?g|gif|png|bmp)$
+	RewriteRule ^(.*)$ index.php?!$1!&%{QUERY_STRING} [L]
 </IfModule>
