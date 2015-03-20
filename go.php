@@ -1,15 +1,11 @@
 <?php
-/*
-	Copyright © Eleanor CMS
-	URL: http://eleanor-cms.ru, http://eleanor-cms.com
-	E-mail: support@eleanor-cms.ru
-	Developing: Alexander Sunvas*
-	Interface: Rumin Sergey
-	=====
-	*Pseudonym
-
-	Это не сервис. Это защита от прямых ссылок.
+/**
+	Eleanor CMS © 2014
+	http://eleanor-cms.ru
+	info@eleanor-cms.ru
 */
+
+#Это не сервис. Это защита от прямых ссылок.
 $ref=getenv('HTTP_REFERER');
 $our=(!$ref or stripos($ref,getenv('HTTP_HOST'))!==false and stripos($ref,getenv('HTTP_HOST'))<14);
 header('HTTP/1.1 301 Moved Permanently');
@@ -23,8 +19,15 @@ if($our and isset($_GET['int']) and strpos($_SERVER['QUERY_STRING'],'://')===fal
 	header('Location: '.$nurl);
 }
 elseif($our and isset($_GET['gourl']))
-	header('Location: '.urldecode($_GET['gourl']));
-elseif($our and $_SERVER['QUERY_STRING'])
+{
+	$url=urldecode($_GET['gourl']);
+
+	if(filter_var($url,FILTER_VALIDATE_URL))
+		header('Location: '.$url);
+	else
+		header('Location: index.php');
+}
+elseif($our and $_SERVER['QUERY_STRING'] and filter_var($_SERVER['QUERY_STRING'],FILTER_VALIDATE_URL))
 	header('Location: '.$_SERVER['QUERY_STRING']);
 else
 	header('Location: index.php');

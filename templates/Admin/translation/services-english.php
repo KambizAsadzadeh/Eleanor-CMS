@@ -1,0 +1,26 @@
+<?php
+return[
+	#For Classes/Services.php
+	'create'=>'Create service',
+	'save'=>'Save service',
+	'delete-text-span'=>'Are you sure to delete "<span id="delete-title"></span>"?',
+	'delete-text%'=>'Are you sure to delete "%s"?',
+	'name'=>'Service name',
+	'file'=>'File',
+	'theme'=>'Template',
+	'protected'=>'Protected service',
+	'yes'=>'Yes',
+	'no'=>'No',
+	'not_found'=>'Services were not found',
+	'applied-by%'=>'Applied filter %s',
+	'by-name'=>'by name',
+	'by-file'=>'by file',
+	'filter-by-name'=>'Filter by service name',
+	'filter-by-file'=>'Filter by file',
+	'login'=>'Main login',
+	'protected_'=>'Protected service (could not be deleted or name changed)',
+	'form-errors'=>'Mistakes while filling out the form',
+	'EMPTY_NAME'=>'Please, input service name',
+	'NAME_EXISTS'=>'Service with such name already exists',
+	'LOGIN_MISSED'=>'Such login is not exists',
+];

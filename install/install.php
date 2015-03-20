@@ -168,7 +168,7 @@ HTML;
 				LoadOptions('blocker');
 				try
 				{
-					UserManager::Add([
+					UserManager::Create([
 						'name'=>$name,
 						'_password'=>$pass,
 						'email'=>$email,

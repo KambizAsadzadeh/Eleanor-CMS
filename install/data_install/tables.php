@@ -335,10 +335,12 @@ CREATE TABLE `{$prefix}multisite_jump` (
 	`type` ENUM('in','out') NOT NULL,
 	`signature` VARCHAR(32) NOT NULL,
 	`expire` TIMESTAMP NOT NULL default '0000-00-00 00:00:00',
-	`uid` MEDIUMINT UNSIGNED NOT NULL,
-	`name` VARCHAR(25) NOT NULL,
+	`user_id` MEDIUMINT UNSIGNED NOT NULL,
+	`user_name` VARCHAR(25) NOT NULL,
 	PRIMARY KEY (`id`),
-	INDEX(`expire`)
+	INDEX(`expire`),
+	INDEX(`user_id`),
+	FOREIGN KEY (`user_id`) REFERENCES `{$prefix}users_site` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET={$charset}
 SQL;
 

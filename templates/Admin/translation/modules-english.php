@@ -1,0 +1,27 @@
+<?php
+return[
+	#For admin/modules/modules.php
+	'WRONG_PATH'=>'Wrong path to module folder',
+	'FILE_DOES_NOT_EXISTS'=>'Start file does not exists',
+	'API_DOES_NOT_EXISTS'=>'API file does not exists',
+	'CONFIG_DOES_NOT_EXISTS'=>'Config file does not exists',
+	'UNFILLED_PATH'=>'Please, input path to module',
+	'UNFILLED_FILE'=>'Please, input file name',
+	'off'=>'Off',
+	'turn-off'=>'Turn off',
+	'turn-on'=>'Turn on',
+	'form-errors'=>'Mistakes while filling out the form',
+	'tip-rel-cms'=>'Relative to /cms folder',
+	'tip-rel-module'=>'Relative to module folder',
+	'name'=>'Module name',
+	'descr'=>'Module description',
+	'uri'=>'Module URI',
+	'paths'=>'Paths',
+	'path'=>'Module folder',
+	'file'=>'Start file',
+	'config'=>'Config',
+	'delete-text-span'=>'Are you sure to delete module "<span id="delete-title"></span>"?',
+	'delete-text%'=>'Are you sure to delete module "%s"?',
+	'create'=>'Create module',
+	'save'=>'Save module',
+];

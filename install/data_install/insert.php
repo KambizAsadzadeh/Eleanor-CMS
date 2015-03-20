@@ -36,7 +36,7 @@ INSERT INTO `{$prefix}blocks` (`id`, `type`, `file`, `user_groups`, `showfrom`, 
 (2, 'file', 'blocks/block_tags_cloud.php', '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '', 0, '', 1),
 (3, 'file', 'modules/news/block_archive.php', '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '', 0, '', 1),
 (4, 'file', 'modules/news/block_lastvoting.php', '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '', 0, '', 1),
-(5, 'file', 'blocks/block_menu_single.php', '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '', 0, 'a:1:{s:6:"parent";i:7;}', 1),
+(5, 'file', 'blocks/block_menu_single.php', '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '', 0, '{"parent":7}', 1),
 (6, 'file', 'modules/news/block_similar.php', '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '', 0, '', 1),
 (7, 'file', 'blocks/block_themesel.php', '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '', 0, '', 1)
 SQL;
@@ -49,7 +49,7 @@ INSERT INTO `{$prefix}blocks_l` (`id`, `language`, `title`, `config`) VALUES
 (2, '{$russian}', 'Облако тегов', ''),
 (3, '{$russian}', 'Архив', ''),
 (4, '{$russian}', 'Опрос', ''),
-(5, '{$russian}', 'Вертикальное меню', 'a:1:{s:6:"parent";i:7;}'),
+(5, '{$russian}', 'Вертикальное меню', '{"parent":7}'),
 (6, '{$russian}', 'По теме', ''),
 (7, '{$russian}', 'Выбор шаблона', '')
 SQL;
@@ -63,7 +63,7 @@ INSERT INTO `{$prefix}blocks_l` (`id`, `language`, `title`, `config`) VALUES
 (2, '{$english}', 'Tags cloud', ''),
 (3, '{$english}', 'Archive', ''),
 (4, '{$english}', 'Voting', ''),
-(5, '{$english}', 'Vertical menu', 'a:1:{s:6:"parent";i:7;}'),
+(5, '{$english}', 'Vertical menu', '{"parent":7}'),
 (6, '{$english}', 'By topic', ''),
 (7, '{$english}', 'Select template', '')
 SQL;
@@ -77,7 +77,7 @@ INSERT INTO `{$prefix}blocks_l` (`id`, `language`, `title`, `config`) VALUES
 (2, '{$ukrainian}', 'Хмарка тегів', ''),
 (3, '{$ukrainian}', 'Архів', ''),
 (4, '{$ukrainian}', 'Опитування', ''),
-(5, '{$ukrainian}', 'Вертикальне меню', 'a:1:{s:6:"parent";i:7;}'),
+(5, '{$ukrainian}', 'Вертикальне меню', '{"parent":7}'),
 (6, '{$ukrainian}', 'По темі', ''),
 (7, '{$ukrainian}', 'Вибір шаблону', '')
 SQL;
@@ -767,8 +767,8 @@ INSERT INTO `{$prefix}config_l` (`id`,`language`,`title`,`descr`,`value`,`json`,
 (1, '{$russian}', 'Доверенные домены', 'Через запятую, без http://', '{$domain}', 0, '{$domain}', '', 'Домен'),
 (3, '{$russian}', 'Кеширование страниц браузером', 'Введите стандартный срок кеширования страницы в минутах. 0 - отключить кеширование.', '600', 0, '600', '', 'Оптимизация нагрузки'),
 (7, '{$russian}', 'Префикс сookie', 'Данная опция позволяет избежать конфликтов, если на домене кроме системы расположены и другие скрипты, использующие cookies', 'el', 0, 'el', '', ''),
-(8, '{$russian}', 'Группа гостей', 'Наделить гостей правами группы...', 'a:1:{i:0;s:1:"3";}', 1, 'a:1:{i:0;s:1:"3";}', '{$config_['groups']}', 'Права по умолчанию'),
-(10, '{$russian}', 'Группа поисковых ботов', 'Наделить поисковых ботов правами группы...', 'a:1:{i:0;s:1:"4";}', 1, 'a:1:{i:0;s:1:"4";}', '{$config_['groups']}', ''),
+(8, '{$russian}', 'Группа гостей', 'Наделить гостей правами группы...', '3', 0, '3', '{$config_['groups']}', 'Права по умолчанию'),
+(10, '{$russian}', 'Группа поисковых ботов', 'Наделить поисковых ботов правами группы...', '4', 0, '4', '{$config_['groups']}', ''),
 (11, '{$russian}', 'Список поисковых ботов', 'Здесь хранятся данные о поисковых ботах. Формат ввода: по одному с каждой строки в виде <b>user agent=имя бота</b>.', '{$config_['bots']}', 1, '{$config_['bots']}', '', ''),
 (12, '{$russian}', 'Включить многоязыковую поддержку?', '', '{$multilang}', 0, '{$multilang}', '', 'Локализация'),
 (13, '{$russian}', 'Часовой пояс по-умолчанию', '', '{$timezone}', 0, '{$timezone}', '{$config_['tz']}', ''),
@@ -784,7 +784,7 @@ INSERT INTO `{$prefix}config_l` (`id`,`language`,`title`,`descr`,`value`,`json`,
 (26, '{$russian}', 'Выключить сайт?', 'Сайт будет доступен только группам, для которых включена опция просмотра закрытого сайта', '0', 0, '0', '', 'Выключение сайта'),
 (27, '{$russian}', 'Причина выключения сайта', '', '', 0, '', '[''type''=>-1]', ''),
 (28, '{$russian}', 'Информация о генерации страницы', 'Информация внизу страницы, содержащая скорость генерации страницы, количество использованных запросов в базу данных, статус GZIP сжатия и количество затраченной памяти.', '2', 0, '2', '{$config['pg']}', 'Дополнительная информация'),
-(29, '{$russian}', 'Шаблоны на выбор', 'Укажите шаблоны, которые пользователи смогут выбирать в качестве оформления сайта.', 'a:1:{i:0;s:5:"Uniel";}', 1, 'a:1:{i:0;s:5:"Uniel";}', '{$config_['templates']}', 'Разное'),
+(29, '{$russian}', 'Шаблоны на выбор', 'Укажите шаблоны, которые пользователи смогут выбирать в качестве оформления сайта.', '["Uniel"]', 1, '["Uniel"]', '{$config_['templates']}', 'Разное'),
 
 (30, '{$russian}', 'Ссылка личного кабинета', 'Обратите внимание, что запись <q>param1=value1<b>&amp;</b>param2=value2</q> некорректна. Корректная запись: <q>param1=value1<b>&amp;amp;</b>param2=value2</q>', '{$account['main']}', 0, '{$account['main']}', '', 'Ссылки'),
 (31, '{$russian}', 'Ссылка на регистрацию', 'Обратите внимание, что запись <q>param1=value1<b>&amp;</b>param2=value2</q> некорректна. Корректная запись: <q>param1=value1<b>&amp;amp;</b>param2=value2</q>', '{$account['reg']}', 0, '{$account['reg']}', '', ''),
@@ -843,8 +843,8 @@ INSERT INTO `{$prefix}config_l` (`id`,`language`,`title`,`descr`,`value`,`json`,
 (77, '{$russian}', 'Порядок сортировки комментариев', '', '1', 0, '1', '{$config['or']}', ''),
 (78, '{$russian}', 'Комментариев на страницу', '', '10', 0, '10', '', ''),
 (79, '{$russian}', 'Ограничение изменения по времени', 'Введите количество секунд, по истечению которых пользователи не смогут удалять / править свои комментарии. Отсчет времени осуществляется с момента публикации комментария.', '86400', 0, '86400', '', ''),
-(80, '{$russian}', 'Отображать комментарии для', '', 'a:6:{i:0;s:1:"4";i:1;s:1:"1";i:2;s:1:"3";i:3;s:1:"6";i:4;s:1:"5";i:5;s:1:"2";}', 1, 'a:6:{i:0;s:1:"4";i:1;s:1:"1";i:2;s:1:"3";i:3;s:1:"6";i:4;s:1:"5";i:5;s:1:"2";}', '{$config_['groups']}', 'Права'),
-(81, '{$russian}', 'Публикация комментариев доступна для', '', 'a:2:{i:0;s:1:"1";i:1;s:1:"2";}', 1, 'a:2:{i:0;s:1:"1";i:1;s:1:"2";}', '{$config_['groups']}', ''),
+(80, '{$russian}', 'Отображать комментарии для', '', '[4,1,3,6,5,2]', 1, '[4,1,3,6,5,2]', '{$config_['groups']}', 'Права'),
+(81, '{$russian}', 'Публикация комментариев доступна для', '', '[1,2]', 1, '[1,2]', '{$config_['groups']}', ''),
 
 (88, '{$russian}', 'Включить водяной знак?', 'Наложить водяной знак на загружаемые картинки?', '1', 0, '1', '', 'Настройки водяного знака'),
 (90, '{$russian}', 'Прозрачность водяного знака (в процентах от 0 до 100)', '100 - не видно водяного знака', '50', 0, '50', '', ''),
@@ -908,8 +908,8 @@ INSERT INTO `{$prefix}config_l` (`id`,`language`, `title`, `descr`, `value`, `js
 (1, '{$ukrainian}', 'Довірені домени', 'Через кому, без http://', '{$domain}', 0, '{$domain}', '', 'Домен'),
 (3, '{$ukrainian}', 'Кешування сторінок браузером', 'Введіть стандартний термін кешування сторінки у хвилинах. 0 - відключити кешування.', '600', 0, '600', '', 'Оптимізація навантаження'),
 (7, '{$ukrainian}', 'Префікс сookie', 'Дана опція дозволяє уникнути конфліктів, якщо на домені крім системи розташовані також інші скрипти, що використовують cookies.', 'el', 0, 'el', '', ''),
-(8, '{$ukrainian}', 'Група гостей', 'Наділити гостей правами групи...', 'a:1:{i:0;s:1:"3";}', 1, 'a:1:{i:0;s:1:"3";}', '{$config_['groups']}', 'Права по замовчуванню'),
-(10, '{$ukrainian}', 'Група пошукових ботів', 'Наділити пошукових роботів правами групи...', 'a:1:{i:0;s:1:"4";}', 1, 'a:1:{i:0;s:1:"4";}', '{$config_['groups']}', ''),
+(8, '{$ukrainian}', 'Група гостей', 'Наділити гостей правами групи...', '3', 0, '3', '{$config_['groups']}', 'Права по замовчуванню'),
+(10, '{$ukrainian}', 'Група пошукових ботів', 'Наділити пошукових роботів правами групи...', '4', 0, '4', '{$config_['groups']}', ''),
 (11, '{$ukrainian}', 'Список пошукових ботів', 'Тут зберігаються дані про пошукових ботах. Формат вводу: по одному з кожного рядка у вигляді <b>user agent=ім''я бота</ b>', '{$config_['bots']}', 1, '{$config_['bots']}', '', ''),
 (12, '{$ukrainian}', 'Увімкнути багатомовну підтримку?', '', '{$multilang}', 0, '{$multilang}', '', 'Локалізація'),
 (13, '{$ukrainian}', 'Часовий пояс за замовчуванням', '', '{$timezone}', 0, '{$timezone}', '{$config_['tz']}', ''),
@@ -925,7 +925,7 @@ INSERT INTO `{$prefix}config_l` (`id`,`language`, `title`, `descr`, `value`, `js
 (26, '{$ukrainian}', 'Вимкнути сайт?', 'Сайт буде доступний тільки групам, для яких включена опція перегляду закритого сайту', '0', 0, '0', '', 'Вимкнення сайту'),
 (27, '{$ukrainian}', 'Причина вимкнення сайту', '', '', 0, '', 'array(''type''=>-1)', ''),
 (28, '{$ukrainian}', 'Інформація про генерацію сторінки', 'Інформація внизу сторінки, що містить швидкість генерації сторінки, кількість використаних запитів до бази даних, статус GZIP стиснення і кількість витраченої пам''яті.', '2', 0, '2', '{$config['pg']}', 'Додаткова інформація'),
-(29, '{$ukrainian}', 'Шаблони на вибір', 'Вкажіть шаблони, які користувачі зможуть вибирати в якості оформлення сайту.', 'a:1:{i:0;s:5:"Uniel";}', 1, 'a:1:{i:0;s:5:"Uniel";}', '{$config_['templates']}', 'Різне'),
+(29, '{$ukrainian}', 'Шаблони на вибір', 'Вкажіть шаблони, які користувачі зможуть вибирати в якості оформлення сайту.', '["Uniel"]', 1, '["Uniel"]', '{$config_['templates']}', 'Різне'),
 
 (30, '{$ukrainian}', 'Посилання особистого кабінету', 'Зверніть увагу, що запис <q>param1=value1<b>&</b>param2=value2</q> некоректний. Коректний запис: <q>param1=value1<b>&amp;</b>param2=value2</q>', '{$account['main']}', 0, '{$account['main']}', '', 'Посилання'),
 (31, '{$ukrainian}', 'Посилання на реєстрацію', 'Зверніть увагу, що запис <q>param1=value1<b>&</b>param2=value2</q> некоректний. Коректний запис: <q>param1=value1<b>&amp;</b>param2=value2</q>', '{$account['reg']}', 0, '{$account['reg']}', '', ''),
@@ -984,8 +984,8 @@ INSERT INTO `{$prefix}config_l` (`id`,`language`, `title`, `descr`, `value`, `js
 (77, '{$ukrainian}', 'Порядок сортування коментарів', '', '1', 0, '1', '{$config['or']}', ''),
 (78, '{$ukrainian}', 'Коментарів на сторінку', '', '10', 0, '10', '', ''),
 (79, '{$ukrainian}', 'Обмеження зміни за часом', 'Введіть кількість секунд, після завершення яких користувачі не зможуть видаляти / редагувати свої коментарі. Відлік часу здійснюється з моменту публікації коментаря.', '86400', 0, '86400', '', ''),
-(80, '{$ukrainian}', 'Відображати коментарі для', '', 'a:6:{i:0;s:1:"4";i:1;s:1:"1";i:2;s:1:"3";i:3;s:1:"6";i:4;s:1:"5";i:5;s:1:"2";}', 1, 'a:6:{i:0;s:1:"4";i:1;s:1:"1";i:2;s:1:"3";i:3;s:1:"6";i:4;s:1:"5";i:5;s:1:"2";}', '{$config_['groups']}', 'Права'),
-(81, '{$ukrainian}', 'Публікація коментарів доступна для', '', 'a:2:{i:0;s:1:"1";i:1;s:1:"2";}', 1, 'a:2:{i:0;s:1:"1";i:1;s:1:"2";}', '{$config_['groups']}', ''),
+(80, '{$ukrainian}', 'Відображати коментарі для', '', '[4,1,3,6,5,2]', 1, '[4,1,3,6,5,2]', '{$config_['groups']}', 'Права'),
+(81, '{$ukrainian}', 'Публікація коментарів доступна для', '', '[1,2]', 1, '[1,2]', '{$config_['groups']}', ''),
 
 (88, '{$ukrainian}', 'Включити водяний знак?', 'Накласти водяний знак на завантажувані картинки?', '1', 0, '1', '', 'Настройки ватермарка'),
 (90, '{$ukrainian}', 'Прозорість водяного знаку (у відсотках від 0 до 100)', '100 - не видно водяного знаку', '50', 0, '50', '', ''),
@@ -1049,8 +1049,8 @@ INSERT INTO `{$prefix}config_l` (`id`,`language`,`title`,`descr`,`value`,`json`,
 (1, '{$english}', 'Trusted domains', 'Comma separated, without http://', '{$domain}', 0, '{$domain}', '', 'Domain'),
 (3, '{$english}', 'Browser page caching', 'Enter the standard term caching pages in minutes. 0 - disable caching.', '600', 0, '600', '', 'Optimizing workload'),
 (7, '{$english}', 'Cookie prefix', 'This option allows you to avoid conflicts if a domain other than the system are located and other scripts that use cookies.', 'el', 0, 'el', '', ''),
-(8, '{$english}', 'Guests group', 'Give guest the rights of group...', 'a:1:{i:0;s:1:"3";}', 1, 'a:1:{i:0;s:1:"3";}', '{$config_['groups']}', 'Permissions by default'),
-(10, '{$english}', 'Search engine bots group', 'Give the search bots rights of group...', 'a:1:{i:0;s:1:"4";}', 1, 'a:1:{i:0;s:1:"4";}', '{$config_['groups']}', ''),
+(8, '{$english}', 'Guests group', 'Give guest the rights of group...', '3', 0, '3', '{$config_['groups']}', 'Permissions by default'),
+(10, '{$english}', 'Search engine bots group', 'Give the search bots rights of group...', '4', 0, '4', '{$config_['groups']}', ''),
 (11, '{$english}', 'List of search engine bots', 'Here, the data is stored on the search bots. Input format: one on each line in the form <b>user agent=bot</ b>.', '{$config_['bots']}', 1, '{$config_['bots']}', '', ''),
 (12, '{$english}', 'Enable multilingual support?', '', '{$multilang}', 0, '{$multilang}', '', 'Localization'),
 (13, '{$english}', 'Timezone by default', '', '{$timezone}', 0, '{$timezone}', '{$config_['tz']}', ''),
@@ -1066,7 +1066,7 @@ INSERT INTO `{$prefix}config_l` (`id`,`language`,`title`,`descr`,`value`,`json`,
 (26, '{$english}', 'Turn off the site?', 'Site will be available to groups for which the option view site closing', '0', 0, '0', '', 'Turning site off'),
 (27, '{$english}', 'The reason for the turning off the site', '', '', 0, '', 'array(''type''=>-1)', ''),
 (28, '{$english}', 'Information about the generation of page', 'Information at the bottom of the page containing the speed of page generation, the number of used database queries, GZIP compression status and number of memory consumed.', '2', 0, '2', '{$config['pg']}', 'Addon information'),
-(29, '{$english}', 'Templates to choose', 'Specify a templates that users can choose as a site design.', 'a:1:{i:0;s:5:"Uniel";}', 1, 'a:1:{i:0;s:5:"Uniel";}', '{$config_['templates']}', 'Others'),
+(29, '{$english}', 'Templates to choose', 'Specify a templates that users can choose as a site design.', '["Uniel"]', 1, '["Uniel"]', '{$config_['templates']}', 'Others'),
 
 (30, '{$english}', 'Link to personal cabinet', 'Please note that the record <q>param1=value1<b>&</b>param2=value2</q> is incorrect. Correct record is <q>param1=value1<b>&amp;</b>param2=value2</q>', '{$account['main']}', 0, '{$account['main']}', '', 'Links'),
 (31, '{$english}', 'Link to registration', 'Please note that the record <q>param1=value1<b>&</b>param2=value2</q> is incorrect. Correct record is <q>param1=value1<b>&amp;</b>param2=value2</q>', '{$account['reg']}', 0, '{$account['reg']}', '', ''),
@@ -1125,8 +1125,8 @@ INSERT INTO `{$prefix}config_l` (`id`,`language`,`title`,`descr`,`value`,`json`,
 (77, '{$english}', 'Order displaying comments', '', '1', 0, '1', '{$config['or']}', ''),
 (78, '{$english}', 'Comments per page', '', '10', 0, '10', '', ''),
 (79, '{$english}', 'Limitation of time changes', 'Enter the number of seconds after which users can not delete / edit your comments. The countdown is carried out since the publication of comments.', '86400', 0, '86400', '', ''),
-(80, '{$english}', 'Display comments for', '', 'a:6:{i:0;s:1:"4";i:1;s:1:"1";i:2;s:1:"3";i:3;s:1:"6";i:4;s:1:"5";i:5;s:1:"2";}', 1, 'a:6:{i:0;s:1:"4";i:1;s:1:"1";i:2;s:1:"3";i:3;s:1:"6";i:4;s:1:"5";i:5;s:1:"2";}', '{$config_['groups']}', 'Rights'),
-(81, '{$english}', 'Post comments available for', '', 'a:2:{i:0;s:1:"1";i:1;s:1:"2";}', 1, 'a:2:{i:0;s:1:"1";i:1;s:1:"2";}', '{$config_['groups']}', ''),
+(80, '{$english}', 'Display comments for', '', '[4,1,3,6,5,2]', 1, '[4,1,3,6,5,2]', '{$config_['groups']}', 'Rights'),
+(81, '{$english}', 'Post comments available for', '', '[1,2]', 1, '[1,2]', '{$config_['groups']}', ''),
 
 (88, '{$english}', 'Enable a watermark?', 'Apply a watermark to your uploaded images?', '1', 0, '1', '', 'Настройки ватермарка'),
 (90, '{$english}', 'Transparency of the watermark (as a percentage from 0 to 100)', '100 - not visible watermark', '50', 0, '50', '', ''),
@@ -1580,8 +1580,8 @@ SQL;
 
 $insert['voting_q']=<<<SQL
 INSERT INTO `{$prefix}voting_q` (`id`,`qid`,`multiple`,`maxans`,`answers`) VALUES
-(1,0,0,2,'a:3:{i:0;i:0;i:1;i:0;i:2;i:0;}'),
-(1,1,1,2,'a:3:{i:0;i:0;i:1;i:0;i:2;i:0;}')
+(1,0,0,2,'[0,0,0]'),
+(1,1,1,2,'[0,0,0]')
 SQL;
 
 #Russian
