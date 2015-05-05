@@ -374,7 +374,7 @@ HTML;
 		$back=$back ? Html::Input('back',$back,['type'=>'hidden']) : '';
 
 		#Errors
-		$er_title=$er_run=$er_def=$er_hour=$er_min=$er_sec=$er_mon=$er_day='';
+		$er_title=$er_run=$er_hour=$er_min=$er_sec=$er_mon=$er_day=$er_def='';
 
 		foreach($errors as $type=>$error)
 		{
@@ -411,7 +411,7 @@ HTML;
 					$er_day=$error;
 				break;
 				default:
-					$er_def=$error;
+					$er_def.=$error;
 			}
 		}
 

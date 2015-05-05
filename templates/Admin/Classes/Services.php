@@ -262,7 +262,7 @@ HTML;
 				case'LOGIN_MISSED':
 					$er_login=$error;break;
 				default:
-					$er_def=$error;
+					$er_def.=$error;
 			}
 		}
 

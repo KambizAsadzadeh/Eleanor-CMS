@@ -82,7 +82,7 @@ switch($type)
 				'name'=>isset($_REQUEST['name']) ? (string)$_REQUEST['name'] : '',
 			];
 			list($t,$sign)=explode('-',$sign,2);
-
+#Закончил
 			if($t<time() or $sign!=md5($t.'-'.$a['uid'].$service.Eleanor::$ip.$a['name'].getenv('HTTP_USER_AGENT').$d['secret']))
 				return Error();
 		}

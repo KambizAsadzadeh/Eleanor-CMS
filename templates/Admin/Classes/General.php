@@ -58,8 +58,8 @@ class General
 		static::Menu('main');
 
 		$Lst=TableList(7)
-			->begin(static::$lang['name'],'E-mail',static::$lang['group'],static::$lang['reg'],static::$lang['lastw'],
-					'IP',T::$lang['functs']);
+			->head(static::$lang['name'],'E-mail',static::$lang['group'],static::$lang['reg'],static::$lang['lastw'],
+					'IP');
 
 		foreach($users as$v)
 		{
@@ -81,11 +81,7 @@ HTML;
 				rtrim($grs,' ,'),
 				[Eleanor::$Language->Date($v['register'],'fdt'),'center'],
 				[substr($v['last_visit'],0,-3),'center'],
-				[$v['ip'],'center','href'=>'http://eleanor-cms.ru/whois/'.$v['ip'],'hrefextra'=>['target'=>'_blank']],
-				$Lst('func',
-					[$v['_aedit'],T::$lang['edit'],Eleanor::$Template->default['images'].'edit.png'],
-					$v['_adel'] ? [$v['_adel'],T::$lang['delete'],Eleanor::$Template->default['images'].'delete.png'] : false
-				)
+				[$v['ip'],'center','href'=>'http://eleanor-cms.ru/whois/'.$v['ip'],'hrefextra'=>['target'=>'_blank']]
 			);
 		}
 

@@ -182,6 +182,11 @@ class Files extends Eleanor\BaseClass
 			if(file_exists($dest))
 				static::Delete($dest);
 
+			$destdir=dirname($dest);
+
+			if(!is_dir($destdir))
+				static::MkDir($destdir);
+
 			return rename($temp,$dest);
 		}
 
@@ -381,10 +386,11 @@ class Files extends Eleanor\BaseClass
 
 	/** Удаление файлов, каталогов и ссылок на файлы
 	 * @param string $path Путь к файлу, каталогу или ссылке которые нужно удалить
-	 * @param bool $nocheck Флаг отключения проверки существования файла перед unlink
 	 * @return bool */
-	public static function Delete($path,$nocheck=false)
+	public static function Delete($path)
 	{
+		$path=rtrim($path,'/\\');
+
 		if(is_dir($path))
 		{
 			$entries=array_diff(scandir($path),['.','..']);
@@ -396,8 +402,8 @@ class Files extends Eleanor\BaseClass
 			return rmdir($path);
 		}
 
-		#Если ссылка битая, file_exists её не определяет, поэтому $check
-		return$nocheck||file_exists($path) ? unlink($path) : true;
+		#Если ссылка битая, file_exists её не определяет
+		return is_link($path)||file_exists($path) ? unlink($path) : true;
 	}
 
 	/** Получение размера каталога

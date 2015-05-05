@@ -116,7 +116,7 @@ class StaticPage
 
 			if($children or $posasc)
 			{
-				$GLOBALS['scripts'][]=T::$http['3rd'].'static/sortable.min.js';
+				$GLOBALS['scripts'][]='//cdn.jsdelivr.net/sortable/latest/Sortable.min.js';
 				$GLOBALS['head']['sortable-table']=<<<'HTML'
 <script>$(function(){
 var tbody=$(".table.table-list tbody:first");
@@ -263,9 +263,6 @@ HTML;
 	 * @return string */
 	public static function LoadSubPages($items,$query)
 	{
-		#ToDo! Удалить:
-		T::$data['speedbar']=[];
-
 		if($items)
 		{
 			$posasc=count($items)>1 && (!$query['sort'] || $query['sort']=='pos' && $query['order']=='asc');
@@ -442,7 +439,7 @@ HTML;
 			elseif(strpos($type,'EMPTY_TEXT')===0)
 				$er_text=$error;
 			else
-				$er_def=$error;
+				$er_def.=$error;
 		}
 
 		if($errors and !$er_def)

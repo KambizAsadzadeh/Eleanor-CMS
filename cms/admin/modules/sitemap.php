@@ -1,48 +1,53 @@
 <?php
-/*
-	Eleanor CMS © 2014
+/**
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
+namespace CMS;
 defined('CMS\STARTED')||die;
+
 global$Eleanor,$title;
-$lang=Eleanor::$Language->Load('addons/admin/langs/sitemap-*.php','sitemap');
-Eleanor::$Template->queue[]='Sitemap';
+$lang=Eleanor::$Language->Load(DIR.'admin/translation/sitemap-*.php','sitemap');
+Eleanor::$Template->queue[]=Eleanor::$Template->classes.'Sitemap';
 
-$Eleanor->module['links']=array(
-	'list'=>$Eleanor->Url->Prefix(),
-	'add'=>$Eleanor->Url->Construct(array('do'=>'add')),
-	'er'=>$Eleanor->Url->Construct(array('do'=>'editrobots')),
-);
+/** @var DynUrl $Url */
+$Url=$Eleanor->DynUrl;
+$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$Eleanor->module['links']=[
+	'list'=>(string)$Url,
+	'add'=>$Url(['do'=>'create']),
+	'robots.txt'=>$Url(['do'=>'robots.txt']),
+];
 
-if(isset($_GET['do']))
-	switch($_GET['do'])
-	{
-		case'add':
-			if($_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$our_query)
-				Save(0);
-			else
-				AddEdit(0);
-		break;
-		case'editrobots':
-			$title[]=$lang['editingr'];
-			$f=Eleanor::$root.'robots.txt';
-			$saved=false;
-			if(isset($_POST['text']) and Eleanor::$our_query)
-			{
-				file_put_contents($f,(string)$_POST['text']);
-				$saved=true;
-			}
-			$text=is_file($f) ? file_get_contents($f) : '';
-			$c=Eleanor::$Template->EditRobots($text,$saved);
-			Start();
-			echo$c;
-		break;
-		default:
-			ShowList();
-	}
+if(isset($_GET['do'])) switch($_GET['do'])
+{
+	case'create':
+		goto CreateEdit;
+	break;
+	case'robots.txt':
+		$title[]=$lang['robots.txt'];
+		$f=DIR.'../robots.txt';
+		$saved=false;
+
+		if($post and isset($_POST['text']))
+		{
+			file_put_contents($f,(string)$_POST['text']);
+			$saved=true;
+		}
+
+		$text=is_file($f) ? file_get_contents($f) : '';
+		$c=Eleanor::$Template->EditRobots($text,$saved);
+		Start();
+		echo$c;
+	break;
+	default:
+		ShowList();
+}
 elseif(isset($_GET['edit']))
 {
+	CreateEdit:
+
 	$id=(int)$_GET['edit'];
 	if($_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$our_query)
 		Save($id);

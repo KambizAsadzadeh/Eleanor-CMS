@@ -8,7 +8,7 @@ return[
 			'english'=>'Site',
 		],
 		#Адрес удаленного сайта. Слэш в конце обязателен!
-		'address'=>'http://eleanor-cms.ru/',
+		'url'=>'http://eleanor-cms.ru/',
 
 		#Синхронизованность пользователей
 		'sync'=>false,
@@ -22,5 +22,5 @@ return[
 		'user'=>'[db_user]',
 		'pass'=>'[db_pass]',
 		'prefix'=>'',
-	]*/
+	],*/
 ];

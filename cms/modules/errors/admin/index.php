@@ -5,7 +5,7 @@
 	info@eleanor-cms.ru
 */
 namespace CMS;
-use Eleanor\Classes\EE, Eleanor\Classes\Files, Eleanor\Classes\Output, Eleanor\Classes\StringCallback;
+use Eleanor\Classes\EE, Eleanor\Classes\Files, Eleanor\Classes\Output;
 
 defined('CMS\STARTED')||die;
 global$Eleanor,$title;
@@ -71,9 +71,6 @@ if(isset($_GET['do'])) switch($_GET['do'])
 		goto CreateEdit;
 	break;
 	case'letters':
-		#ToDo! Удалить:
-		Templates\Admin\T::$data['speedbar']=[];
-
 		$controls=[
 			$lang['letter_error'],
 			'error_t'=>[

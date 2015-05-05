@@ -25,13 +25,11 @@ defined('CMS\STARTED')||die;
 if(!isset($var_0,$var_1,$var_2,$var_3))
 	throw new EE('Incorrect editor input',EE::DEV);
 
-if(isset(T::$data['speedbar']))
-{
-	#Smiles
-	$smiles='';
-	foreach($var_2 as $v)
-		if($v['show'])
-			$smiles.='<button data-em="'.reset($v['emotion']).'" style="background-image: url('.T::$http['static'].$v['path'].');"></button>	';
+#Smiles
+$smiles='';
+foreach($var_2 as $smile)
+	if($smile['show'])
+		$smiles.='<button data-em="'.reset($smile['emotion']).'" style="background-image: url('.T::$http['static'].$smile['path'].');"></button>';
 
 	if($smiles)
 		$smiles=<<<HTML
@@ -44,32 +42,35 @@ if(isset(T::$data['speedbar']))
 HTML;
 	#/Smiles
 
-	#OwnBB
-	$ownbb='';
-	$n=0;
+#OwnBB
+$ownbb='';
+$n=0;
 
-	foreach($var_3 as $k=>$v)
+foreach($var_3 as $k=>$tag)
+{
+	switch($k)
 	{
-		switch($k)
-		{
-			case'script':
-				$k='js';
-			break;
-			case'onlinevideo':
-				$k='youtube';
-		}
-
-		$ownbb.='<button class="bb"'.($v['l'] ? ' title="'.$v['l'].'"' : '').' data-code="'.$v['t'].'" data-single="'.$v['s'].'"><span class="ico-'.$k.'"></span></button>';
-
-		if(++$n%4==0)
-			$ownbb.='<span class="bb-sep"></span>';
+		case'script':
+			$k='js';
+		break;
+		case'onlinevideo':
+			$k='youtube';
 	}
+
+	$title=$tag['l'] ? ' title="'.$tag['l'].'"' : '';
+	$ownbb.=<<<HTML
+<button class="bb"{$title} data-code="{$tag['t']}" data-single="{$tag['s']}"><span class="ico-{$k}"></span></button>
+HTML;
 
 	if(++$n%4==0)
 		$ownbb.='<span class="bb-sep"></span>';
+}
 
-	if($var_3)
-		$ownbb.=<<<HTML
+if(++$n%4==0)
+	$ownbb.='<span class="bb-sep"></span>';
+
+if($var_3)
+	$ownbb.=<<<HTML
 <div class="dropdown dropup bb-combo">
 	<button class="bb" title="Вставка блоков" data-toggle="dropdown" data-code="special-block"><span class="ico-plus"></span></button>
 	<ul class="dropdown-menu bb-custombbcode" id="blocks-{$var_0}">
@@ -83,12 +84,12 @@ HTML;
 HTML;
 	#/OwnBB
 
-	$foot=$smiles|| $ownbb ? '<div class="bb-foot" id="foot-'.$var_0.'">'.$smiles.$ownbb.'</div>' : '';
+$foot=$smiles|| $ownbb ? '<div class="bb-foot" id="foot-'.$var_0.'">'.$smiles.$ownbb.'</div>' : '';
 
-	if($var_4=='ckeditor')
-		$GLOBALS['head']['ckeditor_admin']='<script>CKEDITOR_CONFIG.uiColor="#EBEBEB";</script>';
+if($var_4=='ckeditor')
+	$GLOBALS['head']['ckeditor_admin']='<script>CKEDITOR_CONFIG.uiColor="#EBEBEB";</script>';
 
-	echo<<<HTML
+echo<<<HTML
 <div class="bb-editor">{$var_1}{$foot}</div>
 <script>//<![CDATA[
 $(function(){
@@ -112,47 +113,3 @@ $(function(){
 	});
 })//]]></script>
 HTML;
-}
-else
-{
-	$GLOBALS['scripts'][]=T::$http['static'].'js/dropdown.js';
-
-	$smiles='';
-	foreach($var_2 as$v)
-		if($v['show'])
-			$smiles.='<a href="#" style="background: transparent url('.T::$http['static'].$v['path']
-				.') no-repeat 50% 50%;" data-em="'.reset($v['emotion']).'"></a>';
-
-	$ownbb='';
-	foreach($var_3 as $v)
-		$ownbb.='<a href="#" class="bbe_ytext" onclick="EDITOR.Insert(\'['.$v['t'].']\',\''.($v['s'] ? '' : '[/'.$v['t'].']')
-			.'\',0,\''.$var_0.'\'); return false;"'.($v['l'] ? ' title="'.$v['l'].'"' : '').'><span>['.$v['t'].']</span></a>';
-
-	$sm=uniqid('sm-');
-	$lsm=T::$lang['smiles'];
-
-	if($ownbb or $smiles)
-		echo'<div>',$var_1,
-			$smiles
-				? <<<HTML
-<div class="bb_footpanel"><b><a href="#" id="a-{$sm}" class="bbf_smiles">{$lsm}</a></b></div>
-<script>//<![CDATA[
-$(function(){
-	var D=new DropDown({
-		selector:"#a-{$sm}",
-		left:false,
-		top:true,
-		rel:"#{$sm}"
-	});
-	$("#{$sm} a").click(function(e){
-		e.preventDefault();
-		EDITOR.Insert(" "+$(this).data("em")+" ","",false,"{$var_0}");
-		D.hide();
-	});
-})//]]></script><div class="bb_smiles" id="{$sm}">{$smiles}</div>
-HTML
-				: '',
-				'<div class="bb_yourpanel">',$ownbb,'<div class="clr"></div></div></div>';
-	else
-		echo$var_1,'<div class="clr"></div>';
-}

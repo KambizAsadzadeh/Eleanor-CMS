@@ -10,9 +10,7 @@ use Eleanor\Classes\Html;
 defined('CMS\STARTED')||die;
 
 $t=is_array($GLOBALS['title']) ? end($GLOBALS['title']) : $GLOBALS['title'];
-$back=isset($var_1) ? $var_1 : false;
-
-if(isset(T::$data['speedbar'])):?>
+$back=isset($var_1) ? $var_1 : false;?>
 <div role="alert" class="alert alert-danger">
 	<h4><?=$var_0?></h4>
 	<!-- <p>Дополнительный текст</p>-->
@@ -23,17 +21,3 @@ if(isset(T::$data['speedbar'])):?>
 	</form>
 	</p>
 </div>
-<?php else:?>
-<div class="wbpad"><div class="warning">
-	<img src="<?=$images?>confirm.png" class="info" alt="<?=$t?>" title="<?=$t?>" />
-	<div>
-		<h4><?=$t?></h4>
-		<hr />
-		<form method="post"><?=$var_0,$back ? Html::Input('back',$back,['type'=>'hidden']) : $back?><br />
-			<input class="button" type="submit" value="<?=T::$lang['yes']?>" name="ok" />
-			<input class="button" type="button" value="<?=T::$lang['no']?>" onclick="history.go(-1)" />
-		</form>
-	</div>
-	<div class="clr"></div>
-</div></div>
-<?php endif?>

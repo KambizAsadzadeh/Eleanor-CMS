@@ -1,52 +1,189 @@
 <?php
-/*
-	Eleanor CMS © 2014
+/**
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Шаблоны мультисайта
 */
-class TPLMultisite
-{
-	public static
-		$lang;
 
-	/*
-		Меню модуля
-	*/
+namespace CMS\Templates\Admin;
+use \CMS\Eleanor, Eleanor\Classes\Html;
+
+/** Шаблоны мультисайта */
+class Multisite
+{
+	/** @var array Языковые параметры */
+	public static $lang;
+
+	/** Меню модуля
+	 * @param string $act Идентификатор активного пункта меню
+	 * @return string */
 	protected static function Menu($act='')
 	{
+		$lang=Eleanor::$Language['multisite'];
 		$links=&$GLOBALS['Eleanor']->module['links'];
 
-		$GLOBALS['Eleanor']->module['navigation']=array(
-			array($links['main'],Eleanor::$Language['ms']['conf'],'act'=>$act=='main'),
-			array($links['options'],Eleanor::$Language['main']['options'],'act'=>$act=='options'),
-		);
-
+		T::$data['navigation']=[
+			[$links['main'],$lang['config'],'act'=>$act=='main'],
+			[$links['options'],T::$lang['options'],'act'=>$act=='options'],
+		];
 	}
 
-	/*
-		Шаблон редактирования мультисайта
-		$sites - массив id=>результирующий HTML-код контролов, который необходимо вывести на странице. Ключи данного массива совпадают с ключами $controls
-		$controls - перечень контролов в соответствии с классом контролов. Если какой-то элемент массива не является массивом, значит это заголовок подгруппы контролов
-		$error - ошибка, если ошибка пустая - значит ее нет
-	*/
-	public static function Multisite($sites,$controls,$error)
+	/** Страница заполнения конфига мультисайта
+	 * @param callback $Controls2Html Генератор html из $controls: id=>массив html контролов
+	 * @param array $controls Перечень элементов формы
+	 * @param array $errors Ошибки формы
+	 * @return string */
+	public static function Multisite($Controls2Html,$controls,$errors)
 	{
+		#ToDo! Успешно сохранено, проверка на подключение к БД, заполнение заголовков
+
+		#SpeedBar
+		T::$data['speedbar']=[
+			[Eleanor::$services['admin']['file'].'?section=management',Eleanor::$Language['main']['management']],
+			$GLOBALS['Eleanor']->module['title']
+		];
+
 		static::Menu('main');
-		$GLOBALS['scripts'][]='js/multisite_manager.js';
-		$Lst=Eleanor::LoadListTemplate('table-form')->form(array('id'=>'multisite'));
+		$GLOBALS['scripts'][]=T::$T->default['js'].'multisite_manager.js';
+
+		$c_lang=static::$lang;
+		$t_lang=T::$lang;
+
+		#Errors
+		$er_def='';
+
+		foreach($errors as $type=>$error)
+		{
+			if(is_int($type) and is_string($error) and isset(static::$lang[$error]))
+					$error=static::$lang[$error];
+
+			$er_def.=T::$T->Alert($error,'danger',true);;
+		}
+		#/Errors
+
+		$sites=$Controls2Html();
+		$parts='';
+
+		foreach($sites as $key=>$site)
+		{
+
+			/*foreach($controls as $name=>&$control)
+			{
+				if(is_array($control))
+					$Lst->item([$control['title'].$cl,T::$T->LangEdit($site[$name], null),'tip'=>$control['descr'],'imp'=>$control['imp']]);
+				elseif($control)
+				{
+					switch($control)
+					{
+						case'site':
+							$h=static::$lang['sgd'].' <a href="#" class="delsite">'.static::$lang['dels'].'</a>';
+							break;
+						default:
+							$h=static::$lang['dbt'].' <a href="#" class="checkdb">'.static::$lang['chdb'].'</a>';
+					}
+					$Lst->head($h);
+				}
+				$cl='';
+			}*/
+
+			$site['title']=T::$T->LangEdit($site['title'], null);
+//
+			$parts.=<<<HTML
+<div class="block-t expand">
+	<p class="btl" data-toggle="collapse" data-target="#opts-{$key}"><span class="site-title">&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#" class="delete">{$t_lang['delete']}</a></p>
+	<div id="opts-{$key}" class="collapse in">
+		<div class="bcont">
+			<div class="row">
+				<div class="col-xs-6 form-group">
+					<label id="label-title-{$key}" for="title-{$key}">{$controls['title']['title']}</label>
+					{$site['title']}
+				</div>
+				<div class="col-xs-6 form-group no-bottom-padding">
+					<label id="label-url-{$key}" for="url-{$key}">{$controls['url']['title']}</label>
+					{$site['url']}
+					<p class="text-muted">{$controls['url']['descr']}</p>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-6 form-group">
+					<label id="label-secret-{$key}" for="secret-{$key}">{$controls['secret']['title']}</label>
+					{$site['secret']}
+				</div>
+				<div class="col-xs-6 form-group">
+					<label id="label-prefix-{$key}" for="prefix-{$key}">{$controls['prefix']['title']}</label>
+					{$site['prefix']}
+				</div>
+			</div>
+			<hr />
+			<div class="row">
+				<div class="col-xs-6 form-group">
+					<label id="label-host-{$key}" for="host-{$key}">{$controls['host']['title']}</label>
+					{$site['host']}
+				</div>
+				<div class="col-xs-6 form-group">
+					<label id="label-db-{$key}" for="db-{$key}">{$controls['db']['title']}</label>
+					{$site['db']}
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-6 form-group">
+					<label id="label-user-{$key}" for="user-{$key}">{$controls['user']['title']}</label>
+					{$site['user']}
+				</div>
+				<div class="col-xs-6 form-group">
+					<label id="label-pass-{$key}" for="pass-{$key}">{$controls['pass']['title']}</label>
+					{$site['pass']}
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-6 checkbox">
+					<label title="{$controls['sync']['descr']}">{$site['sync']} {$controls['sync']['title']}</label>
+				</div>
+				<div class="col-xs-6 text-right">
+					<button type="button" class="btn btn-default need-tabindex"><b>{$c_lang['check']}</b></button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+HTML;
+		}
+
+		return<<<HTML
+		{$er_def}
+			<form method="post">
+				<div id="mainbar">
+					{$parts}
+				</div>
+				<div id="rightbar"></div>
+				<!-- FootLine -->
+				<div class="submit-pane">
+					<button type="submit" class="btn btn-success need-tabindex"><b>{$c_lang['save-config']}</b></button>
+					<button type="button" class="btn btn-primary need-tabindex"><b>{$c_lang['add-site']}</b></button>
+				</div>
+				<!-- FootLine [E] -->
+			</form>
+			<script>$(function(){
+$(".form-group input:not(:checkbox),textarea,select").addClass("form-control pim");
+			})</script>
+HTML;
+
+
+
+
+
+		$Lst=Eleanor::LoadListTemplate('table-form')->form(['id'=>'multisite']);
 
 		foreach($sites as $sn=>&$site)
 		{
 			$Lst->begin();
-			foreach($controls as $k=>&$v)
+			foreach($controls as $name=>&$control)
 			{
-				if(is_array($v))
-					$Lst->item(array($v['title'].$cl,Eleanor::$Template->LangEdit($site[$k],null),'tip'=>$v['descr'],'imp'=>$v['imp']));
-				elseif($v)
+				if(is_array($control))
+					$Lst->item([$control['title'].$cl,T::$T->LangEdit($site[$name],null),'tip'=>$control['descr'],'imp'=>$control['imp']]);
+				elseif($control)
 				{
-					switch($v)
+					switch($control)
 					{
 						case'site':
 							$h=static::$lang['sgd'].' <a href="#" class="delsite">'.static::$lang['dels'].'</a>';
@@ -60,18 +197,26 @@ class TPLMultisite
 			}
 			$Lst->end();
 		}
-		$Lst->submitline(Eleanor::Button(static::$lang['addsite'],'button',array('class'=>'addsite')).' '.Eleanor::Button(static::$lang['saveconf']))->endform();
+		$Lst->submitline(Eleanor::Button(static::$lang['addsite'],'button',['class'=>'addsite']).' '.Eleanor::Button(static::$lang['saveconf']))->endform();
 		return Eleanor::$Template->Cover((string)$Lst,$error,'error');
 	}
 
-	/*
-		Обертка для настроек
-		$c - интерфейс настроек
-	*/
-	public static function Options($c)
+	/** Обертка для интерфейса настроек
+	 * @param string $options Интерфейс настроек
+	 * @return string */
+	public static function Options($options)
 	{
+		#SpeedBar
+		T::$data['speedbar']=[
+			[Eleanor::$services['admin']['file'].'?section=management',Eleanor::$Language['main']['management']],
+			$GLOBALS['Eleanor']->module['title'],
+			end($GLOBALS['title'])
+		];
+
 		static::Menu('options');
-		return$c;
+		return(string)$options;
 	}
 }
-TplMultisite::$lang=Eleanor::$Language->Load(Eleanor::$Template->default['theme'].'langs/multisite-*.php',false);
+Multisite::$lang=Eleanor::$Language->Load(__DIR__.'/../translation/multisite-*.php',false);
+
+return Multisite::class;

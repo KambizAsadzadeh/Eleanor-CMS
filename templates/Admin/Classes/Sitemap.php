@@ -1,24 +1,27 @@
 <?php
-/*
+/**
 	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Шаблоны для админки генератора sitemap-ов
 */
-class TPLSitemap
-{
-	public static
-		$lang;
 
-	/**
-	 * Меню модуля
-	 */
+namespace CMS\Templates\Admin;
+use \CMS\Eleanor, Eleanor\Classes\Html;
+
+/** Шаблоны для админки генератора sitemap-ов */
+class Sitemap
+{
+	/** @var array Языковые параметры */
+	public static $lang;
+
+	/** Меню модуля
+	 * @param string $act Идентификатор активного пункта меню
+	 * @return string */
 	protected static function Menu($act='')
 	{
 		$links=&$GLOBALS['Eleanor']->module['links'];
 
-		$GLOBALS['Eleanor']->module['navigation']=array(
+		$GLOBALS['Eleanor']->module['navigation']=[
 			array($links['list'],Eleanor::$Language['sitemap']['list'],'act'=>$act=='list',
 				'submenu'=>array(
 					array($links['add'],static::$lang['add'],'act'=>$act=='add'),

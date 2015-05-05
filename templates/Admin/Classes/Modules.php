@@ -301,7 +301,7 @@ HTML;
 					$er_title=$error;
 				break;
 				default:
-					$er_def=$error;
+					$er_def.=$error;
 			}
 		}
 

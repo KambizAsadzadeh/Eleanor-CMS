@@ -18,7 +18,9 @@ class T extends Template
 		$lang,
 
 		/** @var array Место хранение служебных данных */
-		$data;
+		$data=[
+			'speedbar'=>[],
+		];
 }
 
 /** Генератор шаблонизатора таблиц
@@ -27,14 +29,6 @@ class T extends Template
 function TableList($columns)
 {
 	$a=\Eleanor\AwareInclude(__DIR__.'/Lists/table-list.php',['columns'=>$columns]);
-	return new Template([$a]);
-}
-
-/** Генератор шаблонизатора форм #Old....
- * @return Template */
-function TableForm()
-{
-	$a=\Eleanor\AwareInclude(__DIR__.'/Lists/table-form.php');
 	return new Template([$a]);
 }
 

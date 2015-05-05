@@ -264,6 +264,8 @@ elseif(isset($_GET['edit']))
 			if($v=='')
 				if($id or $k==Language::$main or !isset($title_[ Language::$main ]))
 					$errors['EMPTY_TITLE'][]=$k;
+				elseif($id)
+					unset($title_[$k]);
 				else
 					$v=$title_[ Language::$main ];
 		}
@@ -275,8 +277,11 @@ elseif(isset($_GET['edit']))
 		{
 			$v=trim($v);
 
-			if($v=='' and !$id and $k!=Language::$main and isset($descr[ Language::$main ]))
+			if($v=='')
+				if(!$id and $k!=Language::$main and isset($descr[ Language::$main ]))
 					$v=$descr[ Language::$main ];
+				else
+					unset($descr[$k]);
 		}
 		unset($v);
 
@@ -508,11 +513,11 @@ elseif(isset($_GET['edit']))
 					];
 			}
 
-		if($title_)
-			$values['title_l']=json_encode($title_,JSON);
+		if(isset($_POST['title']))
+			$values['title_l']=$title_ ? json_encode($title_,JSON) : '';
 
-		if($descr)
-			$values['descr_l']=json_encode($descr,JSON);
+		if(isset($_POST['descr']))
+			$values['descr_l']=$descr ? json_encode($descr,JSON) : '';
 
 		if($unlocked)
 			IntValue($values,'status',[0,1]);
@@ -596,6 +601,7 @@ elseif(isset($_GET['edit']))
 			'uris'=>'array',
 			'path'=>'string',
 			'file'=>'string',
+			'api'=>'string',
 			'config'=>'string',
 		];
 

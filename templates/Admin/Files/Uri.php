@@ -7,9 +7,12 @@
 namespace CMS;
 defined('CMS\STARTED')||die;
 
-/** Невидимый элемент шаблона, автоматически прописывает URI */
+/** Невидимый элемент шаблона, автоматически прописывает URI
+ * @var bool $var_0 Включение транслитерации */
 
-if(Eleanor::$vars['trans_uri'])
+$trans=Eleanor::$vars['trans_uri'] || !empty($var_0);
+
+if($trans)
 	if(Eleanor::$vars['multilang'])
 		$GLOBALS['scripts'][]=Template::$http['static'].'js/'.Language::$main.'.js';
 	else
@@ -20,9 +23,9 @@ if(Eleanor::$vars['trans_uri'])
 if(Eleanor::$vars['multilang'])
 	foreach(Eleanor::$langs as $k=>$v)
 		echo'Source2Uri($("#title-',$k,'"),$("#uri-',$k,'"),',
-		Eleanor::$vars['trans_uri'] && $k!='english' ? 'CORE.'.ucfirst(Language::$main).'.Translit' : 'false',
+		$trans && $k!='english' ? 'CORE.'.ucfirst(Language::$main).'.Translit' : 'false',
 		',"',Eleanor::$vars['url_rep_space'],'");';
 else
 	echo'Source2Uri($("#title"),$("#uri"),',
-		Eleanor::$vars['trans_uri'] ? 'CORE.'.ucfirst(Language::$main).'.Translit' : 'false',
+		$trans ? 'CORE.'.ucfirst(Language::$main).'.Translit' : 'false',
 		',"',Eleanor::$vars['url_rep_space'],'");';

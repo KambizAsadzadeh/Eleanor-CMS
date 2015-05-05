@@ -1,10 +1,7 @@
 <?php
-return array(
+return[
 	#For Classes/Multisite.php
-	'sgd'=>'Site general settings',
-	'dels'=>'Delete site',
-	'dbt'=>'Data base',
-	'chdb'=>'Check',
-	'addsite'=>'Add site',
-	'saveconf'=>'Save configuration',
-);
+	'check'=>'Check',
+	'add-site'=>'Add site',
+	'save-config'=>'Save configuration',
+];

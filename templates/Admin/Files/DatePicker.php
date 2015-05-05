@@ -8,7 +8,7 @@ use Eleanor\Classes\Html;
  * @var bool $var_2 Включение использования времени
  * @var array $var_3 Extra
  * @var bool $var_4 Флаг вывода кнопки вывода даты
- * @var string $var_5 JSON объект настройки и работы*/
+ * @var string $var_5 JSON объект настройки и работы */
 defined('CMS\STARTED')||die;
 
 global$head,$scripts;
@@ -21,10 +21,9 @@ if(!isset($var_3))
 
 if(!isset($head['datetimepicker']))
 {
-	$head['datetimepicker']='<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.0.0/css/bootstrap-datetimepicker.min.css" rel="stylesheet"/>';
+	$head['datetimepicker']='<link href="//cdn.jsdelivr.net/bootstrap.datetimepicker/4/css/bootstrap-datetimepicker.min.css" rel="stylesheet"/>';
 
-	$scripts[]='//cdn.jsdelivr.net/g/momentjs';
-	$scripts[]='//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.0.0/js/bootstrap-datetimepicker.min.js';
+	$scripts[]='//cdn.jsdelivr.net/g/momentjs,bootstrap.datetimepicker@4';
 
 	if($use_lang)
 		$scripts[]=Template::$http['3rd'].'static/datetimepicker/bootstrap-datetimepicker.'.$use_lang.'.js';
@@ -34,7 +33,7 @@ if(!isset($var_3['id']))
 	$var_3['id']=uniqid();
 
 if(!isset($var_3['class']))
-	$var_3['class']='form-control';
+	$var_3['class']='form-control need-tabindex pim';
 
 if(!isset($var_3['data-date-format']))
 	$var_3['data-date-format']='YYYY-MM-DD'.($time ? ' HH:mm' : '');

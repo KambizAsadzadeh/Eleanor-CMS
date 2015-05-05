@@ -56,11 +56,11 @@ class StaticPage
 				: false
 		]);
 
-		return Eleanor::$Template->OpenTable()
+		return T::$T->OpenTable()
 			.$navi
 			.\CMS\Templates\Content($data['text'])
 			.$see
-			.Eleanor::$Template->CloseTable();
+			.T::$T->CloseTable();
 	}
 
 	/** Вывод статических страниц на главной (когда модуль установлен на главную)
@@ -90,8 +90,8 @@ class StaticPage
 	public static function StaticSubstance($statics)
 	{
 		static::RssLink();
-		return Eleanor::$Template->Title(end($GLOBALS['title']))
-		.($statics ? Eleanor::$Template->OpenTable().self::SubstanceItems($statics).Eleanor::$Template->CloseTable() : '');
+		return T::$T->Title(end($GLOBALS['title']))
+		.($statics ? T::$T->OpenTable().self::SubstanceItems($statics).T::$T->CloseTable() : '');
 	}
 
 	/** Внутренний шаблон отображения содержания */

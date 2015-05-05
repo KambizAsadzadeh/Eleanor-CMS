@@ -7,7 +7,7 @@
 namespace CMS\Traits;
 use \CMS\Eleanor, \Eleanor\Classes\EE;
 
-/** Повторное использование кода для классов \CMS\Editor и \CMS\EditorsResult */
+/** Повторное использование кода для классов \CMS\Editor и \CMS\Saver */
 trait Editor
 {
 	public static

@@ -1,10 +1,11 @@
 <?php
-return array(
-	#Для /addons/admin/modules/sitemap.php
-	'editingr'=>'Редактирование robots.txt',
-	'delc'=>'Подтверждение удаления',
-	'list'=>'Список Sitemap-ов',
-	'adding'=>'Добавление карты сайта',
-	'editing'=>'Редактирование карты сайта',
-	'unacr'=>'Невозможно создать файл %s. Снимите защиту от записи!',
-);
+return[
+	#Для /cms/admin/modules/users/sitemap.php
+	'robots.txt'=>'Редактирование robots.txt',
+	'ROBOTS_ERROR'=>'Невозможно создать файл %s. Снимите защиту от записи!',
+
+	'list'=>'Список sitemap',
+	'deleting'=>'Подтверждение удаления',
+	'creating'=>'Создание sitemap',
+	'editing'=>'Редактирование sitemap',
+];

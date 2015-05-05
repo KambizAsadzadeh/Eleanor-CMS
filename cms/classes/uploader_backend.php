@@ -320,7 +320,7 @@ class Uploader_BackEnd
 					#Заменяем все [ и ] потому что они криво вставляются в тег [attach]
 					$name=preg_replace('#[\s\'"%\]\[/\\\-]+#','-',$name);
 
-					#Проверка на сбойность имение
+					#Проверка на сбойность имени
 					if(static::EF($name) or !is_uploaded_file($_FILES['file']['tmp_name'][$k]))
 						continue;
 

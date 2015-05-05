@@ -183,7 +183,7 @@ function ExitPage($code=404)
 	return GoAway(true);
 }
 
-/** Показ главное страницы сайта */
+/** Показ главной страницы сайта */
 function MainPage()
 {global$Eleanor;
 	$id=(int)Eleanor::$vars['prefix_free_module'];

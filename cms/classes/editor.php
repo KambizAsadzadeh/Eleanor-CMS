@@ -23,8 +23,11 @@ class Editor extends \Eleanor\BaseClass
 	 * @param string $value HTML содержимое редактора
 	 * @param array $extra Дополнительные параметры textarea редактора
 	 * @param array $settings Дополнительные параметры редактора, ключи
+	 *  mixed nosmiles Если присутствует флаг (не равен null) смайлы не будут отображаться (но будут обрабатываться)
 	 *  string syntax Название синтаксиса, для его подсветки. Работает пока только для codemirror
 	 *  bool post Указывает редактору, что переданное $value взято из POST запроса, и не является сохраненным HTML
+	 *  string codemirror_embed Тело функции для вставки объектов. Должна вернуть строку, входящие переменные: type,data
+	 *  string ckeditor_package На выбор пакет CKeditor: basic, standar, full (default)
 	 *  array bb,no,ckeditor Определяют дополнительные параметры тега textarea при помощи которого создается редактор.
 	 * @param null|Template $Template
 	 * @return string */
@@ -85,7 +88,7 @@ format_tags:'p;h1;h2;h3;pre',
 removeDialogTabs:'image:advanced;link:advanced'*/
 
 				$language=substr(Language::$main,0,2);
-				$ckeditor='//cdn.ckeditor.com/4.4.6/full/';
+				$ckeditor='//cdn.ckeditor.com/4.4.7/'.(isset($settings['ckeditor_package']) ? $settings['ckeditor_package'] : 'full').'/';
 				$GLOBALS['head']['ckeditor']=<<<HTML
 <script>window.CKEDITOR_BASEPATH="{$ckeditor}";</script><script src="{$ckeditor}ckeditor.js"></script><script>
 var CKEDITOR_CONFIG={
@@ -181,7 +184,7 @@ HTML;
 				$html=Html::Text($name,$value,$extra);
 			break;
 			case'codemirror':
-				$cm='//cdn.jsdelivr.net/codemirror/4/';
+				$cm='//cdnjs.cloudflare.com/ajax/libs/codemirror/5.1.0/';
 				array_push($GLOBALS['scripts'],$cm.'codemirror.js',
 					$cm.'addon/selection/active-line.js',/* styleActiveLine:true, lineNumbers:true, ineWrapping: true */
 					$cm.'addon/edit/closebrackets.js',/* autoCloseBrackets: true */
@@ -252,7 +255,8 @@ dt {font-family: monospace; color: #666;}
 </style>
 HTML;
 				$syntax=isset($settings['syntax']) ? preg_replace('#[^a-z0-9]+#','',(string)$settings['syntax']) : '';
-				$params=$extrakeys='';
+				$params=',autoCloseBrackets: true';
+				$extrakeys='';
 
 				switch($syntax)
 				{
@@ -268,13 +272,15 @@ HTML;
 						$GLOBALS['head']['codemirror'].='<link rel="stylesheet" href="'.$cm
 							.'addon/hint/show-hint.css" />';
 						$extrakeys.=',"Ctrl-Space": "autocomplete"';
-						$params.=',autoCloseBrackets: true, mode: {name: "javascript", globalVars: true} ';
+						$params.=', mode: {name: "javascript", globalVars: true} ';
 					break;
 					case'sql':
 						array_push($GLOBALS['scripts'],$cm.'mode/sql/sql.js');
+						$params.=', mode: "sql"';
 					break;
 					case'css':
 						array_push($GLOBALS['scripts'],$cm.'mode/css/css.js');
+						$params.=', mode: "css"';
 					break;
 					case'http':
 						array_push($GLOBALS['scripts'],$cm.'mode/http/http.js');
@@ -295,76 +301,93 @@ HTML;
 						);
 						$GLOBALS['head']['codemirror'].='<link rel="stylesheet" href="'.$cm
 							.'addon/hint/show-hint.css" />';
-						$params.=',autoCloseBrackets: true, mode: "application/x-httpd-php"';
+						$params.=', mode: "application/x-httpd-php"';
 				}
+
+				$replace=isset($settings['codemirror_embed'])
+					? $settings['codemirror_embed']
+					: 'if(type=="image" && data.src)return"<img src=\""+data.src+"\""+(data.title ? " title=\""+data.title+"\"" : "")+" />";';
 
 				$html=Html::Text($name,$value,$extra)
 					.<<<HTML
-<script>//<![CDATA[
+<script>
 $(function(){
-	var editor=CodeMirror.fromTextArea(
-		$("#{$id}").get(0),
-		{
-			lineNumbers:true,
-			autoCloseBrackets: true,
-			styleActiveLine: true,
-			lineWrapping: true,
-			autoCloseTags: true,
-			extraKeys: { "Ctrl-Q": function(cm){ cm.foldCode(cm.getCursor()); },
-				"F11": function(cm) {
-					cm.setOption("fullScreen", !cm.getOption("fullScreen"));
-				},
-				"Esc": function(cm) {
-					if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
-				}{$extrakeys}
-			},
-			foldGutter: true,
-			gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-			highlightSelectionMatches: {showToken: /\w/},
-			indentWithTabs:true,
-			indentUnit:4,
-			matchBrackets:true,
-			showTrailingSpace: true,
-			onFocus:function(){EDITOR.Active("{$id}")}{$params}
-		}
-	);
-	EDITOR.New(
-		"{$id}",
-		{
-			Embed:function(type,data)
+	$("#{$id}").addClass("cloneable").on("clone",function(){
+		var id=$(this).attr("id"),
+			editor=CodeMirror.fromTextArea(
+				this,
+				{
+					lineNumbers:true,
+					autoCloseBrackets: true,
+					styleActiveLine: true,
+					lineWrapping: true,
+					autoCloseTags: true,
+					extraKeys: { "Ctrl-Q": function(cm){ cm.foldCode(cm.getCursor()); },
+						"F11": function(cm) {
+							cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+						},
+						"Esc": function(cm) {
+							if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+						}{$extrakeys}
+					},
+					foldGutter: true,
+					gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+					highlightSelectionMatches: {showToken: /\w/},
+					indentWithTabs:true,
+					indentUnit:4,
+					matchBrackets:true,
+					showTrailingSpace: true{$params}
+				}
+			);
+
+		editor.on("focus",function(){EDITOR.Active(id)});
+		EDITOR.New(
+			id,
 			{
-				if(type=="image" && data.src)
-					editor.replaceSelection("<img src=\""+data.src+"\""+(data.title ? " title=\""+data.title+"\"" : "")+" />");
-			},
-			Insert:function(pre,after,F){
-				var s=editor.getSelection();
-				if($.isFunction(F))
-					s=F(s);
-				editor.replaceSelection(pre+s+after);
-			},
-			Set:function(text){ editor.setValue(text); },
-			Get:function(){ return editor.getValue(); },
-			Selection:function(){ return editor.getSelection(); }
-		}
-	);
-})//]]></script>
+				Embed:function(type,data)
+				{
+					var replace=(function(){{$replace}})();
+
+					if(replace)
+						editor.replaceSelection(replace);
+				},
+				Insert:function(pre,after,F){
+					var s=editor.getSelection();
+					if($.isFunction(F))
+						s=F(s);
+					editor.replaceSelection(pre+s+after);
+				},
+				Set:function(text){ editor.setValue(text); },
+				Get:function(){ return editor.getValue(); },
+				Selection:function(){ return editor.getSelection(); }
+			}
+		);
+	}).trigger("clone");
+})</script>
 HTML;
 			break;
 			default:#Без редактора
 				$GLOBALS['scripts'][]=Template::$http['static'].'js/bb_editor.js';
 				$html=Html::Text($name,$value,(isset($extra['no']) ? (array)$extra['no'] : [])+['id'=>$id]).<<<HTML
-<script>/*<![CDATA[*/EDITOR.New("{$id}",{
-		Embed:function(type,data)
-		{
-			if(type=="image" && data.src)
-				SetSelectedText($("#{$id}"),data.src);
-		},
-		Insert:function(pre,after,F){ SetSelectedText($("#{$id}"),pre,after,F); },
-		Get:function(){ return $("#{$id}").val(); },
-		Set:function(text){ $("#{$id}").val(text); }
-	}
-);
-$("#{$id}").focus(function(){EDITOR.Active("{$id}")});//]]></script>
+<script>$(function(){
+$("#{$id}").addClass("cloneable").on("clone",function(){
+	var th=$(this),
+		id=th.attr("id");
+
+	EDITOR.New(id,{
+			Embed:function(type,data)
+			{
+				if(type=="image" && data.src)
+					SetSelectedText(th,data.src);
+			},
+			Insert:function(pre,after,F){ SetSelectedText(th,pre,after,F); },
+			Get:function(){ return th.val(); },
+			Set:function(text){ th.val(text); }
+		}
+	);
+	$(this).focus(function(){EDITOR.Active(id)});
+}).trigger("clone");
+</script>
 HTML
 ;
 		}
@@ -388,7 +411,7 @@ HTML
 				}
 		}
 
-		return$Template->Editor($id,$html,$this->smiles ? static::GetSmiles() : [],$ownbb,$this->type);
+		return$Template->Editor($id,$html,$this->smiles && !isset($settings['nosmiles']) ? static::GetSmiles() : [],$ownbb,$this->type);
 	}
 
 	/** Получение содержимого редактора: преобразование смайлов в их текстовое представление, конвертирование HTML в BB

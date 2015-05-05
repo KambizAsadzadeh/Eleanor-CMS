@@ -79,9 +79,6 @@ if(isset($_REQUEST['do'])) switch($_REQUEST['do'])
 			Response( Eleanor::$Template->Options($c) );
 	break;
 	case'letters':
-		#ToDo! Удалить:
-		Templates\Admin\T::$data['speedbar']=[];
-
 		$controls=[
 			$lang['letter4created'],
 			'created_t'=>[
@@ -154,11 +151,19 @@ if(isset($_REQUEST['do'])) switch($_REQUEST['do'])
 			],
 		];
 
-		$values=[];
+		$values=$errors=[];
 		$multilang=Eleanor::$vars['multilang'] ? array_keys(Eleanor::$langs) : [Language::$main];
 		if($post)
 		{
-			$letter=$Eleanor->Controls->SaveControls($controls);
+			try
+			{
+				$letter=$Eleanor->Controls->SaveControls($controls);
+			}
+			catch(EE$E)
+			{
+				$errors['ERROR']=$E->getMessage();
+				goto EditLetter;
+			}
 
 			if(Eleanor::$vars['multilang'])
 				foreach($multilang as $l)
@@ -198,6 +203,8 @@ if(isset($_REQUEST['do'])) switch($_REQUEST['do'])
 					foreach($letter as $k=>$v)
 						$values[$k]['value']=$v;
 			}
+
+		EditLetter:
 
 		$values=$Eleanor->Controls->DisplayControls($controls,$values)+$values;
 		$title[]=$lang['letters'];

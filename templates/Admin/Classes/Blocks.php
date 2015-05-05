@@ -1,16 +1,22 @@
 <?php
-/*
-	Eleanor CMS © 2014
+/**
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
-class TPLBlocks
+
+namespace CMS\Templates\Admin;
+use \CMS\Eleanor, Eleanor\Classes\Html;
+
+/** Шаблоны блоков */
+class Blocks
 {
-	public static
-		$lang;
-	/*
-		Меню модуля
-	*/
+	/** @var array Языковые параметры */
+	public static $lang;
+
+	/** Меню модуля
+	 * @param string $act Идентификатор активного пункта меню
+	 * @return string */
 	protected static function Menu($act='')
 	{
 		$lang=Eleanor::$Language['blocks'];

@@ -1,19 +1,21 @@
 <?php
-/*
+/**
 	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Шаблоны менеджера шаблонов
 */
-class TplThemes
-{
-	public static
-		$lang;
+namespace CMS\Templates\Admin;
+use \CMS\Eleanor, Eleanor\Classes\Html;
 
-	/*
-		Меню модуля
-	*/
+/** Шаблоны менеджера шаблонов */
+class Themes
+{
+	/** @var array Языковые параметры */
+	public static $lang;
+
+	/** Меню модуля
+	 * @param string $act Идентификатор активного пункта меню
+	 * @return string */
 	protected static function Menu($act='')
 	{
 		$links=&$GLOBALS['Eleanor']->module['links'];

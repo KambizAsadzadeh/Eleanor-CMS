@@ -1,6 +1,6 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
@@ -24,7 +24,7 @@ class Errors
 		$links=&$GLOBALS['Eleanor']->module['links'];
 
 		T::$data['navigation']=[
-			[$links['list'],$lang['list'],'modules','act'=>$act=='list'],
+			[$links['list'],$lang['list'],'act'=>$act=='list'],
 			[$links['create'],static::$lang['create'],'act'=>$act=='create'],
 			[$links['letters'],$lang['letters'],'act'=>$act=='letters'],
 		];
@@ -94,8 +94,7 @@ class Errors
 			$Items->end()->foot(Html::Option(T::$lang['delete'],'delete'),$cnt,$pp,$page,$links)->endform()->checks();
 
 			$back=Html::Input('back',\Eleanor\SITEDIR.\CMS\Url::$current,['type'=>'hidden']);
-			$t_lang=T::$lang;
-			$c_lang=static::$lang;
+
 			$Items.=<<<HTML
 <!-- Окно подтверждение удаления -->
 <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-hidden="true">
@@ -319,7 +318,7 @@ HTML;
 			elseif(strpos($type,'EMPTY_TEXT')===0)
 				$er_text=$error;
 			else
-				$er_def=$error;
+				$er_def.=$error;
 		}
 
 		if($errors and !$er_def)

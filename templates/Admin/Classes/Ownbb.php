@@ -74,7 +74,7 @@ class OwnBB
 
 			if($posasc)
 			{
-				$GLOBALS['scripts'][]=T::$http['3rd'].'static/sortable.min.js';
+				$GLOBALS['scripts'][]='//cdn.jsdelivr.net/sortable/latest/Sortable.min.js';
 				$GLOBALS['head']['sortable-table']=<<<HTML
 <script>/*<![CDATA[*/$(function(){
 	new Sortable($(".table.table-list tbody").get(0), {
@@ -326,7 +326,7 @@ HTML;
 		$back=$back ? Html::Input('back',$back,['type'=>'hidden']) : '';
 
 		#Errors
-		$er_title=$er_def=$er_tags='';
+		$er_title=$er_tags=$er_def='';
 
 		foreach($errors as $type=>$error)
 		{
@@ -348,7 +348,7 @@ HTML;
 					$er_tags=$error;
 				break;
 				default:
-					$er_def=$error;
+					$er_def.=$error;
 			}
 		}
 

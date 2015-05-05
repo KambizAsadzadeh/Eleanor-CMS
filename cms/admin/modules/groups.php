@@ -5,6 +5,8 @@
 	info@eleanor-cms.ru
 */
 namespace CMS;
+use Eleanor\Classes\EE;
+
 defined('CMS\STARTED')||die;
 
 global$Eleanor,$title;
@@ -46,8 +48,16 @@ elseif(isset($_GET['edit']))
 	if($post)
 	{
 		$C=new Controls;
-		$values=$C->SaveControls($controls);
-		$errors=$C->errors;
+
+		try
+		{
+			$values=$C->SaveControls($controls);
+			$errors=$C->errors;
+		}
+		catch(EE$E)
+		{
+			$errors['ERROR']=$E->getMessage();
+		}
 
 		include_once DIR.'crud.php';
 
