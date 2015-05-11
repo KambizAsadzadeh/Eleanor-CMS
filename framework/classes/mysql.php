@@ -315,17 +315,17 @@ class MySQL extends Eleanor\BaseClass
 	 * @param array $a Массив изменямых данных. Все данные автоматически экранируются. Если экранирование не нужно,
 	 * перед именем поля поставьте !. Например: ['field1'=>'value1','field2'=>2,'field3'=>NULL,'!field5'=>'NOW()']
 	 * @param string $w Условие обновления. Секция WHERE, без ключевого слова WHERE.
-	 * @param string $type
+	 * @param string $type Тип запроса
 	 * @return int Affected rows */
 	public function Update($t,array$a,$w='',$type='IGNORE')
 	{
 		if(!$a)
 			return 0;
 
-		$q='UPDATE '.$type.' `'.$t.'` SET ';
+		$q="UPDATE {$type} `{$t}` SET ";
 
 		foreach($a as $k=>$v)
-			$q.=$k[0]=='!' ? '`'.substr($k,1).'`='.$v.',' : '`'.$k.'`='.$this->Escape($v).',';
+			$q.=$k[0]=='!' ? '`'.substr($k,1)."`={$v}," : "`{$k}`=".$this->Escape($v).',';
 
 		$q=rtrim($q,',');
 
@@ -340,10 +340,11 @@ class MySQL extends Eleanor\BaseClass
 	/** Обертка для удобного осуществления DELETE запросов
 	 * @param string $t Имя таблицы, откуда необходимо удалить данные
 	 * @param string $w Секция WHERE, без ключевого слова WHERE. Если не заполнять - выполнится TRUNCATE запрос.
+	 * @param string $type Тип запроса
 	 * @return int Affected rows */
-	public function Delete($t,$w='')
+	public function Delete($t,$w='',$type='IGNORE')
 	{
-		$this->Query($w ? 'DELETE FROM `'.$t.'` WHERE '.$w : 'TRUNCATE TABLE `'.$t.'`');
+		$this->Query($w ? "DELETE {$type} FROM `{$t}` WHERE ".$w : "TRUNCATE TABLE `{$t}`");
 
 		return$this->Driver->affected_rows;
 	}

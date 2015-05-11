@@ -265,10 +265,10 @@ class OwnBB extends \Eleanor\BaseClass
 	{
 		if(static::$np)
 			if($type)
-				foreach(static::$np as &$v)
+				foreach(static::$np as $v)
 					$s=str_replace($v['r'],static::ParseBBCodes($v['t'],$type,$v['s']),$s);
 			else
-				foreach(static::$np as &$v)
+				foreach(static::$np as $v)
 					$s=str_replace($v['r'],$v['t'],$s);
 
 		static::$np=[];

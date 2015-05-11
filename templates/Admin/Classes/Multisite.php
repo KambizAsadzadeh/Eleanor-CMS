@@ -32,11 +32,10 @@ class Multisite
 	 * @param callback $Controls2Html Генератор html из $controls: id=>массив html контролов
 	 * @param array $controls Перечень элементов формы
 	 * @param array $errors Ошибки формы
+	 * @param bool $saved Флаг успешного сохранения
 	 * @return string */
-	public static function Multisite($Controls2Html,$controls,$errors)
+	public static function Multisite($Controls2Html,$controls,$errors,$saved)
 	{
-		#ToDo! Успешно сохранено, проверка на подключение к БД, заполнение заголовков
-
 		#SpeedBar
 		T::$data['speedbar']=[
 			[Eleanor::$services['admin']['file'].'?section=management',Eleanor::$Language['main']['management']],
@@ -57,40 +56,25 @@ class Multisite
 			if(is_int($type) and is_string($error) and isset(static::$lang[$error]))
 					$error=static::$lang[$error];
 
-			$er_def.=T::$T->Alert($error,'danger',true);;
+			$er_def.=T::$T->Alert($error,'danger',true);
 		}
 		#/Errors
 
+		if(!$er_def and $saved)
+			$er_def.=T::$T->Alert(T::$lang['successfully-saved'],'success',true);
+
 		$sites=$Controls2Html();
 		$parts='';
+		$next_add=0;
 
 		foreach($sites as $key=>$site)
 		{
+			$next_add=$key;
+			$site['title']=T::$T->LangEdit($site['title'], 'title-'.$key);
 
-			/*foreach($controls as $name=>&$control)
-			{
-				if(is_array($control))
-					$Lst->item([$control['title'].$cl,T::$T->LangEdit($site[$name], null),'tip'=>$control['descr'],'imp'=>$control['imp']]);
-				elseif($control)
-				{
-					switch($control)
-					{
-						case'site':
-							$h=static::$lang['sgd'].' <a href="#" class="delsite">'.static::$lang['dels'].'</a>';
-							break;
-						default:
-							$h=static::$lang['dbt'].' <a href="#" class="checkdb">'.static::$lang['chdb'].'</a>';
-					}
-					$Lst->head($h);
-				}
-				$cl='';
-			}*/
-
-			$site['title']=T::$T->LangEdit($site['title'], null);
-//
 			$parts.=<<<HTML
 <div class="block-t expand">
-	<p class="btl" data-toggle="collapse" data-target="#opts-{$key}"><span class="site-title">&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#" class="delete">{$t_lang['delete']}</a></p>
+	<p class="btl" data-toggle="collapse" data-target="#opts-{$key}"><span class="site-title">&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#" class="delete-site small">{$t_lang['delete']}</a></p>
 	<div id="opts-{$key}" class="collapse in">
 		<div class="bcont">
 			<div class="row">
@@ -110,28 +94,28 @@ class Multisite
 					{$site['secret']}
 				</div>
 				<div class="col-xs-6 form-group">
-					<label id="label-prefix-{$key}" for="prefix-{$key}">{$controls['prefix']['title']}</label>
+					<label class="control-label" id="label-prefix-{$key}" for="prefix-{$key}">{$controls['prefix']['title']}</label>
 					{$site['prefix']}
 				</div>
 			</div>
 			<hr />
 			<div class="row">
 				<div class="col-xs-6 form-group">
-					<label id="label-host-{$key}" for="host-{$key}">{$controls['host']['title']}</label>
+					<label class="control-label" id="label-host-{$key}" for="host-{$key}">{$controls['host']['title']}</label>
 					{$site['host']}
 				</div>
 				<div class="col-xs-6 form-group">
-					<label id="label-db-{$key}" for="db-{$key}">{$controls['db']['title']}</label>
+					<label class="control-label" id="label-db-{$key}" for="db-{$key}">{$controls['db']['title']}</label>
 					{$site['db']}
 				</div>
 			</div>
 			<div class="row">
 				<div class="col-xs-6 form-group">
-					<label id="label-user-{$key}" for="user-{$key}">{$controls['user']['title']}</label>
+					<label class="control-label" id="label-user-{$key}" for="user-{$key}">{$controls['user']['title']}</label>
 					{$site['user']}
 				</div>
 				<div class="col-xs-6 form-group">
-					<label id="label-pass-{$key}" for="pass-{$key}">{$controls['pass']['title']}</label>
+					<label class="control-label" id="label-pass-{$key}" for="pass-{$key}">{$controls['pass']['title']}</label>
 					{$site['pass']}
 				</div>
 			</div>
@@ -140,7 +124,7 @@ class Multisite
 					<label title="{$controls['sync']['descr']}">{$site['sync']} {$controls['sync']['title']}</label>
 				</div>
 				<div class="col-xs-6 text-right">
-					<button type="button" class="btn btn-default need-tabindex"><b>{$c_lang['check']}</b></button>
+					<button type="button" class="btn btn-default need-tabindex button-check"><b>{$c_lang['check']}</b></button>
 				</div>
 			</div>
 		</div>
@@ -149,56 +133,24 @@ class Multisite
 HTML;
 		}
 
+		$next_add++;
+
 		return<<<HTML
 		{$er_def}
-			<form method="post">
+			<form method="post" id="create-edit">
 				<div id="mainbar">
 					{$parts}
 				</div>
-				<div id="rightbar"></div>
+				<div id="rightbar"><div class="alert alert-info" style="margin-left: 15px">{$c_lang['info']}</div></div>
 				<!-- FootLine -->
 				<div class="submit-pane">
 					<button type="submit" class="btn btn-success need-tabindex"><b>{$c_lang['save-config']}</b></button>
-					<button type="button" class="btn btn-primary need-tabindex"><b>{$c_lang['add-site']}</b></button>
+					<button type="button" class="btn btn-primary need-tabindex" id="add-site"><b>{$c_lang['add-site']}</b></button>
 				</div>
 				<!-- FootLine [E] -->
 			</form>
-			<script>$(function(){
-$(".form-group input:not(:checkbox),textarea,select").addClass("form-control pim");
-			})</script>
+			<script>$(function(){ CreateEdit({$next_add}); })</script>
 HTML;
-
-
-
-
-
-		$Lst=Eleanor::LoadListTemplate('table-form')->form(['id'=>'multisite']);
-
-		foreach($sites as $sn=>&$site)
-		{
-			$Lst->begin();
-			foreach($controls as $name=>&$control)
-			{
-				if(is_array($control))
-					$Lst->item([$control['title'].$cl,T::$T->LangEdit($site[$name],null),'tip'=>$control['descr'],'imp'=>$control['imp']]);
-				elseif($control)
-				{
-					switch($control)
-					{
-						case'site':
-							$h=static::$lang['sgd'].' <a href="#" class="delsite">'.static::$lang['dels'].'</a>';
-						break;
-						default:
-							$h=static::$lang['dbt'].' <a href="#" class="checkdb">'.static::$lang['chdb'].'</a>';
-					}
-					$Lst->head($h);
-				}
-				$cl='';
-			}
-			$Lst->end();
-		}
-		$Lst->submitline(Eleanor::Button(static::$lang['addsite'],'button',['class'=>'addsite']).' '.Eleanor::Button(static::$lang['saveconf']))->endform();
-		return Eleanor::$Template->Cover((string)$Lst,$error,'error');
 	}
 
 	/** Обертка для интерфейса настроек

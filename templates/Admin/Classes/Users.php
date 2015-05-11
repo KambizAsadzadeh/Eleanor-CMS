@@ -107,7 +107,7 @@ HTML;
 				</form>
 			</section>
 <script>$(function(){
-	$("#content input:input,textarea").addClass("form-control");
+	$("#content input:not(:checkbox,[class*=select2]),textarea").addClass("form-control");
 })</script>
 HTML;
 	}
@@ -1325,7 +1325,7 @@ $("#extra-0 > .bcont > .form-group:lt(4), div[id^='extra-']:gt(0) > .bcont > .fo
 //Убираем чрезмерный отступ
 $(".row > .col-xs-6:has(p.text-muted)").addClass("no-bottom-padding");
 
-$(".form-group input:not(:checkbox),textarea,select").addClass("form-control pim");
+$(".form-group input:not(:checkbox,[class*=select2]),textarea,select").addClass("form-control pim");
 BlocksState('management-users-ce'); {$pim} })</script>
 HTML;
 	}

@@ -239,9 +239,11 @@ else
 	{
 		list($sort,$order,$limit,$pp)=SortOrderLimit($cnt,$page,$query,['name','file'],$defsort,$deforder);
 
+		$tpl=DynUrl::$base.'section=management&amp;module=theme&amp;info=';
 		$R=Eleanor::$Db->Query("SELECT `name`, `file`, `protected`, `theme`, `login` FROM `{$table}`{$where} ORDER BY `{$sort}` {$order}{$limit}");
 		while($a=$R->fetch_assoc())
 		{
+			$a['_atheme']=$a['theme'] ? $tpl.DynUrl::Encode($a['theme']) : null;
 			$a['_aedit']=$Url(['edit'=>$a['name']]);
 			$a['_adel']=$a['protected'] ? null : $Url(['delete'=>$a['name']]);
 

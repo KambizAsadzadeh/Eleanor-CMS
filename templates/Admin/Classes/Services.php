@@ -34,6 +34,7 @@ class Services
 	 *  [string login] Логин
 	 *  [string theme] Шаблон оформления
 	 *  [bool protected] Флаг защищенного сервиса
+	 *  [string|null _atheme] Ссылка на редактирование
 	 *  [string _aedit] Ссылка на редактирование
 	 *  [string|null _adel] Ссылка на удаление
 	 * @param bool $notempty Флаг того, что сервисы существуют, несмотря на настройки фильтра
@@ -81,7 +82,7 @@ class Services
 							$v['_adel'] ? [ $v['_adel'], T::$lang['delete'], 'extra'=>['class'=>'delete']] : [] ]
 					),
 					$v['file'],
-					$v['theme'],
+					$v['theme'] ? '<a href="'.$v['_atheme'].'">'.$v['theme'].'</a>' : '&mdash;',
 					$v['protected'] ? '<span style="color:green">'.static::$lang['yes'].'</span>' : static::$lang['no']
 				);
 			}

@@ -1,9 +1,10 @@
 <?php
 /*
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
+
 /*
 	Статусы блоков:
 		-3 - блок ожидает наступления даты начала показа
@@ -13,228 +14,233 @@
 		1 - блок активирован
 */
 namespace CMS;
+use Eleanor\Classes\Output;
+
 defined('CMS\STARTED')||die;
+
 global$Eleanor,$title;
-$lang=Eleanor::$Language->Load('addons/admin/langs/blocks-*.php','blocks');
-Eleanor::$Template->queue[]='Blocks';
+$lang=Eleanor::$Language->Load(DIR.'admin/translation/blocks-*.php','blocks');
+Eleanor::$Template->queue[]=Eleanor::$Template->classes.'Blocks.php';
 
-$Eleanor->module['links']=array(
-	'main'=>$Eleanor->Url->Prefix(),
-	'ids'=>$Eleanor->Url->Construct(array('do'=>'identification')),
-	'addi'=>$Eleanor->Url->Construct(array('do'=>'addi')),
-	'list'=>$Eleanor->Url->Construct(array('do'=>'list')),
-	'add'=>$Eleanor->Url->Construct(array('do'=>'add')),
-);
+/** @var DynUrl $Url */
+$Url=$Eleanor->DynUrl;
+$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$Eleanor->module['links']=[
+	'main'=>(string)$Url,
+	'ids'=>$Url(['do'=>'identification']),
+	'create-id'=>$Url(['do'=>'create-id']),
+	'list'=>$Url(['do'=>'list']),
+	'create'=>$Url(['do'=>'create']),
+];
 
-if(isset($_GET['do']))
-	switch($_GET['do'])
-	{
-		case'identification':
-			$title[]=$lang['ipages'];
-			$tosort=$items=$tmp=array();
-			$R=Eleanor::$Db->Query('SELECT `id`,`service`,`title_l` `title`,`code` FROM `'.P.'blocks_ids` ORDER BY `service` ASC');
+if(isset($_GET['do'])) switch($_GET['do'])
+{
+	case'identification':
+		/*$title[]=$lang['ipages'];
+		$tosort=$items=$tmp=[];
+		$R=Eleanor::$Db->Query('SELECT `id`,`service`,`title_l` `title`,`code` FROM `'.P.'blocks_ids` ORDER BY `service` ASC');
+		while($module=$R->fetch_assoc())
+		{
+			$module['title']=$module['title'] ? FilterLangValues(json_decode($module['title'],true)) : '';
+
+			$module['_aedit']=$Eleanor->Url->Construct(['editi'=>$module['id']]);
+			$module['_adel']=$Eleanor->Url->Construct(['deletei'=>$module['id']]);
+
+			$tosort[$module['service']][$module['id']]=$module['title'];
+			$tmp[$module['id']]=array_slice($module,2);
+		}
+		foreach($tosort as &$v)
+			natsort($v);
+		ksort($tosort,SORT_STRING);
+		foreach($tosort as $k=>&$v)
+			foreach($v as $kk=>&$vv)
+				$items[$k][$kk]=$tmp[$kk];
+
+		$c=Eleanor::$Template->BlocksIdsList($items);
+		Start();
+		echo$c;*/
+	break;
+	case'list':
+		if(AJAX)
+		{
+			//SetTitlte
+			/*		$id=isset($_POST['id']) ? (int)$_POST['id'] : 0;
+	$title=isset($_POST['title']) ? (string)Eleanor::$POST['title'] : '';
+	Eleanor::$Db->Update(P.'blocks_l',array('title'=>$title),'`id`='.$id.' AND `language` IN (\'\',\''.Language::$main.'\')');
+	Result(true);*/
+		}
+
+		/*$title[]=$lang['lab'];
+		$page=isset($_GET['page']) ? (int)$_GET['page'] : 1;
+		$qs=['do'=>'list'];
+		$groups=$items=[];
+		$where='';
+		if(isset($_REQUEST['fi']) and is_array($_REQUEST['fi']))
+		{
+			if($_SERVER['REQUEST_METHOD']=='POST')
+				$page=1;
+			$qs['']['fi']=[];
+			if(isset($_REQUEST['fi']['title']) and $_REQUEST['fi']['title']!='')
+			{
+				$t=Eleanor::$Db->Escape((string)$_REQUEST['fi']['title'],false);
+				$qs['']['fi']['title']=$_REQUEST['fi']['title'];
+				$where.=' AND `title` LIKE \'%'.$t.'%\'';
+			}
+			if(isset($_REQUEST['fi']['status']) and $_REQUEST['fi']['status']!='-')
+			{
+				$qs['']['fi']['status']=(int)$_REQUEST['fi']['status'];
+				$where.=' AND `status`='.$qs['']['fi']['status'];
+			}
+		}
+
+		if(Eleanor::$our_query and isset($_POST['op'],$_POST['mass']))
+		{
+			$in=Eleanor::$Db->In($_POST['mass']);
+			switch($_POST['op'])
+			{
+				case'd':
+					Eleanor::$Db->Update(P.'blocks',['status'=>0],'`id`'.$in);
+				break;
+				case'a':
+					$t=time();
+					$R=Eleanor::$Db->Query('SELECT `id`,`showfrom`,`showto` FROM `'.P.'blocks` WHERE `id`'.$in.' AND `status`=0');
+					while($module=$R->fetch_assoc())
+					{
+						$sf=(int)$module['showfrom'] ? strtotime($module['showfrom']) : false;
+						$st=(int)$module['showto'] ? strtotime($module['showto']) : false;
+						$upd=[];
+						if($sf and $sf>$t)
+							$upd['status']=-3;
+						elseif($st and $st<$t)
+							$upd['status']=-2;
+						else
+							$upd['status']=1;
+						Eleanor::$Db->Update(P.'blocks',$upd,'`id`='.$module['id'].' LIMIT 1');
+					}
+				break;
+				case'm':
+					Eleanor::$Db->Update($Eleanor->module['config']['t'],['status'=>0],'`id`'.$in);
+				break;
+				case'k':
+					Eleanor::$Db->Delete(P.'blocks','`id`'.$in);
+					Eleanor::$Db->Delete(P.'blocks_l','`id`'.$in);
+			}
+		}
+		$R=Eleanor::$Db->Query('SELECT COUNT(`id`) FROM `'.P.'blocks` INNER JOIN `'.P.'blocks_l` USING(`id`) WHERE `language` IN (\'\',\''.Language::$main.'\')'.$where);
+		list($cnt)=$R->fetch_row();
+		if($page<=0)
+			$page=1;
+		if(isset($_GET['new-pp']) and 4<$pp=(int)$_GET['new-pp'])
+			Eleanor::SetCookie('per-page',$pp);
+		else
+			$pp=abs((int)Eleanor::GetCookie('per-page'));
+		if($pp<5 or $pp>500)
+			$pp=50;
+		$offset=abs(($page-1)*$pp);
+		if($cnt and $offset>=$cnt)
+			$offset=max(0,$cnt-$pp);
+		$sort=isset($_GET['sort']) ? (string)$_GET['sort'] : '';
+		if(!in_array($sort,['id','title','showfrom','showto','status']))
+			$sort='';
+		$so=$_SERVER['REQUEST_METHOD']!='POST' && $sort && isset($_GET['so']) ? (string)$_GET['so'] : 'desc';
+		if($so!='asc')
+			$so='desc';
+		if($sort and ($sort!='id' or $so!='asc'))
+			$qs+=['sort'=>$sort,'so'=>$so];
+		else
+			$sort='id';
+		$qs+=['sort'=>false,'so'=>false];
+
+		if($cnt>0)
+		{
+			$R=Eleanor::$Db->Query('SELECT `id`,`ctype`,`file`,`user_groups`,`showfrom`,`showto`,`textfile`,`template`,`notemplate`,`status`,`title`,`text` FROM `'.P.'blocks` INNER JOIN `'.P.'blocks_l` USING(`id`) WHERE `language` IN (\'\',\''.Language::$main.'\')'.$where.' ORDER BY `'.$sort.'` '.$so.' LIMIT '.$offset.', '.$pp);
+			while($module=$R->fetch_assoc())
+			{
+				$module['user_groups']=$module['user_groups'] ? explode(',,',trim($module['user_groups'],',')) : [];
+				if($module['user_groups'])
+					$groups=array_merge($groups,$module['user_groups']);
+
+				$module['_aedit']=$Eleanor->Url->Construct(['edit'=>$module['id']]);
+				$module['_aswap']=$module['status']==-2 ? false : $Eleanor->Url->Construct(['swap'=>$module['id']]);
+				$module['_adel']=$Eleanor->Url->Construct(['delete'=>$module['id']]);
+
+				$items[$module['id']]=array_slice($module,1);
+			}
+		}
+
+		if($groups)
+		{
+			$pref=$Eleanor->Url->file.'?&amp;module=groups&amp;';
+			$R=Eleanor::$Db->Query('SELECT `id`,`title_l` `title`,`style` FROM `'.P.'groups` WHERE `id`'.Eleanor::$Db->In($groups));
+			$groups=[];
 			while($module=$R->fetch_assoc())
 			{
 				$module['title']=$module['title'] ? FilterLangValues(json_decode($module['title'],true)) : '';
-
-				$module['_aedit']=$Eleanor->Url->Construct(array('editi'=>$module['id']));
-				$module['_adel']=$Eleanor->Url->Construct(array('deletei'=>$module['id']));
-
-				$tosort[$module['service']][$module['id']]=$module['title'];
-				$tmp[$module['id']]=array_slice($module,2);
+				$module['_aedit']=$pref.$Eleanor->Url->Construct(['edit'=>$module['id']],false);
+				$groups[$module['id']]=array_slice($module,1);
 			}
-			foreach($tosort as &$v)
-				natsort($v);
-			ksort($tosort,SORT_STRING);
-			foreach($tosort as $k=>&$v)
-				foreach($v as $kk=>&$vv)
-					$items[$k][$kk]=$tmp[$kk];
+		}
 
-			$c=Eleanor::$Template->BlocksIdsList($items);
-			Start();
-			echo$c;
-		break;
-		case'list':
-			if(AJAX)
-			{
-				//SetTitlte
-				/*		$id=isset($_POST['id']) ? (int)$_POST['id'] : 0;
-		$title=isset($_POST['title']) ? (string)Eleanor::$POST['title'] : '';
-		Eleanor::$Db->Update(P.'blocks_l',array('title'=>$title),'`id`='.$id.' AND `language` IN (\'\',\''.Language::$main.'\')');
-		Result(true);*/
-			}
+		$links=[
+			'sort_id'=>$Eleanor->Url->Construct(array_merge($qs,['sort'=>'id','so'=>$qs['sort']=='id' && $qs['so']=='asc' ? 'desc' : 'asc'])),
+			'sort_title'=>$Eleanor->Url->Construct(array_merge($qs,['sort'=>'title','so'=>$qs['sort']=='title' && $qs['so']=='asc' ? 'desc' : 'asc'])),
+			'sort_showto'=>$Eleanor->Url->Construct(array_merge($qs,['sort'=>'showto','so'=>$qs['sort']=='showto' && $qs['so']=='asc' ? 'desc' : 'asc'])),
+			'sort_showfrom'=>$Eleanor->Url->Construct(array_merge($qs,['sort'=>'showfrom','so'=>$qs['sort']=='showfrom' && $qs['so']=='asc' ? 'desc' : 'asc'])),
+			'form_items'=>$Eleanor->Url->Construct($qs+['page'=>$page>1 ? $page : false]),
+			'pp'=>function($n)use($qs){ return$GLOBALS['Eleanor']->Url->Construct($qs+['new-pp'=>$n]); },
+			'first_page'=>$Eleanor->Url->Construct($qs),
+			'pages'=>function($n)use($qs){ return$GLOBALS['Eleanor']->Url->Construct($qs+['page'=>$n]); },
+		];
 
-			$title[]=$lang['lab'];
-			$page=isset($_GET['page']) ? (int)$_GET['page'] : 1;
-			$qs=array('do'=>'list');
-			$groups=$items=array();
-			$where='';
-			if(isset($_REQUEST['fi']) and is_array($_REQUEST['fi']))
-			{
-				if($_SERVER['REQUEST_METHOD']=='POST')
-					$page=1;
-				$qs['']['fi']=array();
-				if(isset($_REQUEST['fi']['title']) and $_REQUEST['fi']['title']!='')
-				{
-					$t=Eleanor::$Db->Escape((string)$_REQUEST['fi']['title'],false);
-					$qs['']['fi']['title']=$_REQUEST['fi']['title'];
-					$where.=' AND `title` LIKE \'%'.$t.'%\'';
-				}
-				if(isset($_REQUEST['fi']['status']) and $_REQUEST['fi']['status']!='-')
-				{
-					$qs['']['fi']['status']=(int)$_REQUEST['fi']['status'];
-					$where.=' AND `status`='.$qs['']['fi']['status'];
-				}
-			}
-
-			if(Eleanor::$our_query and isset($_POST['op'],$_POST['mass']))
-			{
-				$in=Eleanor::$Db->In($_POST['mass']);
-				switch($_POST['op'])
-				{
-					case'd':
-						Eleanor::$Db->Update(P.'blocks',array('status'=>0),'`id`'.$in);
-					break;
-					case'a':
-						$t=time();
-						$R=Eleanor::$Db->Query('SELECT `id`,`showfrom`,`showto` FROM `'.P.'blocks` WHERE `id`'.$in.' AND `status`=0');
-						while($module=$R->fetch_assoc())
-						{
-							$sf=(int)$module['showfrom'] ? strtotime($module['showfrom']) : false;
-							$st=(int)$module['showto'] ? strtotime($module['showto']) : false;
-							$upd=array();
-							if($sf and $sf>$t)
-								$upd['status']=-3;
-							elseif($st and $st<$t)
-								$upd['status']=-2;
-							else
-								$upd['status']=1;
-							Eleanor::$Db->Update(P.'blocks',$upd,'`id`='.$module['id'].' LIMIT 1');
-						}
-					break;
-					case'm':
-						Eleanor::$Db->Update($Eleanor->module['config']['t'],array('status'=>0),'`id`'.$in);
-					break;
-					case'k':
-						Eleanor::$Db->Delete(P.'blocks','`id`'.$in);
-						Eleanor::$Db->Delete(P.'blocks_l','`id`'.$in);
-				}
-			}
-			$R=Eleanor::$Db->Query('SELECT COUNT(`id`) FROM `'.P.'blocks` INNER JOIN `'.P.'blocks_l` USING(`id`) WHERE `language` IN (\'\',\''.Language::$main.'\')'.$where);
-			list($cnt)=$R->fetch_row();
-			if($page<=0)
-				$page=1;
-			if(isset($_GET['new-pp']) and 4<$pp=(int)$_GET['new-pp'])
-				Eleanor::SetCookie('per-page',$pp);
-			else
-				$pp=abs((int)Eleanor::GetCookie('per-page'));
-			if($pp<5 or $pp>500)
-				$pp=50;
-			$offset=abs(($page-1)*$pp);
-			if($cnt and $offset>=$cnt)
-				$offset=max(0,$cnt-$pp);
-			$sort=isset($_GET['sort']) ? (string)$_GET['sort'] : '';
-			if(!in_array($sort,array('id','title','showfrom','showto','status')))
-				$sort='';
-			$so=$_SERVER['REQUEST_METHOD']!='POST' && $sort && isset($_GET['so']) ? (string)$_GET['so'] : 'desc';
-			if($so!='asc')
-				$so='desc';
-			if($sort and ($sort!='id' or $so!='asc'))
-				$qs+=array('sort'=>$sort,'so'=>$so);
-			else
-				$sort='id';
-			$qs+=array('sort'=>false,'so'=>false);
-
-			if($cnt>0)
-			{
-				$R=Eleanor::$Db->Query('SELECT `id`,`ctype`,`file`,`user_groups`,`showfrom`,`showto`,`textfile`,`template`,`notemplate`,`status`,`title`,`text` FROM `'.P.'blocks` INNER JOIN `'.P.'blocks_l` USING(`id`) WHERE `language` IN (\'\',\''.Language::$main.'\')'.$where.' ORDER BY `'.$sort.'` '.$so.' LIMIT '.$offset.', '.$pp);
-				while($module=$R->fetch_assoc())
-				{
-					$module['user_groups']=$module['user_groups'] ? explode(',,',trim($module['user_groups'],',')) : array();
-					if($module['user_groups'])
-						$groups=array_merge($groups,$module['user_groups']);
-
-					$module['_aedit']=$Eleanor->Url->Construct(array('edit'=>$module['id']));
-					$module['_aswap']=$module['status']==-2 ? false : $Eleanor->Url->Construct(array('swap'=>$module['id']));
-					$module['_adel']=$Eleanor->Url->Construct(array('delete'=>$module['id']));
-
-					$items[$module['id']]=array_slice($module,1);
-				}
-			}
-
-			if($groups)
-			{
-				$pref=$Eleanor->Url->file.'?&amp;module=groups&amp;';
-				$R=Eleanor::$Db->Query('SELECT `id`,`title_l` `title`,`style` FROM `'.P.'groups` WHERE `id`'.Eleanor::$Db->In($groups));
-				$groups=array(); 
-				while($module=$R->fetch_assoc())
-				{
-					$module['title']=$module['title'] ? FilterLangValues(json_decode($module['title'],true)) : '';
-					$module['_aedit']=$pref.$Eleanor->Url->Construct(array('edit'=>$module['id']),false);
-					$groups[$module['id']]=array_slice($module,1);
-				}
-			}
-
-			$links=array(
-				'sort_id'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'id','so'=>$qs['sort']=='id' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-				'sort_title'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'title','so'=>$qs['sort']=='title' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-				'sort_showto'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'showto','so'=>$qs['sort']=='showto' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-				'sort_showfrom'=>$Eleanor->Url->Construct(array_merge($qs,array('sort'=>'showfrom','so'=>$qs['sort']=='showfrom' && $qs['so']=='asc' ? 'desc' : 'asc'))),
-				'form_items'=>$Eleanor->Url->Construct($qs+array('page'=>$page>1 ? $page : false)),
-				'pp'=>function($n)use($qs){ return$GLOBALS['Eleanor']->Url->Construct($qs+array('new-pp'=>$n)); },
-				'first_page'=>$Eleanor->Url->Construct($qs),
-				'pages'=>function($n)use($qs){ return$GLOBALS['Eleanor']->Url->Construct($qs+array('page'=>$n)); },
-			);
-
-			$c=Eleanor::$Template->ShowList($items,$groups,$cnt,$pp,$qs,$page,$links);
-			Start();
-			echo$c;
-		break;
-		case'add':
-			if($_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$our_query)
-				Save(0);
-			else
-				AddEdit(0);
-		break;
-		case'addi':
-			if($_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$our_query)
-				SaveId(0);
-			else
-				AddEditId(0);
-		break;
-		case'draft':
-			$t=isset($_POST['_draft']) ? (string)$_POST['_draft'] : '';
-			if(preg_match('#^([big])(\d+|'.join('|',array_keys(Eleanor::$services)).')$#',$t,$m)>0)
-			{
-				unset($_POST['_draft'],$_POST['back']);
-				Eleanor::$Db->Replace(P.'drafts',array('key'=>'_blocks-'.Eleanor::$Login->Get('id').'-'.$t,'value'=>json_encode($_POST,JSON)));
-			}
-			Eleanor::$content_type='text/plain';
-			Start('');
-			echo'ok';
-		break;
-		default:
-			ShowGroup();
-	}
+		$c=Eleanor::$Template->ShowList($items,$groups,$cnt,$pp,$qs,$page,$links);
+		Start();
+		echo$c;*/
+	break;
+	case'add':
+		/*if($post)
+			Save(0);
+		else
+			CreateEdit(0);*/
+	break;
+	case'addi':
+		/*if($post)
+			SaveId(0);
+		else
+			CreateEditId(0);*/
+	break;
+	case'draft':
+		/*$t=isset($_POST['_draft']) ? (string)$_POST['_draft'] : '';
+		if(preg_match('#^([big])(\d+|'.join('|',array_keys(Eleanor::$services)).')$#',$t,$m)>0)
+		{
+			unset($_POST['_draft'],$_POST['back']);
+			Eleanor::$Db->Replace(P.'drafts',['key'=>'_blocks-'.Eleanor::$Login->Get('id').'-'.$t,'value'=>json_encode($_POST,JSON)]);
+		}
+		Eleanor::$content_type='text/plain';
+		Start('');
+		echo'ok';*/
+	break;
+	default:
+		ShowGroup();
+}
 elseif(isset($_GET['edit']))
 {
-	$id=(int)$_GET['edit'];
-	if($_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$our_query)
+	/*$id=(int)$_GET['edit'];
+	if($post)
 		Save($id);
 	else
-		AddEdit($id);
+		CreateEdit($id);*/
 }
 elseif(isset($_GET['editi']))
 {
-	$id=(int)$_GET['editi'];
-	if($_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$our_query)
+	/*$id=(int)$_GET['editi'];
+	if($post)
 		SaveId($id);
 	else
-		AddEditId($id);
+		CreateEditId($id);*/
 }
 elseif(isset($_GET['delete']))
 {
-	$id=(int)$_GET['delete'];
+	/*$id=(int)$_GET['delete'];
 	$R=Eleanor::$Db->Query('SELECT `id`,`title` FROM `'.P.'blocks` LEFT JOIN `'.P.'blocks_l` USING(`id`) WHERE `id`='.$id.' AND `language` IN (\'\',\''.Language::$main.'\') LIMIT 1');
 	if(!$module=$R->fetch_assoc() or !Eleanor::$our_query)
 		return GoAway(true);
@@ -254,11 +260,11 @@ elseif(isset($_GET['delete']))
 		$back=isset($_POST['back']) ? (string)$_POST['back'] : getenv('HTTP_REFERER');
 	$c=Eleanor::$Template->Delete($module,$back);
 	Start();
-	echo$c;
+	echo$c;*/
 }
 elseif(isset($_GET['deletei']))
 {
-	$id=(int)$_GET['deletei'];
+	/*$id=(int)$_GET['deletei'];
 	$R=Eleanor::$Db->Query('SELECT `title_l` `title` FROM `'.P.'blocks_ids` WHERE `id`='.$id.' LIMIT 1');
 	if(!$module=$R->fetch_assoc() or !Eleanor::$our_query)
 		return GoAway(true);
@@ -278,14 +284,14 @@ elseif(isset($_GET['deletei']))
 	$module['title']=$module['title'] ? FilterLangValues(json_decode($module['title'],true)) : '';
 	$c=Eleanor::$Template->DeleteI($module,$back);
 	Start();
-	echo$c;
+	echo$c;*/
 }
 elseif(isset($_GET['swap']))
 {
-	$R=Eleanor::$Db->Query('SELECT `id`,`showfrom`,`showto`,`status` FROM `'.P.'blocks` WHERE `id`='.(int)$_GET['swap'].' LIMIT 1');
+	/*$R=Eleanor::$Db->Query('SELECT `id`,`showfrom`,`showto`,`status` FROM `'.P.'blocks` WHERE `id`='.(int)$_GET['swap'].' LIMIT 1');
 	if($module=$R->fetch_assoc())
 	{
-		$upd=array();
+		$upd=[];
 		if($module['status']==0)
 		{
 			$sf=(int)$module['showfrom'] ? strtotime($module['showfrom']) : false;
@@ -303,16 +309,16 @@ elseif(isset($_GET['swap']))
 		Eleanor::$Db->Update(P.'blocks',$upd,'`id`='.$module['id'].' LIMIT 1');
 		Eleanor::$Cache->Obsolete('blocks');
 	}
-	GoAway();
+	GoAway();*/
 }
 elseif(isset($_GET['deleteg']))
 {
-	$id=(int)$_GET['deleteg'];
+	/*$id=(int)$_GET['deleteg'];
 	$tpl=isset($_GET['tpl']) ? (string)$_GET['tpl'] : false;
 	if($tpl and preg_match('#^[a-z0-9_\-]+$#i')>0)
 	{
 		$f=Eleanor::$root.'templates/'.$tpl.'.settings.php';
-		$sett=is_file($f) ? (array)include$f : array();
+		$sett=is_file($f) ? (array)include$f : [];
 		if(isset($sett['places']))
 		{
 			$places=array_keys($sett['places']);
@@ -348,30 +354,31 @@ elseif(isset($_GET['deleteg']))
 	else
 		$service=false;
 
-	GoAway(array('group'=>$service=='user' ? false : $service));
+	GoAway(['group'=>$service=='user' ? false : $service]);*/
 }
 else
 {
 	$gid=isset($_GET['group']) ? (string)$_GET['group'] : 'user';
 	$tpl=isset($_GET['tpl']) ? (string)$_GET['tpl'] : '';
+	$saved=false;
 
-	if(!isset(Eleanor::$services[$gid]))
+	/*if(!isset(Eleanor::$services[$gid]))
 		$gid=(int)$gid;
 
-	$saved=false;
-	if($_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$our_query)
+
+	if($post)
 	{
 		$values=SaveGroupValues();
-		$values['places']=array($tpl=>$values['places']);
-		$values['extra']=array($tpl=>$values['extra']);
+		$values['places']=[$tpl=>$values['places']];
+		$values['extra']=[$tpl=>$values['extra']];
 		if(is_int($gid))
 		{
 			$R=Eleanor::$Db->Query('SELECT `id`,`service` FROM `'.P.'blocks_ids` WHERE `id`='.$gid.' LIMIT 1');
 			if(!$old=$R->fetch_assoc())
-				return ShowGroup($gid,$tpl,array('UNCREATABLE'));
+				return ShowGroup($gid,$tpl,['UNCREATABLE']);
 
 			$R=Eleanor::$Db->Query('SELECT `blocks`,`places`,`extra` FROM `'.P.'blocks_groups` WHERE `id`='.$gid.' LIMIT 1');
-			$old+=$R->num_rows>0 ? $R->fetch_assoc() : array('blocks'=>false,'places'=>false,'extra'=>false);
+			$old+=$R->num_rows>0 ? $R->fetch_assoc() : ['blocks'=>false,'places'=>false,'extra'=>false];
 
 			$tpls=GetTemplates($old['service']);
 			$values['id']=$gid;
@@ -429,15 +436,16 @@ else
 
 		Eleanor::$Cache->Obsolete('blocks');
 		if(isset($_POST['group']) and $_POST['group']!=$gid)
-			return GoAway(array('group'=>$_POST['group'])+(empty($_POST['similar']) ? array() : array('similar'=>$_POST['similar'])));
+			return GoAway(['group'=>$_POST['group']]+(empty($_POST['similar']) ? [] : ['similar'=>$_POST['similar']]));
 		$saved=true;
-	}
-	ShowGroup($gid,$tpl,array(),$saved);
+	}*/
+
+	ShowGroup($gid,$tpl,[],$saved);
 }
 
-function GetTemplates($service)
+/*function GetTemplates($service)
 {
-	$res=array();
+	$res=[];
 	$files=glob(Eleanor::$root.'templates/*.settings.php');
 	if($files)
 		foreach($files as $f)
@@ -449,11 +457,16 @@ function GetTemplates($service)
 				$res[]=$m[1];
 		}
 	return$res;
-}
+}*/
 
-function ShowGroup($gid,$tpl='',$errors=array(),$saved=false)
+function ShowGroup($gid=0,$tpl='',$errors=[],$saved=false)
 {global$Eleanor,$title;
-	$lang=Eleanor::$Language['blocks'];
+	$title[]='Управление группой';
+	$c=Eleanor::$Template->ManageGroup();
+	Response($c);
+
+
+	/*$lang=Eleanor::$Language['blocks'];
 	$title[]=$lang['bpos'];
 
 	$hasdraft=false;
@@ -472,7 +485,7 @@ function ShowGroup($gid,$tpl='',$errors=array(),$saved=false)
 	if($errors)
 	{
 		if($errors===true)
-			$errors=array();
+			$errors=[];
 		$group=SaveGroupValues();
 	}
 	else
@@ -517,30 +530,30 @@ function ShowGroup($gid,$tpl='',$errors=array(),$saved=false)
 				$group=true;
 
 			if($group)
-				$group=array();
+				$group=[];
 			else
 				return FatalError('UNCREATABLE');
 		}while(false);
-		$group['places']=empty($group['places']) ? [] : FilterLangValues(is_array($group['places']) ? $group['places'] : json_decode($group['places'],true),$tpl,array());
+		$group['places']=empty($group['places']) ? [] : FilterLangValues(is_array($group['places']) ? $group['places'] : json_decode($group['places'],true),$tpl,[]);
 		$group['extra']=empty($group['extra']) ? '' : FilterLangValues(is_array($group['extra']) ? $group['extra'] : json_decode($group['extra'],true),$tpl,'');
 	}
 
-	$group+=array('blocks'=>array(),'places'=>array(),'extra'=>array(),);
+	$group+=['blocks'=>[],'places'=>[],'extra'=>[],];
 
-	$blocks=$tosort=$preids=array();
+	$blocks=$tosort=$preids=[];
 	$R=Eleanor::$Db->Query('SELECT `id`,`title` FROM `'.P.'blocks` INNER JOIN `'.P.'blocks_l` USING(`id`) WHERE `language`IN(\'\',\''.Language::$main.'\') ORDER BY `title` ASC');
 	while($a=$R->fetch_assoc())
 	{
-		$a['_aedit']=$Eleanor->Url->Construct(array('edit'=>$a['id']));
-		$a['_adel']=$Eleanor->Url->Construct(array('delete'=>$a['id']));
+		$a['_aedit']=$Eleanor->Url->Construct(['edit'=>$a['id']]);
+		$a['_adel']=$Eleanor->Url->Construct(['delete'=>$a['id']]);
 
 		$blocks[$a['id']]=array_slice($a,1);
 	}
 
-	$ids=array(
-		'user'=>array('user'=>array('t'=>$lang['bydef'],'g'=>true)),#t - название идентификатора, g - признак наличия группы у идентификатора
-		'admin'=>array('admin'=>array('t'=>$lang['bydef'],'g'=>true)),
-	);
+	$ids=[
+		'user'=>['user'=>['t'=>$lang['bydef'],'g'=>true]],#t - название идентификатора, g - признак наличия группы у идентификатора
+		'admin'=>['admin'=>['t'=>$lang['bydef'],'g'=>true]],
+	];
 	$service=is_string($gid) ? $gid : false;
 	$R=Eleanor::$Db->Query('SELECT `i`.`id`,`i`.`service`,`i`.`title_l` `title`,`g`.`id` `gid` FROM `'.P.'blocks_ids` `i` LEFT JOIN `'.P.'blocks_groups` `g` USING(`id`)');
 	while($a=$R->fetch_assoc())
@@ -555,10 +568,10 @@ function ShowGroup($gid,$tpl='',$errors=array(),$saved=false)
 	}
 	asort($tosort,SORT_STRING);
 	foreach($tosort as $k=>&$v)
-		$ids[$preids[$k]['service']][$preids[$k]['id']]=array('t'=>$preids[$k]['title'],'g'=>(bool)$preids[$k]['gid']);
+		$ids[$preids[$k]['service']][$preids[$k]['id']]=['t'=>$preids[$k]['title'],'g'=>(bool)$preids[$k]['gid']];
 	unset($tosort,$preids);
 
-	$tpls=$places=array();
+	$tpls=$places=[];
 	$deftheme=Eleanor::$services[ $service ]['theme'];
 	$files=glob(Eleanor::$root.'templates/*.settings.php');
 	if($files)
@@ -572,31 +585,31 @@ function ShowGroup($gid,$tpl='',$errors=array(),$saved=false)
 				$isour=($m[1]==$tpl or $tpl=='' and $deftheme==$m[1]);
 				if($isour and isset($a['places']))
 					foreach($a['places'] as $k=>&$v)
-						$places[$k]=array(
+						$places[$k]=[
 							'title'=>is_array($v['title']) ? Eleanor::FilterLangValues($v['title']) : $v['title'],
 							'extra'=>isset($group['places'][$k]) ? $group['places'][$k] : $v['extra'],
-						);
-				$tpls[ $m[1] ]=array(
-					'a'=>$isour ? false : $Eleanor->Url->Construct(array('group'=>$gid=='user' ? false : $gid,'tpl'=>$deftheme==$m[1] ? false : $m[1])),
+						];
+				$tpls[ $m[1] ]=[
+					'a'=>$isour ? false : $Eleanor->Url->Construct(['group'=>$gid=='user' ? false : $gid,'tpl'=>$deftheme==$m[1] ? false : $m[1]]),
 					'title'=>is_array($a['name']) ? Eleanor::FilterLangValues($a['name']) : $a['name'],
-				);
+				];
 			}
 		}
-	$group['places']=$places ? $places : array();
+	$group['places']=$places ? $places : [];
 	if(count($tpls)==1)
-		$tpls=array();
+		$tpls=[];
 
-	$links=array(
-		'del_group'=>$isi ? $Eleanor->Url->Construct(array('deleteg'=>$gid)) : false,
-		'nodraft'=>$hasdraft ? $Eleanor->Url->Construct(array('group'=>$gid=='user' ? false : $gid,'nodraft'=>1)) : false,
-		'draft'=>$Eleanor->Url->Construct(array('do'=>'draft')),
-	);
+	$links=[
+		'del_group'=>$isi ? $Eleanor->Url->Construct(['deleteg'=>$gid]) : false,
+		'nodraft'=>$hasdraft ? $Eleanor->Url->Construct(['group'=>$gid=='user' ? false : $gid,'nodraft'=>1]) : false,
+		'draft'=>$Eleanor->Url->Construct(['do'=>'draft']),
+	];
 	$c=Eleanor::$Template->BlocksGroup($gid,$blocks,$ids,$group,$tpls,$errors,$hasdraft,$saved,$links);
 	Start();
-	echo$c;
+	echo$c;*/
 }
 
-function FatalError($e)
+/*function FatalError($e)
 {
 	$s=Eleanor::$Template->FatalError('',$e);
 	Start();
@@ -605,15 +618,15 @@ function FatalError($e)
 
 function SaveGroupValues()
 {
-	$group=array(
-		'places'=>array(),
-		'blocks'=>array(),
+	$group=[
+		'places'=>[],
+		'blocks'=>[],
 		'extra'=>isset($_POST['extra']) ? (string)$_POST['extra'] : '',
-	);
+	];
 	if(isset($_POST['place']) and is_array($_POST['place']))
 		foreach($_POST['place'] as $k=>&$v)
 		{
-			$group['blocks'][$k]=array();
+			$group['blocks'][$k]=[];
 			$group['places'][$k]=(string)$v;
 		}
 
@@ -623,10 +636,14 @@ function SaveGroupValues()
 				$group['blocks'][$k]=(array)$v;
 
 	return$group;
-}
+}*/
 
-function AddEdit($id,$errors=array())
+function CreateEdit($id,$errors=[])
 {global$Eleanor,$title;
+	#ToDo! Создание блока
+	Output::SendHeaders('text');
+	Output::Gzip('Здесь будет создание блока');
+
 	if(AJAX)
 	{
 		//TryConfig
@@ -655,7 +672,7 @@ function AddEdit($id,$errors=array())
 		Result( Eleanor::$Template->AjaxBlocksConf($conf,$values) );*/
 	}
 
-	$lang=Eleanor::$Language['blocks'];
+	/*$lang=Eleanor::$Language['blocks'];
 	if($id)
 	{
 		if(!$errors)
@@ -663,7 +680,7 @@ function AddEdit($id,$errors=array())
 			$R=Eleanor::$Db->Query('SELECT * FROM `'.P.'blocks` WHERE `id`='.$id.' LIMIT 1');
 			if(!$values=$R->fetch_assoc())
 				return GoAway();
-			$values['user_groups']=$values['user_groups'] ? explode(',,',trim($values['user_groups'],',')) : array();
+			$values['user_groups']=$values['user_groups'] ? explode(',,',trim($values['user_groups'],',')) : [];
 			$values['vars']=$values['vars'] ? json_decode($values['vars'],true) : [];
 			if((int)$values['showfrom']==0)
 				$values['showfrom']='';
@@ -697,32 +714,32 @@ function AddEdit($id,$errors=array())
 			{
 				if(!isset($values['_onelang']))
 					$values['_onelang']=false;
-				$values['_langs']=isset($values['title']) ? array_keys($values['title']) : array();
+				$values['_langs']=isset($values['title']) ? array_keys($values['title']) : [];
 			}
 			else
-				$values['config']=array(''=>$values['config']);
+				$values['config']=[''=>$values['config']];
 		}
 		$title[]=$lang['editing'];
 	}
 	else
 	{
 		$title[]=$lang['adding'];
-		$dv=Eleanor::$vars['multilang'] ? array(''=>'') : '';
-		$values=array(
+		$dv=Eleanor::$vars['multilang'] ? [''=>''] : '';
+		$values=[
 			'title'=>$dv,
 			'text'=>$dv,
 			'ctype'=>'text',
 			'file'=>'',
-			'user_groups'=>array(),
+			'user_groups'=>[],
 			'showfrom'=>'',
 			'showto'=>'',
 			'textfile'=>false,
 			'template'=>'',
 			'notemplate'=>false,
-			'config'=>array(),
-			'vars'=>array(),
+			'config'=>[],
+			'vars'=>[],
 			'status'=>1,
-		);
+		];
 
 		if(Eleanor::$vars['multilang'])
 		{
@@ -746,23 +763,23 @@ function AddEdit($id,$errors=array())
 	if($errors)
 	{
 		if($errors===true)
-			$errors=array();
+			$errors=[];
 		$bypost=true;
 		if(Eleanor::$vars['multilang'])
 		{
-			$values['title']=isset($_POST['title']) ? (array)$_POST['title'] : array();
-			$values['text']=isset($_POST['text']) ? (array)$_POST['text'] : array();
+			$values['title']=isset($_POST['title']) ? (array)$_POST['title'] : [];
+			$values['text']=isset($_POST['text']) ? (array)$_POST['text'] : [];
 			$values['_onelang']=isset($_POST['_onelang']);
-			$values['_langs']=isset($_POST['_langs']) ? (array)$_POST['_langs'] : array(Language::$main);
+			$values['_langs']=isset($_POST['_langs']) ? (array)$_POST['_langs'] : [Language::$main];
 		}
 		else
 		{
 			$values['title']=isset($_POST['title']) ? (string)$_POST['title'] : '';
 			$values['text']=isset($_POST['text']) ? (string)$_POST['text'] : '';
 		}
-		$values['ctype']=isset($_POST['ctype']) && in_array($_POST['ctype'],array('file','text')) ? (string)$_POST['ctype'] : 'text';
+		$values['ctype']=isset($_POST['ctype']) && in_array($_POST['ctype'],['file','text']) ? (string)$_POST['ctype'] : 'text';
 		$values['file']=isset($_POST['file']) ? (string)$_POST['file'] : '';
-		$values['user_groups']=isset($_POST['user_groups']) ? (array)$_POST['user_groups'] : array();
+		$values['user_groups']=isset($_POST['user_groups']) ? (array)$_POST['user_groups'] : [];
 		$values['showfrom']=isset($_POST['showfrom']) ? (string)$_POST['showfrom'] : '';
 		$values['showto']=isset($_POST['showto']) ? (string)$_POST['showto'] : '';
 		$values['template']=isset($_POST['template']) ? (string)$_POST['template'] : '';
@@ -770,7 +787,7 @@ function AddEdit($id,$errors=array())
 		$values['textfile']=isset($_POST['textfile']);
 		$values['status']=isset($_POST['status']);
 
-		$values['vars']=array();
+		$values['vars']=[];
 		if(isset($_POST['vn'],$_POST['vv']) and is_array($_POST['vn']) and is_array($_POST['vv']))
 			foreach($_POST['vn'] as $k=>&$v)
 				if(isset($_POST['vv'][$k]))
@@ -795,18 +812,18 @@ function AddEdit($id,$errors=array())
 					if(is_array($v))
 						$v['post']=$bypost;
 
-			$cvals=array();
+			$cvals=[];
 			foreach($values['config'] as $l=>&$kv)
 				foreach($kv as $k=>&$v)
 					if(isset($values['_config'][$k]))
 					{
 						if(!empty($values['_config'][$k]['multilang']))
-							$cvals[$k][$l]=array('value'=>$v);
+							$cvals[$k][$l]=['value'=>$v];
 						elseif(!isset($cvals[$k]) or $l==Language::$main)
-							$cvals[$k]=array('value'=>$v);
+							$cvals[$k]=['value'=>$v];
 					}
 
-			$Eleanor->Controls->arrname=array('config');
+			$Eleanor->Controls->arrname=['config'];
 			$values['config']=$Eleanor->Controls->DisplayControls($values['_config'],$cvals);
 		}
 	}
@@ -816,43 +833,43 @@ function AddEdit($id,$errors=array())
 	else
 		$back=isset($_POST['back']) ? (string)$_POST['back'] : getenv('HTTP_REFERER');
 
-	$links=array(
-		'delete'=>$id ? $Eleanor->Url->Construct(array('delete'=>$id,'noback'=>1)) : false,
-		'nodraft'=>$hasdraft ? $Eleanor->Url->Construct(array('do'=>$id ? false : 'add','edit'=>$id ? $id : false,'nodraft'=>1)) : false,
-		'draft'=>$Eleanor->Url->Construct(array('do'=>'draft')),
-	);
+	$links=[
+		'delete'=>$id ? $Eleanor->Url->Construct(['delete'=>$id,'noback'=>1]) : false,
+		'nodraft'=>$hasdraft ? $Eleanor->Url->Construct(['do'=>$id ? false : 'add','edit'=>$id ? $id : false,'nodraft'=>1]) : false,
+		'draft'=>$Eleanor->Url->Construct(['do'=>'draft']),
+	];
 
 	$c=Eleanor::$Template->AddEdit($id,$values,$errors,$bypost,$hasdraft,$Eleanor->Uploader->Show('blocks'),$back,$links);
 	Start();
-	echo$c;
+	echo$c;*/
 }
 
-function Save($id)
+/*function Save($id)
 {global$Eleanor;
-	$errors=array();
+	$errors=[];
 	$lang=Eleanor::$Language['blocks'];
 	if(Eleanor::$vars['multilang'] and !isset($_POST['_onelang']))
 	{
-		$langs=empty($_POST['_langs']) || !is_array($_POST['_langs']) ? array() : $_POST['_langs'];
+		$langs=empty($_POST['_langs']) || !is_array($_POST['_langs']) ? [] : $_POST['_langs'];
 		$langs=array_intersect(array_keys(Eleanor::$langs),$langs);
 		if(!$langs)
-			$langs=array(Language::$main);
+			$langs=[Language::$main];
 	}
 	else
-		$langs=array('');
+		$langs=[''];
 
-	$values=array(
-		'ctype'=>isset($_POST['ctype']) && in_array($_POST['ctype'],array('file','text')) ? (string)$_POST['ctype'] : 'text',
+	$values=[
+		'ctype'=>isset($_POST['ctype']) && in_array($_POST['ctype'],['file','text']) ? (string)$_POST['ctype'] : 'text',
 		'file'=>isset($_POST['file']) ? (string)$_POST['file'] : '',
-		'user_groups'=>isset($_POST['user_groups']) ? (array)$_POST['user_groups'] : array(),
+		'user_groups'=>isset($_POST['user_groups']) ? (array)$_POST['user_groups'] : [],
 		'showfrom'=>isset($_POST['showfrom']) ? (string)$_POST['showfrom'] : '',
 		'showto'=>isset($_POST['showto']) ? (string)$_POST['showto'] : '',
 		'template'=>isset($_POST['template']) ? (string)$_POST['template'] : '',
 		'notemplate'=>isset($_POST['notemplate']),
 		'textfile'=>isset($_POST['textfile']),
 		'status'=>isset($_POST['status']),
-		'vars'=>array(),
-	);
+		'vars'=>[],
+	];
 
 	if($values['file'] and false!==$p=strrpos($values['file'],'.'))
 	{
@@ -863,31 +880,31 @@ function Save($id)
 			$conf=include$conf;
 			if(is_array($conf))
 			{
-				$Eleanor->Controls->arrname=array('config');
+				$Eleanor->Controls->arrname=['config'];
 				$sc=$Eleanor->Controls->SaveControls($conf);
 			}
 			else
-				$conf=array();
+				$conf=[];
 		}
 		else
-			$conf=array();
+			$conf=[];
 	}
 	else
-		$conf=array();
+		$conf=[];
 
 	if(Eleanor::$vars['multilang'])
 	{
-		$lvalues=array(
-			'title'=>array(),
-			'text'=>array(),
-			'config'=>array(),
-		);
+		$lvalues=[
+			'title'=>[],
+			'text'=>[],
+			'config'=>[],
+		];
 		foreach($langs as $l)
 		{
 			$lng=$l ? $l : Language::$main;
 			$Eleanor->Editor_result->imgalt=$lvalues['title'][$l]=(isset($_POST['title'],$_POST['title'][$lng]) and is_array($_POST['title'])) ? (string)Eleanor::$POST['title'][$lng] : '';
 			$lvalues['text'][$l]=isset($_POST['text'],$_POST['text'][$lng]) && is_array($_POST['text']) ? $Eleanor->Editor_result->GetHtml((string)$_POST['text'][$lng],true) : '';
-			$lvalues['config'][$l]=array();
+			$lvalues['config'][$l]=[];
 			foreach($conf as $k=>&$v)
 				if(isset($sc[$k]))
 					$lvalues['config'][$l][$k]=empty($v['multilang']) || !isset($sc[$k][$lng]) ? $sc[$k] : $sc[$k][$lng];
@@ -896,18 +913,18 @@ function Save($id)
 	else
 	{
 		$Eleanor->Editor_result->imgalt=isset($_POST['title']) ? (string)Eleanor::$POST['title'] : '';
-		$lvalues=array(
-			'title'=>array(''=>$Eleanor->Editor_result->imgalt),
-			'text'=>array(''=>$Eleanor->Editor_result->GetHtml('text')),
-			'config'=>array(''=>array()),
-		);
+		$lvalues=[
+			'title'=>[''=>$Eleanor->Editor_result->imgalt],
+			'text'=>[''=>$Eleanor->Editor_result->GetHtml('text')],
+			'config'=>[''=>[]],
+		];
 		foreach($conf as $k=>&$v)
 			if(isset($sc[$k]))
 				$lvalues['config'][''][$k]=$sc[$k];
 	}
 
 	$ml=in_array('',$langs) ? Language::$main : '';
-	foreach(array('title') as $field)
+	foreach(['title'] as $field)
 		foreach($lvalues[$field] as $k=>&$v)
 			if($v=='')
 			{
@@ -929,7 +946,7 @@ function Save($id)
 	{
 		Eleanor::$Db->Update(P.'blocks',$values,'`id`='.$id.' LIMIT 1');
 		Eleanor::$Db->Delete(P.'blocks_l','`id`='.$id.' AND `language`'.Eleanor::$Db->In($langs,true));
-		$replace=array();
+		$replace=[];
 		foreach($langs as &$v)
 			$replace[]=[
 				'id'=>$id,
@@ -943,7 +960,7 @@ function Save($id)
 	else
 	{
 		$id=Eleanor::$Db->Insert(P.'blocks',$values);
-		$values=array('id'=>array(),'language'=>array(),'title'=>array(),'text'=>array());
+		$values=['id'=>[],'language'=>[],'title'=>[],'text'=>[]];
 		foreach($langs as &$v)
 		{
 			$values['id'][]=$id;
@@ -956,11 +973,15 @@ function Save($id)
 	}
 	Eleanor::$Cache->Obsolete('blocks');
 	GoAway(empty($_POST['back']) ? true : $_POST['back']);
-}
+}*/
 
-function AddEditId($id,$errors=array())
+function CreateEditId($id,$errors=[])
 {global$Eleanor,$title;
-	$lang=Eleanor::$Language['blocks'];
+	#ToDo! Создание идентификации
+	Output::SendHeaders('text');
+	Output::Gzip('Здесь будет создание идентификации');
+
+	/*$lang=Eleanor::$Language['blocks'];
 	if($id)
 	{
 		if(!$errors)
@@ -975,13 +996,12 @@ function AddEditId($id,$errors=array())
 	else
 	{
 		$title[]=$lang['addingi'];
-		$values=array(
+		$values=[
 			'service'=>'user',
-			'title'=>array(''=>''),
+			'title'=>[''=>''],
 			'code'=>'',
-		);
+		];
 	}
-
 	$hasdraft=false;
 	if(!$errors and !isset($_GET['nodraft']))
 	{
@@ -997,11 +1017,11 @@ function AddEditId($id,$errors=array())
 	if($errors)
 	{
 		if($errors===true)
-			$errors=array();
+			$errors=[];
 		if(Eleanor::$vars['multilang'])
-			$values['title']=isset($_POST['title']) ? (array)$_POST['title'] : array();
+			$values['title']=isset($_POST['title']) ? (array)$_POST['title'] : [];
 		else
-			$values['title']=isset($_POST['title']) ? array(''=>(string)$_POST['title']) : array(''=>'');
+			$values['title']=isset($_POST['title']) ? [''=>(string)$_POST['title']] : [''=>''];
 		$values['service']=isset($_POST['service']) ? (string)$_POST['service'] : '';
 		$values['code']=isset($_POST['code']) ? (string)$_POST['code'] : '';
 		$bypost=true;
@@ -1014,37 +1034,37 @@ function AddEditId($id,$errors=array())
 	else
 		$back=isset($_POST['back']) ? (string)$_POST['back'] : getenv('HTTP_REFERER');
 
-	$links=array(
-		'delete'=>$id ? $Eleanor->Url->Construct(array('deletei'=>$id,'noback'=>1)) : false,
-		'nodraft'=>$hasdraft ? $Eleanor->Url->Construct(array('do'=>$id ? false : 'addi','editi'=>$id ? $id : false,'nodraft'=>1)) : false,
-		'draft'=>$Eleanor->Url->Construct(array('do'=>'draft')),
-	);
+	$links=[
+		'delete'=>$id ? $Eleanor->Url->Construct(['deletei'=>$id,'noback'=>1]) : false,
+		'nodraft'=>$hasdraft ? $Eleanor->Url->Construct(['do'=>$id ? false : 'addi','editi'=>$id ? $id : false,'nodraft'=>1]) : false,
+		'draft'=>$Eleanor->Url->Construct(['do'=>'draft']),
+	];
 
 	$Eleanor->Editor->type='codemirror';
 	$Eleanor->Editor->ownbb=$Eleanor->Editor->smiles=false;
 	$c=Eleanor::$Template->AddEditId($id,$values,$errors,$bypost,$hasdraft,$back,$links);
 	Start();
-	echo$c;
+	echo$c;*/
 }
 
-function SaveId($id)
+/*function SaveId($id)
 {global$Eleanor;
 	$Eleanor->Editor_result->type='codemirror';
 	$Eleanor->Editor_result->ownbb=$Eleanor->Editor_result->smiles=false;
-	$values=array(
+	$values=[
 		'service'=>isset($_POST['service']) ? (string)$_POST['service'] : '',
 		'code'=>isset($_POST['code']) ? (string)$_POST['code'] : '',
-	);
+	];
 	if(!isset(Eleanor::$services[$values['service']]))
-		return AddEditId($id,true);
+		return CreateEditId($id,true);
 
 	if(Eleanor::$vars['multilang'])
-		$values['title_l']=isset($_POST['title']) ? (array)Eleanor::$POST['title'] : array();
+		$values['title_l']=isset($_POST['title']) ? (array)Eleanor::$POST['title'] : [];
 	else
-		$values['title_l']=isset($_POST['title']) ? array(''=>(string)Eleanor::$POST['title']) : array();
+		$values['title_l']=isset($_POST['title']) ? [''=>(string)Eleanor::$POST['title']] : [];
 
 	$lang=Eleanor::$Language['blocks'];
-	$errors=array();
+	$errors=[];
 	foreach($values['title_l'] as $k=>&$v)
 		if($v=='')
 		{
@@ -1063,7 +1083,7 @@ function SaveId($id)
 	ob_end_clean();
 
 	if($errors)
-		return AddEditId($id,$errors);
+		return CreateEditId($id,$errors);
 
 	Eleanor::$Db->Delete(P.'drafts','`key`=\'_blocks-'.Eleanor::$Login->Get('id').'-i'.$id.'\' LIMIT 1');
 	$values['title_l']=json_encode($values['title_l'],JSON);
@@ -1074,4 +1094,4 @@ function SaveId($id)
 	Eleanor::$Cache->Obsolete('blocks');
 
 	GoAway(empty($_POST['back']) ? true : $_POST['back']);
-}
+}*/

@@ -465,7 +465,7 @@ $("#parent").change(function(){
 		$(this).triggerHandler("click");
 	});
 }).change();
-$(".form-group input:not(:checkbox),textarea").addClass("form-control pim"); {$pim} });</script>
+$(".form-group input:not(:checkbox,[class*=select2]),textarea").addClass("form-control pim"); {$pim} });</script>
 HTML;
 	}
 

@@ -484,7 +484,7 @@ HTML;
 				</form>
 			</section>
 <script>$(function(){
-	$("#content input:input,textarea").addClass("form-control");
+	$("#content input:not(:checkbox,[class*=select2]),textarea").addClass("form-control");
 })</script>
 HTML;
 	}

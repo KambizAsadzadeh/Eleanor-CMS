@@ -3,164 +3,130 @@
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
-$(function(){
-	var form=$("#multisite"),
-		children="table",//Имя дочерних тегов, которые являются контернерами каждого сайта
+function CreateEdit(next_add)
+{
+	$(".form-group input:not(:checkbox,[class*=select2]),textarea,select").addClass("form-control pim");
 
-		max=form.children(children).size(),
-		waitsubmit=false,
-		tosubmit=0;
-
-	form
-	.children(children).each(function(){
-		var th=$(this),
-			sites,
-			F=function(){
-				var empty=true;
-				sites.each(function(){
-					var v=$(this).is(":checkbox") ? ($(this).prop("checked") ? 1 : "") : $(this).val();
-					if($.inArray(v,["",$(this).data("def")])==-1)
-					{
-						empty=false;
-						return false;
-					}
-				});
-				if(empty)
-					th.addClass("empty");
-				else
-					th.removeClass("empty");
-			};
-		sites=th.on("checkempty",F).find("[name^=\"sites[\"]");
-		F();
-	}).end()
-
-	//AddSite
-	.on("click",".addsite",function(){
-		form.find(children+":first").clone().find("script").remove().end()
-		.find(":input").prop("name",function(ind,old){
-				return old.replace(/sites\[[^\]]*\]$/,"["+max+"]");
-			}).not("[type=button],[type=submit],[type=number]").val("").end()
-			.prop("disabled",false).removeClass("redf greenf").end()
-		.find("[id]").prop("id",function(ind,old){
-			return old+"-"+max;
-		}).end().appendTo(form)
-		.find(".langtabs").each(function(){
-			try
-			{
-				var actcl=false;
-				$("a",this).each(function(){
-					if($(this).hasClass("selected"))
-						actcl=$(this);
-					$(this).data("rel",$(this).data("rel")+"-"+max);
-				}).Tabs();
-				if(actcl)
-					actcl.click();
-			}
-			catch(e){}
-		}).end();
-		max++;
-		return false;
-	})
-
-	//DeleteSite
-	.on("click",".delsite",function(){
-		var t=$(this).closest(children);
-		if(form.children(children).size()>1)
-			t.remove();
-		else
-			t.find(".db").removeClass("redf greenf").end()
-			.find(":input").not("[type=button],[type=submit],[type=number]").val("");
-		return false;
-	})
-
-	//Check Db
-	.on("click",".checkdb",function(){
-		var can=true,
-			data={},
-			dbs=$(this).closest(children).find(".db:not(:disabled,[name$=\"[host]\"][value=\"\"])").removeClass("redf greenf")
-			.filter("[name$=\"[host]\"],[name$=\"[db]\"],[name$=\"[user]\"]").each(function(){
-				if($(this).val()=="")
-				{
-					$(this).addClass("redf");
-					can=false;
-				}
-			}).end();
-		if(!can)
-			return false;
-		dbs.each(function(){
-			data[$(this).prop("name").match(/\[([^\]]+)\]$/)[1]]=$(this).is(":checkbox") ? $(this).prop("checked") ? 1 : 0 : $(this).val();
-		});
-		CORE.Ajax(
-			{
-				direct:"admin",
-				file:"multisite",
-				event:"checkdb",
-				data:data
-			},
-			function(r)
-			{
-				if(r)
-					switch(r)
-					{
-						case"connect":
-							dbs.filter("[name$=\"[host]\"],[name$=\"[user]\"],[name$=\"[pass]\"],[name$=\"[db]\"]").addClass("redf");
-						break;
-						case"prefix":
-							dbs.filter("[name$=\"[prefix]\"],[name$=\"[db]\"]").addClass("redf");
-						break;
-						default:
-							dbs.addClass("redf");
-					}
-				else
-				{
-					dbs.addClass("greenf");
-					if(tosubmit>0 && --tosubmit==0 && waitsubmit)
-						form.submit();
-				}
-			}
-		);
-		return false;
-	})
-
-	//Changing db fields
-	.on("change",".db",function(){
-		var th=$(this),
-			dbs=th.closest(children).find(".db").removeClass("redf greenf");
-		if(th.is("[name$=\"[host]\"]"))
-			dbs.not(this).not("[name$=\"[prefix]\"]").prop("disabled",th.val()=="")
-	})
-	.find("[name$=\"[host]\"]").change().end()
-
-	//Changing secret of site
-	.on("change","[name$=\"[secret]\"]",function(){
-		var th=$(this),
-			trs=th.closest(children).find(".checkdb").closest("tr").nextAll().addBack();
-		if(th.val()=="")
-			trs.show();
-		else
-			trs.hide();
-	})
-	.find("input[name$=\"[secret]\"]").change().end()
-
-	//Default highlight errors
-	.find(children+":not(.empty) .checkdb").change().end()
-
-	//Form submit
-	.submit(function(){
-		var can=true;
-
-		waitsubmit=false;
-		tosubmit=0;
-		$(this).find(children+":not(.empty)").each(function(){
-			if($(this).find("input[name$=\"[secret]\"]").val()=="" && $(this).find(".greenf").size()==0)
-			{
-				tosubmit++;
-				$(this).find(".checkdb:first").click();
-			}
-		});
-		waitsubmit=true;
-		can=tosubmit==0;
-
-		return can;
+	//Заголовок каждого из блоков
+	$("ul.lang-tabs[data-for] a").on("shown.bs.tab",function(){
+		$(this).closest(".bcont").find("input[name*='[title]']:visible").trigger("input");
 	});
-});
+
+	//Изменение заголовка
+	$(document).on("input","input[name*='[title]']:visible",function(e){
+		$(this).closest(".block-t").find(".site-title").text( $(this).val() );
+	}).find("input[name*='[title]']:visible").trigger("change");
+
+	//Удаление возможных ошибок
+	$(document).on("input","input[name*='[prefix]'],input[name*='[host]'],input[name*='[db]'],input[name*='[user]'],input[name*='[pass]']",function(){
+		$(this).closest(".form-group").removeClass("has-error has-success");
+	});
+
+	//Добавление сайта
+	$("#add-site").click(function(e){
+		e.preventDefault();
+
+		var source=$("#mainbar .block-t:last");
+		source.clone()
+			.find("[name]").attr("name",function(i,n){
+				return n.replace(/\[\d+\]/,"["+next_add+"]");
+			}).end()
+			.find("[id]").attr("id",function(i,id){
+				return id.replace(/\-\d+/,"-"+next_add);
+			}).end()
+			.find("[for]").attr("for",function(i,id){
+				return id.replace(/\-\d+/,"-"+next_add);
+			}).end()
+			.find("[data-for]").attr("data-for",function(i,id){
+				return id.replace(/\-\d+/,"-"+next_add);
+			}).end()
+			.find(":input:not(select,:button)").val("").end()
+			.insertAfter(source)
+			.find("input[name*='[title]']:visible").trigger("input").end();
+
+		next_add++;
+	});
+
+	$("#mainbar")
+		//Удаление сайта
+		.on("click",".delete-site",function(e){
+			e.preventDefault();
+			e.stopPropagation();
+
+			var num=$("#mainbar .delete-site").size(),
+				base=$(this).closest(".block-t");
+
+			if(num>1)
+				base.remove();
+			else
+				base.find(":input:not(select,:button)").val(function(){
+					return $(this).data("default")||"";
+				});
+		})
+
+		//Кнопка проверки
+		.on("click",".button-check",function(e){
+			e.preventDefault();
+
+			var block=$(this).closest(".bcont"),
+				prefix=block.find("input[name*='[prefix]']"),
+				fields={
+					host:block.find("input[name*='[host]']"),
+					db:block.find("input[name*='[db]']"),
+					user:block.find("input[name*='[user]']"),
+					pass:block.find("input[name*='[pass]']")
+				},
+				data={},status;
+
+			$.each(fields,function(i,v){
+				data[i]=$.trim(v.val());
+			});
+
+			status=data.host && data.db && data.user
+				? prefix.add(fidels.host).add(fidels.db).add(fidels.user).add(fidels.pass)
+				: prefix;
+
+			CORE.Ajax({
+					data:data.host && data.db && data.user ? data : {},
+					prefix:prefix.val()
+				},function(r){
+					status.closest(".form-group").removeClass("has-error").addClass("has-success");
+				},function(error){
+					alert(error);
+					status.closest(".form-group").removeClass("has-success").addClass("has-error");
+				}
+			);
+		});
+
+	//Сабмит формы
+	$("#create-edit :submit").click(function(e){
+		if($("#mainbar .delete-site").size()==1)
+		{
+			var inputs=$("#mainbar .block-t :input:enabled"),
+				pass=true;
+
+			inputs.each(function(){
+				if($(this).is(":checkbox"))
+					return;
+
+				var val=$(this).val();
+
+				if(val && val!==$(this).data("default"))
+				{
+					console.log(val);
+					pass=false;
+					return false;
+				}
+			});
+
+			if(pass)
+			{
+				inputs.prop("disabled",true);
+
+				setTimeout(function(){
+					inputs.prop("disabled", false);
+				}, 200);
+			}
+		}
+	});
+}

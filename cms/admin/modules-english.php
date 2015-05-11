@@ -12,8 +12,6 @@ return[
 	'smm_'=>'Add, delete or edit code',
 	'smg'=>'Site map generator',
 	'smg_'=>'For all website pages been indexed by search engines',
-	'db'=>'Data base',
-	'db_'=>'Backup and recovery, repair and optimization',
 	'tmpe'=>'Templates editor',
 	'tmpm_'=>'Copy or edit templates',
 	'ownb'=>'Own BB codes',

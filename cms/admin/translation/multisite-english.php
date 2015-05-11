@@ -18,5 +18,7 @@ return[
 	'EMPTY_SITE_NAME'=>'In one of the sites name field is not filled',
 	'WRONG_SITE_URL'=>'One of the sites address is invalid',
 	'MULTI_SITE_TABLE_WAS_NOT_FOUND'=>'Table of multisite was not found',
-	'THIS_SITE'=>'Attempt to connect to this site (&quot;%&quot;)',
+	'THIS_SITE_'=>'Attempt to connect to this site (&quot;%&quot;)',
+	'UNABLE_TO_CONNECT_TO_DB'=>'Unable to connect to database',
+	'THIS_SITE'=>'Attempt to connect to this site',
 ];

@@ -322,8 +322,6 @@ class BBCode extends Eleanor\BaseClass
 	 * @return string */
 	public static function HTML2BB($html)
 	{
-		$html=preg_replace('#<!\-\- .+? -->#Uis','',$html);
-
 		#Списки
 		$List=function($text)
 		{

@@ -80,10 +80,10 @@ if(isset($_GET['do']))
 				$d=FormatList($R);
 				if(!$d)
 					return;
-				$links=array(
-					'first_page'=>$Eleanor->Url->Construct(array('do'=>'my'),true,''),
-					'pages'=>function($n){ return$GLOBALS['Eleanor']->Url->Construct(array('do'=>'my',''=>array('page'=>$n)),true,''); },
-				);
+				$links=[
+					'first_page'=>$Eleanor->Url->Construct(['do'=>'my'],true,''),
+					'pages'=>function($n){ return$GLOBALS['Eleanor']->Url->Construct(['do'=>'my',''=>['page'=>$n]],true,''); },
+				];
 				$c=Eleanor::$Template->MyList($d,$cnt,$page,Eleanor::$vars['publ_per_page'],$links);
 				Start();
 				echo$c;
@@ -98,9 +98,8 @@ if(isset($_GET['do']))
 				if($_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$our_query)
 					Save(0);
 				else
-					AddEdit(0);
-			}
-			else
+					CreateEdit(0);
+			}else
 				Main();
 		break;
 		case'edit':
@@ -110,15 +109,15 @@ if(isset($_GET['do']))
 				$id=(isset($_GET['']) and is_array($_GET[''])) ? (int)reset($_GET['']) : false;
 			else
 				$id=isset($_GET['id']) ? (int)$_GET['id'] : false;
-			$gn=Eleanor::$Login->IsUser() ? array() : GetGN();
+			$gn=Eleanor::$Login->IsUser() ? [] : GetGN();
 			switch($d)
 			{
 				case'edit':
 					if($_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$our_query)
 						Save($id,$gn);
 					else
-						AddEdit($id,array(),$gn);
-				break;
+						CreateEdit($id,[],$gn);
+					break;
 				case'delete':
 					$uid=(int)Eleanor::$Login->Get('id');
 					$R=Eleanor::$Db->Query('SELECT `id`,`title`,`author_id`,`tags`,`voting` FROM `'.$mc['t'].'` LEFT JOIN `'.$mc['tl'].'` USING(`id`) WHERE `id`='.$id.' AND `language` IN (\'\',\''.Language::$main.'\') LIMIT 1');
@@ -160,15 +159,15 @@ if(isset($_GET['do']))
 				$md=(isset($_GET['']) and is_array($_GET[''])) ? reset($_GET['']) : false;
 			else
 				$md=isset($_GET['md']) ? (string)$_GET['md'] : false;
-			$values=array(
+			$values=[
 				'text'=>'',
 				'where'=>'tat',
-				'tags'=>array(),
-				'categs'=>array(),
+				'tags'=>[],
+				'categs'=>[],
 				'sort'=>'date',
 				'c'=>'and',
 				't'=>'and',
-			);
+			];
 			$error='';
 			$data=$cnt=$page=false;
 			if($_SERVER['REQUEST_METHOD']=='POST' or isset($_GET['q']))#$_GET['q'] XML пользовательский поиск из браузера
@@ -176,25 +175,25 @@ if(isset($_GET['do']))
 				{
 					$T=new TimeCheck($Eleanor->module['id']);
 					if(isset($_GET['q']))
-						$values=array(
+						$values=[
 							'text'=>GlobalsWrapper::Filter(CHARSET=='utf-8' ? (string)$_GET['q'] : mb_convert_encoding((string)$_GET['q'],CHARSET,'utf-8')),
 							'where'=>'',
-							'tags'=>array(),
-							'categs'=>array(),
+							'tags'=>[],
+							'categs'=>[],
 							'sort'=>'date',
 							'c'=>'and',
 							't'=>'and',
-						);
+						];
 					else
-						$values=array(
+						$values=[
 							'text'=>isset($_POST['text']) ? (string)Eleanor::$POST['text'] : '',
 							'where'=>isset($_POST['where']) ? (string)$_POST['where'] : '',
-							'tags'=>isset($_POST['tags']) ? (array)$_POST['tags'] : array(),
-							'categs'=>isset($_POST['categs']) ? (array)$_POST['categs'] : array(),
+							'tags'=>isset($_POST['tags']) ? (array)$_POST['tags'] : [],
+							'categs'=>isset($_POST['categs']) ? (array)$_POST['categs'] : [],
 							'sort'=>isset($_POST['sort']) ? (string)$_POST['sort'] : 'date',
 							'c'=>isset($_POST['c']) && $_POST['c']=='or' ? 'or' : 'and',
 							't'=>isset($_POST['t']) && $_POST['t']=='or' ? 'or' : 'and',
-						);
+						];
 					if($ch=$T->Check('search',false))
 					{
 						$error=$lang['search_limit'](Eleanor::$Permissions->SearchLimit(),$ch['_datets']-time());
@@ -206,7 +205,7 @@ if(isset($_GET['do']))
 						break;
 					}
 					$seladd=$order='';
-					$query=array();
+					$query=[];
 					if($values['text'])
 					{
 						$dbtext=Eleanor::$Db->Escape($values['text'],false);
@@ -271,14 +270,14 @@ if(isset($_GET['do']))
 						$T->Add('search','',true,Eleanor::$Permissions->SearchLimit());
 						$query.=$order;
 						Eleanor::StartSession($md);
-						$_SESSION[$mc['n']]=array(
+						$_SESSION[$mc['n']]=[
 							'cnt'=>$cnt,
 							'query'=>$query,
 							'values'=>$values,
 							'seladd'=>$seladd,
-						);
+						];
 						$Eleanor->Url->ending='';
-						return GoAway(array('do'=>'search','md'=>session_id()));
+						return GoAway(['do'=>'search','md'=>session_id()]);
 					}
 				}while(false);
 			elseif($md)
@@ -301,18 +300,18 @@ if(isset($_GET['do']))
 					$offset=max(0,$cnt-Eleanor::$vars['publ_per_page']);
 
 				$R=Eleanor::$Db->Query('SELECT `id`,`cats`,IF(`pinned`=\'0000-00-00 00:00:00\',`date`,`pinned`) `date`,`author`,`author_id`,`show_detail`,`r_average`,`r_total`,`r_sum`,`status`,`reads`,`comments`,`tags`,`uri`,`title`,`announcement`,IF(`text`=\'\',0,1) `_hastext`,UNIX_TIMESTAMP(`last_mod`) `last_mod`,`voting`'.$seladd.' FROM `'.$mc['t'].'` INNER JOIN `'.$mc['tl'].'` USING(`id`) WHERE `language`IN(\'\',\''.Language::$main.'\') AND `lstatus`=1 AND '.$query.' LIMIT '.$offset.', '.Eleanor::$vars['publ_per_page']);
-				$data=FormatList($R,false,$values['text'] ? array('hl'=>array('hl'=>$values['text'])) : array());
+				$data=FormatList($R,false,$values['text'] ? ['hl'=>['hl'=>$values['text']]] : []);
 			}
 
-			$tags=array();
+			$tags=[];
 			$R=Eleanor::$Db->Query('SELECT `id`,`name` FROM `'.$mc['tt'].'` WHERE `language` IN (\'\',\''.Language::$main.'\') AND `cnt`>0 ORDER BY `name` ASC LIMIT 150');
 			while($a=$R->fetch_assoc())
 				$tags[$a['id']]=$a['name'];
 
-			$links=array(
+			$links=[
 				'first_page'=>$Eleanor->Url->Prefix(''),
-				'pages'=>function($n) use ($md){ return$GLOBALS['Eleanor']->Url->Construct(array('do'=>'search','md'=>$md,''=>array('page'=>$n)),true,''); },
-			);
+				'pages'=>function($n) use ($md){ return$GLOBALS['Eleanor']->Url->Construct(['do'=>'search','md'=>$md,''=>['page'=>$n]],true,''); },
+			];
 
 			$c=Eleanor::$Template->Search($values,$error,$tags,$data,$cnt,$page,Eleanor::$vars['publ_per_page'],$links);
 			Start();
@@ -333,7 +332,7 @@ if(isset($_GET['do']))
 			{
 				$n=isset($_POST['_draft']) ? (int)$_POST['_draft'] : 0;
 				unset($_POST['_draft'],$_POST['back']);
-				Eleanor::$Db->Replace(P.'drafts',array('key'=>$mc['n'].'-'.Eleanor::$Login->Get('id').'-n'.$n,'value'=>serialize($_POST)));
+				Eleanor::$Db->Replace(P.'drafts',['key'=>$mc['n'].'-'.Eleanor::$Login->Get('id').'-n'.$n,'value'=>serialize($_POST)]);
 			}
 			Eleanor::$content_type='text/plain';
 			Start('');
@@ -350,7 +349,7 @@ if(isset($_GET['do']))
 
 				if(strtotime($d)>time())
 					return GoAway(true);
-				$title[]=sprintf($lang['for'],Eleanor::$Language->Date($d,strlen($d)>7 ? 'fd' : 'my',array('lowercase'=>true)));
+				$title[]=sprintf($lang['for'],Eleanor::$Language->Date($d,strlen($d)>7 ? 'fd' : 'my',['lowercase'=>true]));
 				$R=Eleanor::$Db->Query('SELECT COUNT(`lstatus`) FROM `'.$mc['t'].'` INNER JOIN `'.$mc['tl'].'` USING(`id`) WHERE `language`IN(\'\',\''.Language::$main.'\') AND `lstatus`=1 AND IF(`pinned`=\'0000-00-00 00:00:00\',`date`,`pinned`) LIKE \''.$d.'%\'');
 				list($cnt)=$R->fetch_row();
 
@@ -372,12 +371,12 @@ if(isset($_GET['do']))
 				$data=FormatList($R);
 				if(!$data)
 					return;
-				$links=array(
+				$links=[
 					'first_page'=>$Eleanor->Url->Prefix(''),
-					'pages'=>function($n) use ($d){ return$GLOBALS['Eleanor']->Url->Construct(array('do'=>$d,''=>array('page'=>$n)),true,''); },
-				);
+					'pages'=>function($n) use ($d){ return$GLOBALS['Eleanor']->Url->Construct(['do'=>$d,''=>['page'=>$n]],true,''); },
+				];
 				$c=Eleanor::$Template->DateList($d,$data,$cnt,-$page,$pages,Eleanor::$vars['publ_per_page'],$links);
-				$Eleanor->origurl=PROTOCOL.Eleanor::$punycode.Eleanor::$site_path.$Eleanor->Url->Construct(array('do'=>$d,''=>array('page'=>$page==$pages ? false : $page)),true,'');
+				$Eleanor->origurl=PROTOCOL.Eleanor::$punycode.Eleanor::$site_path.$Eleanor->Url->Construct(['do'=>$d,''=>['page'=>$page==$pages ? false : $page]],true,'');
 				Start();
 				echo$c;
 			}

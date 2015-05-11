@@ -5,23 +5,67 @@
 	info@eleanor-cms.ru
 */
 namespace CMS;
-#ToDo! Вывести сюда ссылку из сервисов
+use Eleanor\Classes\Files, Eleanor\Classes\Output;
 defined('CMS\STARTED')||die;
-$lang=Eleanor::$Language->Load('addons/admin/langs/themes-*.php','te');
-Eleanor::$Template->queue[]='Themes';
+
+if(Eleanor::$service=='download')
+{
+	do
+	{
+		if(!isset($_GET['file']))
+			break;
+
+		$tpl_path=realpath(DIR.'../templates'.DIRECTORY_SEPARATOR);
+		$path=realpath($tpl_path.Files::Windows(trim($_GET['file'],'/\\')));
+
+		if(!$path or strncmp($path,$tpl_path,strlen($tpl_path))!=0 or !is_file($path))
+			break;
+
+		return Output::Stream(['file'=>$path]);
+
+	}while(false);
+
+	GoAway();
+
+	return 1;
+}
 
 global$Eleanor,$title;
+$lang=Eleanor::$Language->Load(DIR.'admin/translation/themes-*.php','themes');
+Eleanor::$Template->queue[]=Eleanor::$Template->classes.'Themes.php';
 
-$Eleanor->module['links']=array(
-	'list'=>$Eleanor->Url->Prefix(),
-	'info'=>false,
-	'files'=>false,
-	'config'=>false,
-);
+/** @var DynUrl $Url */
+$Url=$Eleanor->DynUrl;
+$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$Eleanor->module['links']=[
+	'list'=>(string)$Url,
+	'info'=>null,
+	'files'=>null,
+	'config'=>null,
+];
+
+/** Создание навигации для шаблонов
+ * @param string $name Имя шаблона
+ * @param array $settings Установки шаблона*/
+function DoNavigation($name,$settings)
+{global$Eleanor;
+	/** @var DynUrl $Url */
+	$Url=$Eleanor->DynUrl;
+
+	$Eleanor->module['links']=[
+		'info'=>$Url(['info'=>$name]),
+		'files'=>$Url(['files'=>$name]),
+		'config'=>isset($settings['options']) ? $Url(['config'=>$name]) : false,
+	]+$Eleanor->module['links'];
+}
 
 if(isset($_GET['info']))
 {
-	$theme=preg_replace('#[^a-z0-9\-_\.]+#i','',(string)$_GET['info']);
+	#ToDo! Информация о шаблоне
+	Output::SendHeaders('text');
+	Output::Gzip('Здесь будет информация о шаблоне');
+
+	/*$theme=preg_replace('#[^a-z0-9\-_\.]+#i','',(string)$_GET['info']);
 	$f=Eleanor::$root.'templates/'.$theme.'.settings.php';
 	if(!is_file($f))
 		return GoAway();
@@ -34,41 +78,47 @@ if(isset($_GET['info']))
 
 	$title[]=$name;
 	$c=Eleanor::$Template->Info($name,$info,$license);
-	Start();
-	echo$c;
+	echo$c;*/
 }
 elseif(isset($_GET['files']))
 {
-	$theme=preg_replace('#[^a-z0-9\-_\.]+#i','',(string)$_GET['files']);
+	#ToDo! работа с файлами шаблона
+	Output::SendHeaders('text');
+	Output::Gzip('Здесь будет работа с файлами шаблона');
+
+	/*$theme=preg_replace('#[^a-z0-9\-_\.]+#i','',(string)$_GET['files']);
 	if(!is_dir(Eleanor::$root.'templates/'.$theme.'/'))
 		return GoAway();
 	$f=Eleanor::$root.'templates/'.$theme.'.settings.php';
-	$info=is_file($f) ? (array)include$f : array();
+	$info=is_file($f) ? (array)include$f : [];
 	DoNavigation($theme,$info);
 	$name=isset($info['name']) ? Eleanor::FilterLangValues((array)$info['name']).' ('.$theme.')' : $theme;
 	$title[]=sprintf($lang['files_tpl'],$name);
 	$Up=new Uploader(Eleanor::$root.'templates'.DIRECTORY_SEPARATOR.$theme.DIRECTORY_SEPARATOR);
 	$Up->watermark=false;
-	$Up->buttons_top=array(
+	$Up->buttons_top=[
 		'create_file'=>true,
 		'create_folder'=>true,
 		'update'=>true,
-	);
-	$Up->buttons_item=array(
+	];
+	$Up->buttons_item=[
 		'edit'=>true,
 		'file_rename'=>true,
 		'file_delete'=>true,
 		'folder_rename'=>true,
 		'folder_open'=>false,
 		'folder_delete'=>true,
-	);
+	];
 	$c=Eleanor::$Template->Files($Up->Show('','tpl',$name),$name);
-	Start();
-	echo$c;
+	echo$c;*/
 }
 elseif(isset($_GET['config']))
 {
-	if($_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$our_query)
+	#ToDo! работа с конфигурациями шаблона
+	Output::SendHeaders('text');
+	Output::Gzip('Здесь будет работа с конфигурациями шаблона');
+
+	/*if($post)
 	{
 		$theme=preg_replace('#[^a-z0-9\-_\.]+#i','',(string)$_GET['config']);
 		$f=Eleanor::$root.'templates/'.$theme.'.settings.php';
@@ -85,7 +135,7 @@ elseif(isset($_GET['config']))
 		}
 		catch(EE$E)
 		{
-			return ConfigTemplate($theme,array('ERROR'=>$E->getMessage()));
+			return ConfigTemplate($theme,['ERROR'=>$E->getMessage()]);
 		}
 		$errors=$C->errors;
 		if(file_put_contents(Eleanor::$root.'templates/'.$theme.'.config.php','<?php return '.var_export($r,true).';')===false)
@@ -96,15 +146,46 @@ elseif(isset($_GET['config']))
 	}
 	else
 		ConfigTemplate((string)$_GET['config']);
+
+	#Содержимое функции ConfigTemplate
+	$theme=preg_replace('#[^a-z0-9\-_\.]+#i','',$theme);
+	$f=Eleanor::$root.'templates/'.$theme.'.settings.php';
+	if(!is_file($f))
+		return GoAway();
+	$info=(array)include$f;
+	if(!isset($info['options']) or !is_array($info['options']))
+		return GoAway();
+	DoNavigation($theme,$info);
+	$values=is_file(Eleanor::$root.'templates/'.$theme.'.config.php') ? (array)include Eleanor::$root.'templates/'.$theme.'.config.php' : [];
+
+	foreach($values as &$v)
+		$v=['value'=>$v];
+	if($errors)
+	{
+		if($errors===true)
+			$error=[];
+		foreach($info['options'] as &$v)
+			if(is_array($v))
+				$v['post']=true;
+	}
+
+	$title[]=sprintf(Eleanor::$Language['te']['config_tpl'],isset($info['name']) ? Eleanor::FilterLangValues((array)$info['name']).' ('.$theme.')' : $theme);
+	$values=$Eleanor->Controls->DisplayControls($info['options'],$values);
+	$c=Eleanor::$Template->Config($info['options'],$values,$errors);
+	echo$c;*/
 }
-elseif(isset($_GET['settpl'],$_GET['to']))
+elseif(isset($_GET['set'],$_GET['to']))
 {
-	$name=(string)$_GET['to'];
+	#ToDo! установка шаблона
+	Output::SendHeaders('text');
+	Output::Gzip('Здесь будет установка шаблона');
+
+	/*$name=(string)$_GET['to'];
 	$theme=preg_replace('#[^a-z0-9\-_\.]+#i','',(string)$_GET['settpl']);
 	if(!is_dir(Eleanor::$root.'templates/'.$theme) or !isset(Eleanor::$services[$name]))
 		return GoAway();
 	$f=Eleanor::$root.'templates/'.$theme.'.settings.php';
-	$info=is_file($f) ? (array)include$f : array();
+	$info=is_file($f) ? (array)include$f : [];
 
 	if(!empty($info['service']) and !in_array($name,$info['service']))
 		return GoAway();
@@ -114,7 +195,7 @@ elseif(isset($_GET['settpl'],$_GET['to']))
 	{
 		if($nolic or isset($_POST['submit']))
 		{
-			Eleanor::$Db->Update(P.'services',array('theme'=>$theme),'`name`='.Eleanor::$Db->Escape($name).' LIMIT 1');
+			Eleanor::$Db->Update(P.'services',['theme'=>$theme],'`name`='.Eleanor::$Db->Escape($name).' LIMIT 1');
 			Eleanor::$Cache->Engine->DeleteByTag('');
 		}
 		elseif(isset($_POST['refuse']))
@@ -129,7 +210,7 @@ elseif(isset($_GET['settpl'],$_GET['to']))
 	elseif(!$nolic)
 	{
 		$f=Eleanor::$root.'templates/'.$theme.'.settings.php';
-		$info=is_file($f) ? (array)include$f : array();
+		$info=is_file($f) ? (array)include$f : [];
 		$title[]=$lang['agreement'];
 		if(isset($_GET['noback']))
 			$back='';
@@ -138,11 +219,15 @@ elseif(isset($_GET['settpl'],$_GET['to']))
 		$c=Eleanor::$Template->License(isset($info['name']) ? Eleanor::FilterLangValues((array)$info['name']).' ('.$theme.')' : $theme,$back,Eleanor::FilterLangValues((array)$info['license']));
 		Start();
 		echo$c;
-	}
+	}*/
 }
 elseif(isset($_GET['delete']))
 {
-	$theme=preg_replace('#[^a-z0-9\-_\.]+#i','',(string)$_GET['delete']);
+	#ToDo! удаление шаблона
+	Output::SendHeaders('text');
+	Output::Gzip('Здесь будет удаление шаблона');
+
+	/*$theme=preg_replace('#[^a-z0-9\-_\.]+#i','',(string)$_GET['delete']);
 	if(!is_dir(Eleanor::$root.'templates/'.$theme))
 		return GoAway();
 
@@ -165,12 +250,12 @@ elseif(isset($_GET['delete']))
 		else
 			$back=isset($_POST['back']) ? (string)$_POST['back'] : getenv('HTTP_REFERER');
 		$f=Eleanor::$root.'templates/'.$theme.'.settings.php';
-		$info=is_file($f) ? (array)include$f : array();
+		$info=is_file($f) ? (array)include$f : [];
 		DoNavigation($theme,$info);
 		$c=Eleanor::$Template->Delete(sprintf($lang['deleting'],isset($info['name']) ? Eleanor::FilterLangValues((array)$info['name']).' ('.$theme.')' : $theme),$back);
 		Start();
 		echo$c;
-	}
+	}*/
 }
 else
 {
@@ -196,82 +281,41 @@ else
 		Error();*/
 	}
 
-	$title[]=Eleanor::$Language['te']['list'];
-	$a=glob(Eleanor::$root.'templates/*',GLOB_ONLYDIR);
-	$tpls=array();
+	$title[]=$lang['list'];
+
+	/*$a=glob(Eleanor::$root.'templates/*',GLOB_ONLYDIR);
+	$tpls=[];
 	foreach($a as &$v)
 	{
 		$theme=basename($v);
-		$info=is_file($v.'.settings.php') ? (array)include$v.'.settings.php' : array();
+		$info=is_file($v.'.settings.php') ? (array)include$v.'.settings.php' : [];
 
-		$tpl=array(
+		$tpl=[
 			'image'=>is_file($v.'.png') ? 'templates/'.$theme.'.png' : false,
-			'setto'=>array(),
-			'used'=>array(),
-		);
+			'setto'=>[],
+			'used'=>[],
+		];
 		if(!isset($info['service']) or !is_array($info['service']))
-			$info['service']=array();
+			$info['service']=[];
 		foreach(Eleanor::$services as $k=>&$vs)
 			if($vs['theme'] and $vs['theme']==$theme)
 				$tpl['used'][]=$k;
 			elseif(in_array($k,$info['service']))
-				$tpl['setto'][$k]=$Eleanor->Url->Construct(array('settpl'=>$theme,'to'=>$k));
+				$tpl['setto'][$k]=$Eleanor->Url->Construct(['settpl'=>$theme,'to'=>$k]);
 			else
 				continue;
 
-		$tpls[$theme]=$tpl+array(
+		$tpls[$theme]=$tpl+[
 			'creation'=>isset($info['creation']) ? $info['creation'] : false,
 			'author'=>isset($info['author']) ? $info['author'] : false,
 			'title'=>isset($info['name']) ? Eleanor::FilterLangValues((array)$info['name']) : false,
-			'_aopts'=>isset($info['options']) ? $Eleanor->Url->Construct(array('config'=>$theme)) : false,
-			'_ainfo'=>isset($info['info']) ? $Eleanor->Url->Construct(array('info'=>$theme)) : false,
-			'_afiles'=>$Eleanor->Url->Construct(array('files'=>$theme)),
-			'_adel'=>$tpl['used'] ? false : $Eleanor->Url->Construct(array('delete'=>$theme)),
-		);
-	}
-	$c=Eleanor::$Template->TemplatesGeneral($tpls);
-	Start();
-	echo$c;
-}
+			'_aopts'=>isset($info['options']) ? $Eleanor->Url->Construct(['config'=>$theme]) : false,
+			'_ainfo'=>isset($info['info']) ? $Eleanor->Url->Construct(['info'=>$theme]) : false,
+			'_afiles'=>$Eleanor->Url->Construct(['files'=>$theme]),
+			'_adel'=>$tpl['used'] ? false : $Eleanor->Url->Construct(['delete'=>$theme]),
+		];
+	}*/
 
-function DoNavigation($name,$info)
-{global$Eleanor;
-	$Eleanor->module['links']=array(
-		'info'=>array(
-			'link'=>$Eleanor->Url->Construct(array('info'=>$name)),
-			'name'=>isset($info['name']) ? Eleanor::FilterLangValues((array)$info['name']) : $name,
-		),
-		'files'=>$Eleanor->Url->Construct(array('files'=>$name)),
-		'config'=>isset($info['options']) ? $Eleanor->Url->Construct(array('config'=>$name)) : false,
-	)+$Eleanor->module['links'];
-}
-
-function ConfigTemplate($theme,$errors=array())
-{global$Eleanor,$title;
-	$theme=preg_replace('#[^a-z0-9\-_\.]+#i','',$theme);
-	$f=Eleanor::$root.'templates/'.$theme.'.settings.php';
-	if(!is_file($f))
-		return GoAway();
-	$info=(array)include$f;
-	if(!isset($info['options']) or !is_array($info['options']))
-		return GoAway();
-	DoNavigation($theme,$info);
-	$values=is_file(Eleanor::$root.'templates/'.$theme.'.config.php') ? (array)include Eleanor::$root.'templates/'.$theme.'.config.php' : array();
-
-	foreach($values as &$v)
-		$v=array('value'=>$v);
-	if($errors)
-	{
-		if($errors===true)
-			$error=array();
-		foreach($info['options'] as &$v)
-			if(is_array($v))
-				$v['post']=true;
-	}
-
-	$title[]=sprintf(Eleanor::$Language['te']['config_tpl'],isset($info['name']) ? Eleanor::FilterLangValues((array)$info['name']).' ('.$theme.')' : $theme);
-	$values=$Eleanor->Controls->DisplayControls($info['options'],$values);
-	$c=Eleanor::$Template->Config($info['options'],$values,$errors);
-	Start();
-	echo$c;
+	$c=Eleanor::$Template->TemplatesList();
+	Response($c);
 }

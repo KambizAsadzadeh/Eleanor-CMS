@@ -374,7 +374,7 @@ elseif(isset($_GET['edit']))
 					foreach(Eleanor::$langs as $lng=>$_)
 						if(isset($preuris[$uri][$lng]))
 						{
-							$value=explode(',',$preuris[$uri][$lng]);
+							$value=(array)$preuris[$uri][$lng];
 
 							foreach($value as $kv=>&$vv)
 							{
@@ -391,7 +391,7 @@ elseif(isset($_GET['edit']))
 				foreach($uris as $uri)
 					if(isset($preuris[$uri]))
 					{
-						$value=explode(',',$preuris[$uri]);
+						$value=(array)$preuris[$uri];
 
 						foreach($value as $kv=>&$vv)
 						{

@@ -60,7 +60,7 @@ function GetHead($ms=true,$search=true)
 	else
 		$descr=false;
 
-	$heads='<meta http-equiv="content-type" content="text/html; charset='.\Eleanor\CHARSET.'" /><base href="'
+	$heads='<meta charset="'.\Eleanor\CHARSET.'" /><base href="'
 		.\Eleanor\SITEDIR.'" /><title>'.$t.'</title><meta name="generator" content="Eleanor CMS '.Eleanor::VERSION
 		.'" />';
 

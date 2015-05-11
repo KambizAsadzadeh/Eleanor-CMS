@@ -58,11 +58,6 @@ $modules=[
 		'descr'=>$lang['smg_'],
 		'image'=>'sitemap-*.png',
 	],
-	'database'=>[
-		'title'=>$lang['db'],
-		'descr'=>$lang['db_'],
-		'image'=>'database-*.png',
-	],
 	'themes'=>[
 		'title'=>$lang['tmpe'],
 		'descr'=>$lang['tmpm_'],

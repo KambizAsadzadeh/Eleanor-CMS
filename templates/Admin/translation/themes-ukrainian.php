@@ -1,17 +1,18 @@
 <?php
-return array(
+return[
 	#Для Classes/Themes.php
-	'submitlic'=>'Приймаю умови',
-	'refuselic'=>'НЕ Приймаю умови (видалити)',
+	'accept-conditions'=>'Приймаю умови',
+	'refuse-conditions'=>'НЕ Приймаю умови (видалити)',
 	'cancel'=>'Скасування',
-	'set_for'=>'Встановити темою для &quot;%s&quot;',
+	'set-for'=>'Встановити темою для &quot;%s&quot;',
+	'info'=>'Інформація',
 	'config'=>'Конфігурація',
-	'file_work'=>'Робота з файлами',
+	'file-working'=>'Робота з файлами',
 	'copy'=>'Копія',
-	'services'=>'Сервіси: %s',
-	'author'=>'Автор: %s',
-	'cr_date'=>'Дата створення: %s',
-	'used_templ'=>'Поточні шаблони',
-	'avai_templ'=>'Доступні варіанти',
-	'enter_nt'=>'Введіть ім\'я нового шаблону:',
-);
+	'services%'=>'Сервіси: %s',
+	'author%'=>'Автор: %s',
+	'date-of-creation%'=>'Дата створення: %s',
+	'used-templates'=>'Поточні шаблони',
+	'available-templates'=>'Доступні варіанти',
+	'enter-new-title'=>'Введіть ім\'я нового шаблону:',
+];

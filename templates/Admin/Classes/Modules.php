@@ -496,13 +496,13 @@ HTML;
 				$uri=[];
 
 				foreach($values[$name] as $k=>$v)
-					$uri[$k]=Select2::Tags('uris['.$name.']['.$k.']',$v,
-						['id'=>'uri-'.$name.'-'.$k]);
+					$uri[$k]=Select2::Tags("uris[{$name}][{$k}]",$v,
+						['id'=>"uri-{$name}-{$k}"]);
 
 				$uri=T::$T->LangEdit($uri,'uri-'.$name);
 			}
 			else
-				$uri=Select2::Tags('uris['.$name.']',$values['uris'][$name],
+				$uri=Select2::Tags("uris[{$name}]",$values['uris'][$name],
 					['id'=>'uri-'.$name]);
 
 			$uri_html.=<<<HTML

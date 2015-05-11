@@ -1,15 +1,13 @@
 <?php
-return array(
-	#Для /addons/admin/modules/themes/index.php
-	'files_tpl'=>'Работа с файлами шаблона &quot;%s&quot;',
+return[
+	#Для /cms/admin/modules/themes/themes.php
+	'files%'=>'Работа с файлами шаблона &quot;%s&quot;',
 	'agreement'=>'Лицензионное соглашение',
-	'delc'=>'Подтверждение удаления',
-	'deleting'=>'Вы действительно хотите удалить тему оформления &quot;%s&quot;?',
+	'deleting'=>'Подтверждение удаления',
 	'list'=>'Список шаблонов',
-	'config_tpl'=>'Конфигурация шаблона &quot;%s&quot;',
+	'config%'=>'Конфигурация шаблона &quot;%s&quot;',
 
-	#Для /addons/admin/modules/themes/ajax.php
-	'incorr_symb'=>'В названии использованы недопустимые символы!',
-	'theme_exists'=>'Тема оформления "%s" уже существует!',
-	'no_ish_thm'=>'Исходной темы оформления "%s" не существует!',
-);
+	'INCORRECT_NAME'=>'В названии использованы недопустимые символы!',
+	'THEME_EXISTS'=>'Тема оформления "%s" уже существует!',
+	'NO_SOURCE'=>'Исходной темы оформления "%s" не существует!',
+];

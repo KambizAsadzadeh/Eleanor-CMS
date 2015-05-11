@@ -449,15 +449,21 @@ $(function(){
 		$(this).tab("show");
 	});
 
-	//Реализация работоспособности <label> при включенной мультиязычности
+	//Реализация работоспособности <label> при включенной мультиязычности + убирание required на скрытых полях
 	$("ul.lang-tabs[data-for] a").on("shown.bs.tab",function(){
 		var th=$(this),
 			name=th.closest("ul").data("for"),
 			lang=th.data("language");
 
 		$("#label-"+name).attr("for",name+"-"+lang);
+
+		//Required off
+		th.closest("ul").prev()
+			.find("[required]:hidden").removeAttr("required").addClass("required")
+			.find(".required:visible").attr("required",true).removeClass("required");
 	}).closest("li").filter(".active").find("a").trigger("shown.bs.tab");
 
+	//Обеспечение работоспособности пагинатора
 	$(".list-pager").each(function(){
 		var ajax=$(this).data("ajax"),
 			input=$("input",this),

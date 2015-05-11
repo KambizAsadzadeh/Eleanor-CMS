@@ -71,6 +71,7 @@ elseif(isset($_GET['edit']))
 			return GoAway();
 
 		$orig['title']=$orig['title_l'] ? json_decode($orig['title_l'],true) : [''=>''];
+		$orig['tags']=$orig['tags'] ? explode(',',trim($orig['tags'],',')) : [];
 		$orig['sp_tags']=$orig['sp_tags'] ? explode(',',trim($orig['sp_tags'],',')) : [];
 		$orig['gr_use']=$orig['gr_use'] ? explode(',',trim($orig['gr_use'],',')) : [];
 		$orig['gr_see']=$orig['gr_see'] ? explode(',',trim($orig['gr_see'],',')) : [];
@@ -96,7 +97,7 @@ elseif(isset($_GET['edit']))
 		PostValues($values,[
 			'handler'=>'string',
 			'pos'=>'int',
-			'tags'=>'string',
+			'tags'=>'array',
 			'sp_tags'=>'array',
 			'gr_use'=>'array',
 			'gr_see'=>'array',
@@ -117,13 +118,16 @@ elseif(isset($_GET['edit']))
 		if(isset($errors['EMPTY_TITLE']))
 			$errors['EMPTY_TITLE']=$lang['EMPTY_TITLE']( $errors['EMPTY_TITLE']==[''] ? [] : $errors['EMPTY_TITLE'] );
 
-		if(isset($values['tags']) and $values['tags']==='')
+		if(empty($values['tags']))
 			$errors[]='EMPTY_TAGS';
 
 		if($errors)
 			goto EditForm;
 
 		$values['title_l']=$title_ ? json_encode($title_,JSON) : '';
+
+		if(isset($values['tags']))
+			$values['tags']=$values['tags'] ? join(',',$values['tags']) : '';
 
 		if(isset($values['sp_tags']))
 			$values['sp_tags']=$values['sp_tags'] ? join(',',$values['sp_tags']) : '';
@@ -196,7 +200,7 @@ elseif(isset($_GET['edit']))
 			'pos'=>0,
 			'status'=>1,
 			'title'=>Eleanor::$vars['multilang'] ? array_fill_keys(array_keys(Eleanor::$langs),'') : '',
-			'tags'=>'',
+			'tags'=>[],
 			'no_parse'=>false,
 			'special'=>false,
 			'sp_tags'=>[],
@@ -217,7 +221,7 @@ elseif(isset($_GET['edit']))
 			'handler'=>'string',
 			'pos'=>'int',
 			'title'=>Eleanor::$vars['multilang'] ? 'array' : 'string',
-			'tags'=>'string',
+			'tags'=>'array',
 			'sp_tags'=>'array',
 			'gr_use'=>'array',
 			'gr_see'=>'array',
@@ -248,7 +252,6 @@ elseif(isset($_GET['edit']))
 
 			$data['poses'][ $a['pos'] ]=array_slice($a,2);
 		}
-
 	}
 
 	if(Eleanor::$vars['multilang'])

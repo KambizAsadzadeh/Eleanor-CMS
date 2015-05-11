@@ -15,12 +15,12 @@ class Select2
 	{
 		if(!isset($GLOBALS['head']['select2']))
 		{
-			$GLOBALS['head']['select2']='<link href="//cdn.jsdelivr.net/select2/3/select2.css" rel="stylesheet"/>
-<link href="//cdn.jsdelivr.net/select2/3/select2-bootstrap.css" rel="stylesheet"/>';
-			$GLOBALS['scripts'][]='//cdn.jsdelivr.net/select2/3/select2.min.js';
+			$GLOBALS['head']['select2']='<link href="//cdn.jsdelivr.net/select2/4/css/select2.min.css" rel="stylesheet"/>';
 
-			if(Language::$main!='english')
-				$GLOBALS['scripts'][]=T::$http['3rd'].'static/select2/select2_locale_'.Eleanor::$langs[ Language::$main ]['d'].'.js';
+			if(Language::$main=='english')
+				$GLOBALS['scripts'][]='//cdn.jsdelivr.net/select2/4/js/select2.full.min.js';
+			else
+				$GLOBALS['scripts'][]='//cdn.jsdelivr.net/g/select2@4(js/select2.full.min.js+js/i18n/'.Eleanor::$langs[ Language::$main ]['d'].'.js)';
 		}
 	}
 
@@ -36,6 +36,12 @@ class Select2
 
 		if(!isset($a['id']))
 			$a['id']=uniqid();
+
+		if(Language::$main!='english')
+			$a['lang']=Eleanor::$langs[ Language::$main ]['d'];
+
+		if(!isset($a['data-width']))
+			$a['data-width']='style';
 
 		return Html::Select($n,$o,$a).<<<HTML
 <script>/*<![CDATA[*/$(function(){ $("#{$a['id']}").select2({$js_obj}); });//]]></script>
@@ -55,33 +61,46 @@ HTML;
 
 	/** Генерация специального контрола для ввода тегов
 	 * @param string $n Имя
-	 * @param string|array $v Перечень тегов: либо массив, либо строка разделенная \t
+	 * @param string|array $v Перечень тегов: либо массив, либо строка разделенная \t, либо <option>...<option>
 	 * @param array $a ассоциативный массив дополнительных параметров
 	 * @return string */
-	public static function Tags($n,$v,array$a=[])
+	public static function Tags($n,$v,array$a=[],$js_obj='')
 	{
-		static::Init();
+		if(is_string($v) and strpos($v,'<option')===0)
+			$opts=$v;
+		elseif($v)
+		{
+			if(is_scalar($v))
+				$v=explode("\t",$v);
 
-		if(!isset($a['id']))
-			$a['id']=uniqid();
+			$opts='';
+			foreach($v as $k=>$opt)
+			{
+				$int=is_int($k);
 
-		$a['type']='hidden';
+				$opts.=Html::Option($int ? $opt : $k,false,$int ? true : $opt);
+			}
+		}
+		else
+			$opts=' ';
 
-		return Html::Input($n,is_array($v) ? join(',',$v) : $v,$a).<<<HTML
-<script>/*<![CDATA[*/$(function(){ $("#{$a['id']}").select2({
-	tags: [],
-	initSelection : function (element, callback) {
-		var data=[];
+		if($js_obj==='tags')
+			$js_obj=',ajax:{url:location.href,cache:"true",processResults:function(pre){
+				var data=[];
+				$.each(pre,function(i,v){
+					data.push("string"===typeof v ? {id:v,text:v} : v);
+				});
+				return{results: data};
+			}}';
+		else
+		{
+			$js_obj=trim($js_obj,',');
 
-		$.each(element.val().split(","),function () {
-			data.push({id: this, text: this});
-		});
+			if($js_obj)
+				$js_obj=','.$js_obj;
+		}
 
-		element.val("");
-		callback(data);
-	}
-}); });//]]></script>
-HTML;
+		return static::Items($n,$opts,$a,"{tags: true, tokenSeparators: ['\\t',',']{$js_obj}}");
 	}
 }
 

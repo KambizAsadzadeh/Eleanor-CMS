@@ -9,14 +9,14 @@ defined('CMS\STARTED')||die;
 
 global$Eleanor,$title;
 $lang=Eleanor::$Language->Load(DIR.'admin/translation/sitemap-*.php','sitemap');
-Eleanor::$Template->queue[]=Eleanor::$Template->classes.'Sitemap';
+Eleanor::$Template->queue[]=Eleanor::$Template->classes.'Sitemap.php';
 
 /** @var DynUrl $Url */
 $Url=$Eleanor->DynUrl;
 $post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
 $Eleanor->module['links']=[
 	'list'=>(string)$Url,
-	'add'=>$Url(['do'=>'create']),
+	'create'=>$Url(['do'=>'create']),
 	'robots.txt'=>$Url(['do'=>'robots.txt']),
 ];
 

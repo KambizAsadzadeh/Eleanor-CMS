@@ -32,27 +32,27 @@ switch($d)
 			Response( Eleanor::$Template->Options($c) );
 	break;
 	default:
-
 		if(AJAX)
 		{
 			$data=isset($_POST['data']) ? (array)$_POST['data'] : [];
-			$pref=isset($data['prefix']) ? (string)$data['prefix'] : '';
+			$pref=isset($_POST['prefix']) ? (string)$_POST['prefix'] : '';
 
-			if(isset($data['host'],$data['user'],$data['pass'],$data['db']))
+			if(isset($data['host'],$data['user'],$data['pass'],$data['db']) and $data['host'] and $data['user'] and $data['db'])
 				try
 				{
+					$data['now']=true;
 					$Db=new MySQL($data);
 				}
 				catch(EE$E)
 				{
-					Response('connect');
+					Error($lang['UNABLE_TO_CONNECT_TO_DB']);
 					break;
 				}
 			else
 			{
 				if($pref==P)
 				{
-					Response('prefix');
+					Error($lang['THIS_SITE']);
 					break;
 				}
 
@@ -64,8 +64,11 @@ switch($d)
 			else
 				$db=false;
 
-			$R=$Db->Query('SHOW TABLES'.($db ? " FROM `}$db}`" : '').' LIKE \''.$Db->Escape($pref,false).'multisite_jump\'');
-			Response($R->num_rows>0 ? false : 'table');
+			$R=$Db->Query('SHOW TABLES'.($db ? " FROM `{$db}`" : '').' LIKE \''.$Db->Escape($pref,false).'multisite_jump\'');
+			if($R->num_rows>0)
+				Response(true);
+			else
+				Error($lang['MULTI_SITE_TABLE_WAS_NOT_FOUND']);
 
 			break;
 		}
@@ -106,6 +109,7 @@ switch($d)
 				'options'=>[
 					'safe'=>true,
 					'extra'=>[
+						'id'=>'title',
 						'class'=>'need-tabindex',
 						'required'=>true,
 					],
@@ -129,6 +133,7 @@ switch($d)
 
 				'options'=>[
 					'extra'=>[
+						'id'=>'uri',
 						'type'=>'url',
 						'data-default'=>\Eleanor\PROTOCOL,
 						'class'=>'need-tabindex',
@@ -144,6 +149,7 @@ switch($d)
 
 				'options'=>[
 					'extra'=>[
+						'id'=>'sync',
 						'data-default'=>0,
 						'class'=>'need-tabindex',
 					],
@@ -155,6 +161,7 @@ switch($d)
 
 				'options'=>[
 					'extra'=>[
+						'id'=>'secret',
 						'class'=>'need-tabindex',
 						'required'=>true,
 					],
@@ -168,6 +175,7 @@ switch($d)
 
 				'options'=>[
 					'extra'=>[
+						'id'=>'prefix',
 						'class'=>'db need-tabindex',
 						'required'=>true,
 					]
@@ -181,6 +189,7 @@ switch($d)
 
 				'options'=>[
 					'extra'=>[
+						'id'=>'host',
 						'class'=>'db need-tabindex',
 						'data-default'=>'localhost',
 					]
@@ -192,6 +201,7 @@ switch($d)
 				
 				'options'=>[
 					'extra'=>[
+						'id'=>'db',
 						'class'=>'db need-tabindex',
 					]
 				]
@@ -202,6 +212,7 @@ switch($d)
 
 				'options'=>[
 					'extra'=>[
+						'id'=>'user',
 						'class'=>'db need-tabindex',
 					]
 				]
@@ -212,6 +223,7 @@ switch($d)
 
 				'options'=>[
 					'extra'=>[
+						'id'=>'pass',
 						'class'=>'db need-tabindex',
 					]
 				]
@@ -228,23 +240,24 @@ switch($d)
 			if($keys) try
 			{
 				$data=[];
+				$n=0;
 
-				foreach($keys as $id=>$site)
+				foreach($keys as $site)
 				{
 					$Eleanor->Controls->name=['sites',$site];
-					$data[$id]=$Eleanor->Controls->SaveControls($controls);
+					$data[++$n]=$Eleanor->Controls->SaveControls($controls);
 
-					if(!$data[$id]['secret'])
+					if(!$data[$n]['secret'])
 					{
-						$pref=isset($data[$id]['prefix']) ? (string)$data[$id]['prefix'] : '';
+						$pref=isset($data[$n]['prefix']) ? (string)$data[$n]['prefix'] : '';
 
-						if(isset($data[$id]['host'],$data[$id]['user'],$data[$id]['pass'],$data[$id]['db']))
-							$Db=new MySQL($data[$id]);
+						if(isset($data[$n]['host'],$data[$n]['user'],$data[$n]['pass'],$data[$n]['db']) and $data[$n]['host'] and $data[$n]['user'] and $data[$n]['db'])
+							$Db=new MySQL(['now'=>true]+$data[$n]);
 						else
 						{
 							if($pref==P)
-								throw new EE(sprintf($lang['THIS_SITE'],isset($data[$id]['title']) && is_array($data[$id]['title'])
-									? FilterLangValues($data[$id]['title']) : $data[$id]['title']),EE::USER);
+								throw new EE(sprintf($lang['THIS_SITE_'],isset($data[$n]['title']) && is_array($data[$n]['title'])
+									? FilterLangValues($data[$n]['title']) : $data[$n]['title']),EE::USER);
 
 							$Db=Eleanor::$Db;
 						}
@@ -297,13 +310,32 @@ return[];');
 				$C=new Controls;
 				$C->name=['sites',$key];
 
-				$sites[$key]=$C->DisplayControls($controls,$values);
+				$control2=$controls;
+				foreach($control2 as $k=>&$v)
+				{
+					if(!is_array($v) or !isset($v['options']['extra']['id']))
+						continue;
+
+					if(empty($v['multilang']))
+						$v['options']['extra']['id'].='-'.$key;
+					else
+					{
+						$values[$k]['options']=array_fill_keys(array_keys(Eleanor::$langs), $v['options']);
+
+						foreach($values[$k]['options'] as $l=>&$opts)
+							$opts['extra']['id'].="-{$l}-".$key;
+					}
+				}
+
+				unset($opts,$v);
+
+				$sites[$key]=$C->DisplayControls($control2,$values);
 			}
 
 			return$sites;
 		};
 
 		$title[]=$lang['config'];
-		$c=Eleanor::$Template->Multisite($Controls2Html,$controls,$errors);
+		$c=Eleanor::$Template->Multisite($Controls2Html,$controls,$errors,$post && !$errors);
 		Response($c);
 }

@@ -19,11 +19,15 @@ class Blocks
 	 * @return string */
 	protected static function Menu($act='')
 	{
-		$lang=Eleanor::$Language['blocks'];
 		$links=&$GLOBALS['Eleanor']->module['links'];
 
-		$GLOBALS['Eleanor']->module['navigation']=array(
-			array($links['main'],$lang['bpos'],'act'=>$act=='main'),
+		#ToDo! Сделать меню
+		T::$data['navigation']=[
+			[$links['main'],'Управление блоками','act'=>$act=='main'],
+		];
+
+
+		/*			array($links['main'],$lang['bpos'],'act'=>$act=='main'),
 			array($links['ids'],$lang['ipages'],'act'=>$act=='ids',
 				'submenu'=>array(
 					array($links['addi'],static::$lang['addi'],'act'=>$act=='addi'),
@@ -33,8 +37,17 @@ class Blocks
 				'submenu'=>array(
 					array($links['add'],static::$lang['addb'],'act'=>$act=='add'),
 				),
-			),
-		);
+			),*/
+	}
+
+	/** Основная страница: управление блоками группы */
+	public static function ManageGroup()
+	{
+		static::Menu('main');
+
+		return<<<HTML
+Серёж, именно здесь ты можешь оформлять шаблон управления блоками :)
+HTML;
 	}
 
 	/*
@@ -645,4 +658,6 @@ $(function(){
 		return Eleanor::$Template->Cover('',isset(static::$lang[$e]) ? static::$lang[$e] : '');
 	}
 }
-TplBlocks::$lang=Eleanor::$Language->Load(Eleanor::$Template->default['theme'].'langs/blocks-*.php',false);
+Blocks::$lang=Eleanor::$Language->Load(__DIR__.'/../translation/blocks-*.php',false);
+
+return Blocks::class;

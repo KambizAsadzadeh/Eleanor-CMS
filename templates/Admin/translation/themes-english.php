@@ -1,17 +1,18 @@
 <?php
-return array(
+return[
 	#For Classes/Themes.php
-	'submitlic'=>'Accept the terms',
-	'refuselic'=>'Do not accept (remove)',
+	'accept-conditions'=>'Accept the terms',
+	'refuse-conditions'=>'Do not accept (remove)',
 	'cancel'=>'Cancel',
-	'set_for'=>'Set the theme for &quot;%s&quot;',
+	'set-for'=>'Set the theme for &quot;%s&quot;',
+	'info'=>'Information',
 	'config'=>'Configuration',
-	'file_work'=>'Working with files',
+	'file-working'=>'Working with files',
 	'copy'=>'Copy',
-	'services'=>'Services: %s',
-	'author'=>'Author: %s',
-	'cr_date'=>'Date created: %s',
-	'used_templ'=>'Current templates',
-	'avai_templ'=>'Available templates',
-	'enter_nt'=>'Enter a name for your new template:',
-);
+	'services%'=>'Services: %s',
+	'author%'=>'Author: %s',
+	'date-of-creation%'=>'Date created: %s',
+	'used-templates'=>'Current templates',
+	'available-templates'=>'Available templates',
+	'enter-new-title'=>'Enter a name for your new template:',
+];

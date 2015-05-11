@@ -1,6 +1,6 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
@@ -18,114 +18,27 @@ class Themes
 	 * @return string */
 	protected static function Menu($act='')
 	{
-		$links=&$GLOBALS['Eleanor']->module['links'];
+		$links=$GLOBALS['Eleanor']->module['links'];
+		T::$data['navigation']=[
+			[$links['list'],Eleanor::$Language['themes']['list'],'act'=>$act=='list'],
+		];
 
-		$GLOBALS['Eleanor']->module['navigation']=array(
-			array($links['list'],Eleanor::$Language['te']['list'],'act'=>$act=='list'),
-			$links['info']
-			? array($links['info']['link'],$links['info']['name'],'act'=>$act=='info',
-				'submenu'=>array(
-					array($links['files'],static::$lang['file_work'],'act'=>$act=='files'),
-					$links['config'] ? array($links['config'],static::$lang['config'],'act'=>$act=='config') : false,
-				),
-			)
-			: false,
-		);
+		if($links['info'] and $links['files'] and $links['config'])
+			array_push(T::$data['navigation'],
+				[$links['info'],static::$lang['info'],'act'=>$act=='info'],
+				[$links['config'],static::$lang['config'],'act'=>$act=='config'],
+				[$links['files'],static::$lang['file-working'],'act'=>$act=='files']
+			);
 	}
 
-	/*
-		Основная страница менеджера шаблонов. Вывод всех шаблонов, которые существуют в системе
-		$tpls - массив шаблонов. Формат имя шаблона=>array(), ключи внутреннего массива:
-			title - название шаблона
-			setto - массив сервисов, куда этот шаблон может быть установлен. Формат название сервиса=>ссылка на установку
-			_afiles - ссылка на управление файлами шаблона
-			_aopts - ссылка на конфигурирование шаблона, либо false
-			_ainfo - ссылка на информацию о шаблоне, либо false
-			_adel - ссылка на удаление шаблона
-			image - ссылка на изображение-логотип шаблона
-			used - массив сервисов, использующие этот шаблон по умолчанию
-			creation - дата создания шаблона (задается создателем шаблона)
-	*/
-	public static function TemplatesGeneral($tpls)
+	/** Основная страница менеджера шаблонов. Вывод всех шаблонов, которые существуют в системе */
+	public static function TemplatesList()
 	{
 		static::Menu('list');
-		$ltpl=T::$lang;
-		$images=Eleanor::$Template->default['theme'].'images/';
-		$used=$notused='';
-		$n=$nn=2;
-		foreach($tpls as $k=>&$v)
-		{
-			$setto='';
-			$title=$v['title'] ? $v['title'].' ('.$k.')' : $k;
-			foreach($v['setto'] as $sk=>&$sv)
-				$setto.='<p><a href="'.$sv.'" style="font-weight:bold">'.sprintf(static::$lang['set_for'],$sk).'</a></p>';
 
-			$c='<td><div class="thm_block"><div class="thm_brd"><div class="thm_menu"><div class="thm_cont"><div class="thm_mtop">'
-				.($v['_aopts'] ? '<a href="'.$v['_aopts'].'">'.static::$lang['config'].'</a> | ' : '')
-				.($v['_ainfo'] ? '<a href="'.$v['_ainfo'].'">'.$ltpl['info'].'</a> | ' : '')
-				.'<a href="'.$v['_afiles'].'">'.static::$lang['file_work'].'</a></div>'
-				.$setto.'<div class="thm_btn"><a href="#" title="'.static::$lang['copy'].'" class="copy" data-n="'.$k.'"><img src="'.$images.'thm_copy.png" alt="" /></a>'
-				.($v['_adel'] ? '<a href="'.$v['_adel'].'" title="'.$ltpl['delete'].'"><img src="'.$images.'thm_del.png" alt="" /></a>' : '')
-				.'</div></div></div><div class="thm_cont"><span class="thm_img"><img src="'.($v['image'] ? $v['image'] : $images.'default_theme.png').'" alt="" title="'.$title.'" /></span><div class="thm_mcont"><div class="thm_heading"><h3>'.$title.'</h3>'
-				.($v['used'] ? '<b>'.sprintf(static::$lang['services'],join(', ',$v['used'])).'</b>' : '').'</div><div class="thm_info">'.($v['author'] ? '<p>'.sprintf(static::$lang['author'],$v['author']).'</p>' : '')
-				.($v['creation'] ? '<p>'.sprintf(static::$lang['cr_date'],$v['creation']).'</p>' : '').'</div></div></div></div></div></td>';
-
-			if($v['used'])
-			{
-				$used.=($n--==2 ? '<tr>' : '').$c;
-				if($n==0)
-				{
-					$used.='</tr>';
-					$n=2;
-				}
-			}
-			else
-			{
-				$notused.=($nn--==2 ? '<tr>' : '').$c;
-				if($nn==0)
-				{
-					$notused.='</tr>';
-					$nn=2;
-				}
-			}
-		}
-		if($n>0 and $n<2)
-		{
-			while($n--)
-				$used.='<td></td>';
-			$used.='</tr>';
-		}
-		if($nn>0 and $nn<2)
-		{
-			while($nn--)
-				$notused.='<td></td>';
-			$notused.='</tr>';
-		}
-		return($used ? Eleanor::$Template->Title(static::$lang['used_templ'])->OpenTable().'<table class="tablethm">'.$used.'</table>'.Eleanor::$Template->CloseTable() : '')
-			.($notused ? Eleanor::$Template->Title(static::$lang['avai_templ'])->OpenTable().'<table class="tablethm">'.$notused.'</table>'.Eleanor::$Template->CloseTable() : '')
-			.'<script>//<![CDATA[
-$(function(){
-	$(".tablethm").on("click",".copy",function(){
-		var nt=prompt("'.static::$lang['enter_nt'].'"),
-			t=$(this).data("n");
-		if(!nt || !t || t==nt)
-			return false;
-		CORE.Ajax(
-			{
-				direct:"admin",
-				file:"'.$GLOBALS['Eleanor']->module['name'].'",
-				event:"copy",
-				theme:t,
-				newtpl:nt
-			},
-			function(r)
-			{
-				window.location.reload();
-			}
-		);
-		return false;
-	});
-})//]]></script>';
+		return<<<HTML
+Серёж, именно здесь ты можешь оформлять шаблон менеджера шаблонов :)
+HTML;
 	}
 
 	/*
@@ -226,4 +139,6 @@ $(function(){
 		return Eleanor::$Template->Cover(Eleanor::$Template->Confirm($t,$back));
 	}
 }
-TplThemes::$lang=Eleanor::$Language->Load(Eleanor::$Template->default['theme'].'langs/themes-*.php',false);
+Themes::$lang=Eleanor::$Language->Load(__DIR__.'/../translation/themes-*.php',false);
+
+return Themes::class;

@@ -133,7 +133,7 @@ class Minify
 				if(is_file($v) and (filesize($v)!=$size or filemtime($v)>$mt))
 				{
 					$create=true;
-					unlink($f);
+					Files::Delete($f);
 					break;
 				}
 		}
@@ -175,5 +175,5 @@ class Minify
 	}
 }
 
-Minify::$path=DIR.'/../cache/';
+Minify::$path=DIR.'../cache/';
 Minify::$http=\Eleanor\SITEDIR.'cache/';

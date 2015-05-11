@@ -554,7 +554,7 @@ a { outline: none !important; }
 /* Форма добавления модуля */
 .form-control.select2-container-multi { height: 35px; padding: 1px 1px; background-image: none; }
 .form-control.select2-container-multi .select2-choices { border: none; }
-.select2-container { width:100%; }
+.select2.select2-container { width:100%; }
 /* Мульти меню модуля */
 .module-menu > li > a.dropdown-toggle { padding-left: 0; }
 .module-menu > li > a.dropdown-toggle.active { cursor: pointer; }

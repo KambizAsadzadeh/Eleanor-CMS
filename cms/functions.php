@@ -183,9 +183,9 @@ else
 			: (string)Eleanor::$Template->index([ 'content'=>$content ]);
 
 		#Мегафикс: поисковики не понимают тег <base href...>, и всегда лишний раз переходят по ссылке без его учета
-		$out=preg_replace_callback('#href="([^/"]+)#i',function($match){
-			if(strpos($match[1],'://')===false)
-				return'href="'.\Eleanor\SITEDIR.$match[1];
+		$out=preg_replace_callback('%href=(["\'])([^\'"#/][^\'"]+)%i',function($match){
+			if(strpos($match[2],'://')===false)
+				return'href='.$match[1].\Eleanor\SITEDIR.$match[2];
 
 			return$match[0];
 		},$out);
