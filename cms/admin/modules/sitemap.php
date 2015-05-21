@@ -13,7 +13,7 @@ Eleanor::$Template->queue[]=Eleanor::$Template->classes.'Sitemap.php';
 
 /** @var DynUrl $Url */
 $Url=$Eleanor->DynUrl;
-$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$post=$_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery;
 $Eleanor->module['links']=[
 	'list'=>(string)$Url,
 	'create'=>$Url(['do'=>'create']),

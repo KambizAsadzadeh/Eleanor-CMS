@@ -18,7 +18,7 @@ global$Eleanor,$title;
 /** @var DynUrl $Url */
 $Url=$Eleanor->DynUrl;
 $lang=Eleanor::$Language['users'];
-$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$post=$_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery;
 $id=0;
 $uid=Eleanor::$Login->Get('id');
 $Eleanor->module['links']=[

@@ -1,34 +1,29 @@
 <?php
-#ToDo! Исправить файл
-/*
-	Eleanor CMS © 2014
+/**
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Шаблон по умолчанию для админки модуля обратной связи
-	Рекомендуется скопировать этот файл в templates/[шаблон админки]/Classes/[имя этого файла] и там уже начинать править.
-	В случае если такой файл уже существует - правьте его.
 */
-class TplAdminContacts
+namespace CMS\Templates\ContactsTemplate;
+
+/** Шаблон по умолчанию для админки модуля обратной связи. Рекомендуется скопировать этот файл в
+ * templates/[шаблон админки]/Classes/Errors.php и там уже править. Если такой файл уже существует - правьте его.*/
+class Contacts
 {
-	/*
-		Страница редактирование параметров обратной связи
-		$controls - перечень контролов в соответствии с классом контролов. Если какой-то элемент массива не является массивом, значит это заголовок подгруппы контролов
-		$values - результирующий HTML код контролов, который необходимо вывести на странице. Ключи данного массива совпадают с ключами $controls
-		$error - ошибка, если ошибка пустая - значит ее нету
-	*/
-	public static function Contacts($controls,$values,$error)
-	{
-
-	}
-
-	/*
-		Элемент шаблона. Таблица ввода электронных адресов получателей обратной связи
-		$n - имя-префикс всех контролов
-		$emails - массив получателей формат email=>имя
-	*/
-	public static function LoadWhom($n,$emails)
+	/** Основная страница правки обратной связи
+	 * @param array $values Значения полей формы:
+	 *  [string|array info] Информация для страницы обратной связи
+	 *  [array recipient] Возможные получатели письма
+	 *  [string|array subject] Формат темы получаемого письма
+	 *  [string|array text] Формат текста письма
+	 * @param callback $Editor Генератор Editor-a, параметры аналогичны Editor->Area
+	 * @param array $errors Ошибки формы
+	 * @param bool $saved Флаг успешного сохранения
+	 * @return string */
+	public static function Contacts($values,$Editor,$errors,$saved)
 	{
 
 	}
 }
+
+return Contacts::class;

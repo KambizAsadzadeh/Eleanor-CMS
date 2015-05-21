@@ -46,11 +46,7 @@ class StaticPage
 		}
 
 		\CMS\Templates\OG([
-			'title'=>$data['title'],
-			'uri'=>$GLOBALS['Eleanor']->module['origurl'],
 			'locale'=>Eleanor::$langs[\CMS\Language::$main]['d'],
-			'site_name'=>Eleanor::$vars['site_name'],
-			'description'=>$GLOBALS['Eleanor']->module['description'],
 			'image'=>preg_match('#<img.+?src="([^"]+)"[^>]*>#',$data['text'],$m)>0
 				? (strpos($m[1],'://')===false ? \Eleanor\PROTOCOL.\Eleanor\PUNYCODE.\Eleanor\SITEDIR.$m[1] : $m[1])
 				: false

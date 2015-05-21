@@ -105,7 +105,8 @@ class Minify
 
 		$s='';
 		foreach($source as $v)
-			$s.=preg_replace("#^\xEF\xBB\xBF#",'',file_get_contents($v))."\n";
+			if(is_file($v))
+				$s.=preg_replace("#^\xEF\xBB\xBF#",'',file_get_contents($v))."\n";
 
 		$M=new \JavaScriptPacker($s,0);
 

@@ -1,6 +1,6 @@
 <?php
 return array(
-	#For Classes/UserContacts.php
+	#For Classes/Contacts.php
 	'WRONG_RESPONDER'=>'Incorrect recipient',
 	'EMPTY_SUBJECT'=>'You have not entered the message subject',
 	'SHORT_MESSAGE'=>'Your message is too short',

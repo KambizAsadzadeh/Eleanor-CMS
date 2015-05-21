@@ -439,6 +439,22 @@ function DraggableModal(modal)
 }
 
 $(function(){
+	//Переход к якорю с учётом верхней черной полосы
+	$(window).on('hashchange',function(e){
+		e.preventDefault();
+
+		try
+		{
+			var item=$(location.hash);
+
+			if(item.size()>0)
+				$(this).scrollTop(item.offset().top - $("#topbar").height());
+		}catch(E){}
+	});
+	setTimeout(function(){
+		$(window).trigger("hashchange");
+	},200);
+
 	//Автоматическое проставление tabindex
 	$(".need-tabindex").prop("tabindex",function(i){
 		return i;
@@ -732,6 +748,7 @@ $(function(){
 	//[E] Верхнее меню
 });
 
+//ToDo!
 /*function ProgressList(m,cron)
 {
 	var progr={},

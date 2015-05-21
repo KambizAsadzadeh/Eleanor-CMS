@@ -12,7 +12,8 @@ defined('CMS\STARTED')||die;
 /** @var array $config */
 
 global$Eleanor,$title;
-$lang=Eleanor::$Language[ $config['n'] ];
+
+$lang=Eleanor::$Language->Load(__DIR__.'/index-*.php',$config['n']);;
 $uid=Eleanor::$Login->Get('id');
 $Eleanor->module['links']=[
 	'rss'=>Eleanor::$services['rss']['file'].'?'.Url::Query([

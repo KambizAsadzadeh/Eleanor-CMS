@@ -17,7 +17,7 @@ Eleanor::$Template->queue[]=Eleanor::$Template->classes.'Modules.php';
 /** @var DynUrl $Url */
 $Url=$Eleanor->DynUrl;
 $table=P.'modules';
-$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$post=$_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery;
 $id=0;
 $Eleanor->module=[
 	'title'=>Eleanor::$Language['main']['modules'],

@@ -11,8 +11,11 @@ use Eleanor\Framework, Eleanor\Classes as FClasses, Eleanor\Classes\EE;
 
 defined('CMS\STARTED')||die;
 
+#Без этого, на некоторых серверах вылазит ошибка "It is not safe to rely on the system's timezone settings."
+date_default_timezone_set('Europe/Simferopol');
+
 /** Копирайты системы. Пожалуйста, не удаляйте и не изменяйте их, если, конечно, у вас есть хоть немного уваженияк разработчикам. */
-define('CMS\COPYRIGHT','<a href="http://eleanor-cms.ru/" target="_blank">CMS Eleanor</a> © <!-- Eleanor CMS Team http://eleanor-cms.ru/copyright.php -->'.idate('Y'));
+define('CMS\COPYRIGHT','<a href="http://eleanor-cms.ru/" target="_blank">CMS Eleanor</a> © '.idate('Y'));
 
 /** Квинтэссенция ENT_* констант  */
 define('CMS\ENT',ENT_QUOTES | ENT_HTML5 | ENT_SUBSTITUTE | ENT_DISALLOWED);

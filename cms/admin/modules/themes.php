@@ -36,7 +36,7 @@ Eleanor::$Template->queue[]=Eleanor::$Template->classes.'Themes.php';
 
 /** @var DynUrl $Url */
 $Url=$Eleanor->DynUrl;
-$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$post=$_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery;
 $Eleanor->module['links']=[
 	'list'=>(string)$Url,
 	'info'=>null,

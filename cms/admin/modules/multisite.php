@@ -15,7 +15,7 @@ Eleanor::$Template->queue[]=Eleanor::$Template->classes.'Multisite.php';
 
 /** @var DynUrl $Url */
 $Url=$Eleanor->DynUrl;
-$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$post=$_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery;
 $Eleanor->module['links']=[
 	'main'=>(string)$Url,
 	'options'=>$Url(['do'=>'options']),

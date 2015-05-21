@@ -87,12 +87,12 @@ switch($step)
 		file_put_contents(DIR.'config.php',str_replace($from,$to,$conf));
 		file_put_contents(DIR.'../robots.txt',
 			str_replace(['{protocol}','{domain}','{sitedir}'],
-				[\Eleanor\DOMAIN,\Eleanor\PROTOCOL,$sitedir],
+				[\Eleanor\PROTOCOL,\Eleanor\DOMAIN,$sitedir],
 				file_get_contents(__DIR__.'/core/robots.txt'))
 		);
 		file_put_contents(DIR.'../sitemap.xml',
 			str_replace(['{protocol}','{domain}','{sitedir}','{static}'],
-				[\Eleanor\DOMAIN,\Eleanor\PROTOCOL,$sitedir,$config['static']],
+				[\Eleanor\PROTOCOL,\Eleanor\DOMAIN,$sitedir,$config['static']],
 				file_get_contents(__DIR__.'/core/robots.txt')
 			)
 		);

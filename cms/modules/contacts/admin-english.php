@@ -1,12 +1,19 @@
 <?php
-return array(
+namespace CMS;
+return[
 	#For admin/index.php
-	'info'=>'Contact information',
-	'res'=>'Recipients',
-	'erremail'=>'For recipient &quot;%s&quot; %field of email is filled incorrectly.',
-	'lf'=>'Subject format of received letter',
-	'lf_'=>'{s} - users\'s subject',
+	'EMPTY_SUBJECT'=>function($l){
+		foreach($l as &$v)
+			if(isset(Eleanor::$langs[$v]))
+				$v=Eleanor::$langs[$v]['name'];
 
-	#For template
-	'who'=>'Who',
-);
+		return'Subject not given'.($l ? ' (for '.join(', ',$l).')' : '');
+	},
+	'EMPTY_TEXT'=>function($l){
+		foreach($l as &$v)
+			if(isset(Eleanor::$langs[$v]))
+				$v=Eleanor::$langs[$v]['name'];
+
+		return'Template of letter not given'.($l ? ' (for '.join(', ',$l).')' : '');
+	},
+];

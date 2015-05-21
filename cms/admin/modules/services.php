@@ -16,7 +16,7 @@ Eleanor::$Template->queue[]=Eleanor::$Template->classes.'Services.php';
 /** @var DynUrl $Url */
 $Url=$Eleanor->DynUrl;
 $table=P.'services';
-$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$post=$_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery;
 $service=false;
 $Eleanor->module['links']=[
 	'list'=>(string)$Url,

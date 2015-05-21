@@ -54,7 +54,7 @@ function GoAway($where=false,$code=301,$hash='')
 	}
 
 	if($hash)
-		$referrer=preg_replace('%#.*$%','',$referrer).'#'.$hash;
+		$referrer=preg_replace('%#.*$%','',$referrer).'#'.ltrim($hash,'#');
 
 	header('Cache-Control: no-store');
 	header('Location: '.rtrim(html_entity_decode($referrer),'&?'),true,$code);
@@ -183,9 +183,9 @@ else
 			: (string)Eleanor::$Template->index([ 'content'=>$content ]);
 
 		#Мегафикс: поисковики не понимают тег <base href...>, и всегда лишний раз переходят по ссылке без его учета
-		$out=preg_replace_callback('%href=(["\'])([^\'"#/][^\'"]+)%i',function($match){
-			if(strpos($match[2],'://')===false)
-				return'href='.$match[1].\Eleanor\SITEDIR.$match[2];
+		$out=preg_replace_callback('%(href|src)=(["\'])([^\'"#/][^\'"]+)%i',function($match){
+			if(strpos($match[3],'://')===false)
+				return$match[1].'='.$match[2].\Eleanor\SITEDIR.$match[3];
 
 			return$match[0];
 		},$out);

@@ -38,18 +38,25 @@ function PerPage(&$query)
  * @param array $sorting все возможные виды сортировок
  * @param string $defsort Вид сортировки по умолчанию
  * @param string $deforder Порядок сортировки по умолчанию (asc,desc)
+ * @param int|null $pp Пунктов на страницу
  * @return array [$sort,$order,$limit,$offset,$pp] */
-function SortOrderLimit($total,&$page,array&$query,array$sorting,$defsort,$deforder='desc')
+function SortOrderLimit($total,&$page,array&$query,array$sorting,$defsort,$deforder='desc',$pp=null)
 {
-	$pp=PerPage($query);
+	if(!$pp)
+		$pp=PerPage($query);
 
 	if($page<=0)
 		$page=1;
 
-	if($page>ceil($total/$pp))
-		$page=floor($total/$pp);
+	if($total>0)
+	{
+		if($page>ceil($total/$pp))
+			$page=floor($total/$pp);
 
-	$offset=($page-1)*$pp;
+		$offset=($page-1)*$pp;
+	}
+	else
+		$offset=0;
 
 	if(isset($_GET['sort']))
 	{

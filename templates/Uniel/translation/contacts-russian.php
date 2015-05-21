@@ -1,6 +1,6 @@
 <?php
 return array(
-	#Для Classes/UserContacts.php
+	#Для Classes/Contacts.php
 	'WRONG_RESPONDER'=>'Некорректный получатель',
 	'EMPTY_SUBJECT'=>'Вы не ввели тему сообщения',
 	'SHORT_MESSAGE'=>'Текст сообщения слишком короткий',

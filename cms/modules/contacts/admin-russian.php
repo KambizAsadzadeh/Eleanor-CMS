@@ -1,12 +1,19 @@
 <?php
-return array(
+namespace CMS;
+return[
 	#Для admin/index.php
-	'info'=>'Информация для связи',
-	'res'=>'Получатели',
-	'erremail'=>'Для получателя &quot;%s&quot; %sнекорректно задан e-mail.',
-	'lf'=>'Формат темы получаемого письма',
-	'lf_'=>'{s} - тема пользователя',
+	'EMPTY_SUBJECT'=>function($l){
+		foreach($l as &$v)
+			if(isset(Eleanor::$langs[$v]))
+				$v=Eleanor::$langs[$v]['name'];
 
-	#Для шаблона
-	'who'=>'Кто',
-);
+		return'Тема письма не задана'.($l ? ' (для '.join(', ',$l).')' : '');
+	},
+	'EMPTY_TEXT'=>function($l){
+		foreach($l as &$v)
+			if(isset(Eleanor::$langs[$v]))
+				$v=Eleanor::$langs[$v]['name'];
+
+		return'Формат текста письма не задан'.($l ? ' (для '.join(', ',$l).')' : '');
+	},
+];

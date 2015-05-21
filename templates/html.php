@@ -8,6 +8,7 @@
 */
 namespace CMS\Templates;
 use CMS, CMS\Eleanor, CMS\Url, CMS\Language, CMS\Template, CMS\OwnBB;
+use Eleanor\Classes\Strings;
 
 defined('CMS\STARTED')||die;
 
@@ -44,12 +45,16 @@ function GetHead($ms=true,$search=true)
 	}
 
 	if(!$title)
-		$t=Eleanor::$vars['site_name'];
+		$t=$og_t=Eleanor::$vars['site_name'];
 	elseif(is_string($title))
-		$t=$title;
+		$t=$og_t=$title;
 	else
-		$t=(is_array($title) ? join(Eleanor::$vars['site_defis'],array_reverse($title)) : $title)
+	{
+		$isa=is_array($title);
+		$og_t=$isa ? reset($title) : (string)$title;
+		$t=($isa ? join(Eleanor::$vars['site_defis'], $title) : $title)
 			.(Eleanor::$vars['site_name'] ? Eleanor::$vars['site_defis'].Eleanor::$vars['site_name'] : '');
+	}
 
 	$t=htmlspecialchars($t,CMS\ENT,\Eleanor\CHARSET,false);
 
@@ -62,10 +67,19 @@ function GetHead($ms=true,$search=true)
 
 	$heads='<meta charset="'.\Eleanor\CHARSET.'" /><base href="'
 		.\Eleanor\SITEDIR.'" /><title>'.$t.'</title><meta name="generator" content="Eleanor CMS '.Eleanor::VERSION
-		.'" />';
+		.'" /><meta property="og:title" content="'.$og_t.'" /><meta property="og:site_name" content="'.Eleanor::$vars['site_name'].'" />';
 
 	if($descr)
-		$heads.='<meta name="description" content="'.htmlspecialchars($descr,CMS\ENT,\Eleanor\CHARSET,false).'" />';
+	{
+		$descr=strip_tags($descr);
+		$descr=Strings::CutStr($descr,255);
+		$descr=htmlspecialchars($descr, CMS\ENT, \Eleanor\CHARSET, false);
+
+		$heads.=<<<HTML
+<meta name="description" content="{$descr}" />
+<meta property="og:description" content="{$descr}" />
+HTML;
+	}
 
 	#Подключение поиска
 	if($search)
@@ -96,8 +110,10 @@ function GetHead($ms=true,$search=true)
 	$request=Url::Decode($_SERVER['REQUEST_URI']);
 
 	if(!Eleanor::$ourquery or strcasecmp($orig,$request)!=0)
-		$heads.='<link rel="canonical" href="'.(Eleanor::$ourquery ? '' : \Eleanor\PROTOCOL.\Eleanor\PUNYCODE).$orig
-			.'" />';
+		$heads.='<link rel="canonical" href="'.\Eleanor\PROTOCOL.\Eleanor\PUNYCODE.$orig.'" />';
+
+	if(!isset($head['og:uri']))
+		$heads.='<meta property="og:uri" content="'.\Eleanor\PROTOCOL.\Eleanor\PUNYCODE.$orig.'" />';
 
 	SkipCanonical:
 
@@ -107,11 +123,14 @@ function GetHead($ms=true,$search=true)
 		Template::$http['static'].'js/lang-'.Language::$main.'.js');
 	$scripts=array_unique($scripts);
 
-	$ourjs=[];
+	$ourjs=$js=[];
 
 	foreach($scripts as $v)
 		if($v and strpos($v,'//')===false and !Eleanor::$debug)
-			$ourjs[]=$v;
+		{
+			$js[]=$v;
+			$ourjs[]=\CMS\DIR.'../'.$v;
+		}
 		else
 			$heads.=<<<HTML
 <script src="{$v}"></script>
@@ -125,8 +144,12 @@ HTML;
 		'dir'=>\Eleanor\SITEDIR,
 		'language'=>Language::$main,
 		'head'=>$head&&is_array($head) ? array_keys($head) : [],
-		'scripts'=>$ourjs,
+		'scripts'=>$js,
 	]+$hms,true,false,'CORE.').join('',$head);
+
+	#ToDo!
+	/*<link rel="alternate" href="http://site.ru/eng/" hreflang="en" />
+<link rel="alternate" href="http://site.ru/ukr/" hreflang="uk" />*/
 }
 
 /** Комплексная функция обработки текста из базы данных. Выполняет OwnBB::Parse() и сокрытие внешних ссылок.

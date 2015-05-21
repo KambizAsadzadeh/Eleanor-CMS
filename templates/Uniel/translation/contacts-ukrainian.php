@@ -1,6 +1,6 @@
 <?php
 return array(
-	#Для Classes/UserContacts.php
+	#Для Classes/Contacts.php
 	'WRONG_RESPONDER'=>'Некоректний одержувач',
 	'EMPTY_SUBJECT'=>'Ви не ввели тему повідомлення',
 	'SHORT_MESSAGE'=>'Текст повідомлення надто короткий',

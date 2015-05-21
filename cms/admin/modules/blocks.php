@@ -24,7 +24,7 @@ Eleanor::$Template->queue[]=Eleanor::$Template->classes.'Blocks.php';
 
 /** @var DynUrl $Url */
 $Url=$Eleanor->DynUrl;
-$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$post=$_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery;
 $Eleanor->module['links']=[
 	'main'=>(string)$Url,
 	'ids'=>$Url(['do'=>'identification']),

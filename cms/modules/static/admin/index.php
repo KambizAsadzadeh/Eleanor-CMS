@@ -13,7 +13,7 @@ global$Eleanor,$title;
 /** @var DynUrl $Url
  * @var array $config */
 $Url=$Eleanor->DynUrl;
-$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$post=$_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery;
 $lang=Eleanor::$Language->Load($Eleanor->module['path'].'admin-*.php',$config['n']);
 $langmain=Language::$main;
 $id=0;

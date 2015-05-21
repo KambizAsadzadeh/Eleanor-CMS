@@ -36,7 +36,7 @@ else
 
 /** @var DynUrl $Url */
 $Url=$Eleanor->DynUrl;
-$post=$_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery;
+$post=$_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery;
 $id=0;
 $Eleanor->module['links']=[
 	'list'=>(string)$Url,

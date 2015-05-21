@@ -1,13 +1,14 @@
 <?php
-/*
-	Eleanor CMS © 2014
+/**
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
+namespace CMS;
 defined('CMS\STARTED')||die;
 global$Eleanor,$title;
-$config=include($Eleanor->module['path'].'config.php');
-$lang=Eleanor::$Language->Load($Eleanor->module['path'].'user-*.php','contacts');
+
+$lang=Eleanor::$Language->Load(__DIR__.'/index-*.php',$config['n']);
 Eleanor::$Template->queue[]='UserContacts';
 
 if($_SERVER['REQUEST_METHOD']=='POST')

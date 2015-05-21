@@ -48,7 +48,7 @@ elseif(isset($_GET['edit']))
 	$id=(int)$_GET['edit'];
 	$errors=[];
 
-	if($_SERVER['REQUEST_METHOD']=='POST' and Eleanor::$ourquery)
+	if($_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery)
 	{
 		$R=Eleanor::$Db->Query("SELECT `status` FROM `{$table}` WHERE id={$id} LIMIT 1");
 		if(!$comment=$R->fetch_assoc())
