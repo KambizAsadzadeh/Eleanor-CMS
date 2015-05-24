@@ -486,8 +486,8 @@ a { outline: none !important; }
 	.fl-img { background-position: 50% 50%; background-repeat: no-repeat; background-size: cover; }
 
 	/* Document Types */
-	.fl-pdf, .fl-doc, .fl-xls { background-color: #d0d0d0; color: #fff; text-align: center; }
-	.fl-pdf:before, .fl-doc:before, .fl-xls:before { text-align: center; font-weight: bold; font-size: 16px; display: inline-block; vertical-align: middle; margin-top: 21px; }
+	.fl-pdf, .fl-doc, .fl-xls, .fl-rar, .fl-zip { background-color: #d0d0d0; color: #fff; text-align: center; }
+	.fl-pdf:before, .fl-doc:before, .fl-xls:before, .fl-rar:before, .fl-zip:before { text-align: center; font-weight: bold; font-size: 16px; display: inline-block; vertical-align: middle; margin-top: 21px; }
 
 	/* PDF Type */
 	.fl-pdf { background-color: #d73f40; }
@@ -500,6 +500,14 @@ a { outline: none !important; }
 	/* XLS Type */
 	.fl-xls { background-color: #7cc576; }
 	.fl-xls:before { content: "XLS"; }
+
+	/* RAR Type */
+	.fl-rar { background-color: #80476f; }
+	.fl-rar:before { content: "RAR"; }
+
+	/* ZIP Type */
+	.fl-zip { background-color: #5fb4cc; }
+	.fl-zip:before { content: "ZIP"; }
 
 /* Gallery - Выбор аватаров */
 .gallery { list-style: none; padding: 0; margin: 0; }

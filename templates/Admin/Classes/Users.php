@@ -147,7 +147,6 @@ HTML;
 	 *  [string sort_location] Ссылка на сортировку списка по URL последнего запроса
 	 *  [string form_items] Ссылка для параметра action формы, внтури которой происходит отображение перечня $items
 	 *  [callback pp] Генератор ссылок на изменение количества сессий отображаемых на странице
-	 *  [string first_page] Ссылка на первую страницу
 	 *  [callback pagination] Генератор ссылок на остальные страницы
 	 * @return string */
 	public static function OnlineList($items,$groups,$notempty,$cnt,$pp,$query,$page,$links)
@@ -539,7 +538,6 @@ HTML;
 	 *  [string sort_id] Ссылка на сортировку списка по ID
 	 *  [string form_items] Ссылка для параметра action формы, внтури которой происходит отображение перечня $items
 	 *  [callback pp] Генератор ссылок на изменение количества пользователей отображаемых на странице
-	 *  [string first_page] Ссылка на первую страницу
 	 *  [callback pagination] Генератор ссылок на остальные страницы
 	 * @return string */
 	public static function ShowList($items,$groups,$cnt,$pp,$query,$page,$links)

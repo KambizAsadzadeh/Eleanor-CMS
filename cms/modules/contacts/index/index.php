@@ -23,7 +23,7 @@ if($_SERVER['REQUEST_METHOD']=='POST')
 		'sess'=>isset($_POST['sess']) ? (string)$_POST['sess'] : false,
 		'from'=>isset($_POST['from']) && !$isu ? (string)$_POST['from'] : '',
 	);
-	$whom=Eleanor::FilterLangValues($config['whom']);
+	$whom=FilterLangValues($config['whom']);
 	$errors=array();
 	do
 	{

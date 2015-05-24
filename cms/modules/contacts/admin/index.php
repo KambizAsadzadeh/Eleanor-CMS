@@ -20,10 +20,13 @@ $values+=[
 	'recipient'=>[],
 	'subject'=>[],
 	'text'=>[],
+	'document_title'=>[],
+	'meta_descr'=>[],
 ];
 
 if($_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery)
 {
+	$data=[];
 
 	if($errors)
 		goto Form;
@@ -38,5 +41,5 @@ $Editor=function()use($Eleanor){
 };
 
 $title[]=$Eleanor->module['title'];
-$s=Eleanor::$Template->Contacts($values,$Editor,$errors,$saved);
+$s=Eleanor::$Template->Contacts($values,$Editor,$Eleanor->Uploader->Show(),$errors,$saved);
 Response($s);

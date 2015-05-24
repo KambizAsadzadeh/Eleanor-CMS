@@ -17,10 +17,11 @@ class Contacts
 	 *  [string|array subject] Формат темы получаемого письма
 	 *  [string|array text] Формат текста письма
 	 * @param callback $Editor Генератор Editor-a, параметры аналогичны Editor->Area
+	 * @param \Eleanor\Classes\StringCallback $Uploader Загрузчик файлов
 	 * @param array $errors Ошибки формы
 	 * @param bool $saved Флаг успешного сохранения
 	 * @return string */
-	public static function Contacts($values,$Editor,$errors,$saved)
+	public static function Contacts($values,$Editor,$Uploader,$errors,$saved)
 	{
 
 	}

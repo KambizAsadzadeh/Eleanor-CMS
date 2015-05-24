@@ -57,7 +57,6 @@ class Tasks
 	 *  [string sort_status] Ссылка на сортировку списка по фдагу активности
 	 *  [string sort_id] Ссылка на сортировку списка по ID
 	 *  [callback pp] Генератор ссылок на изменение количества пунктов отображаемых на странице
-	 *  [string first_page] Ссылка на первую страницу
 	 *  [callback pagination] Генератор ссылок на остальные страницы
 	 * @return string */
 	public static function ShowList($items,$notempty,$cnt,$pp,$query,$page,$links)
@@ -78,10 +77,10 @@ class Tasks
 			$Items=TableList(5)
 				->head(
 					[T::$lang['status'],$query['sort']=='status' ? $query['order'] : false,$links['sort_status'],'col_status'],
-					[T::$lang['name'],$query['sort']=='task' ? $query['task'] : false,$links['sort_task'],'col_item'],
+					[T::$lang['name'],$query['sort']=='task' ? $query['order'] : false,$links['sort_task'],'col_item'],
 					static::$lang['run_time'],
-					[static::$lang['lastrun'],$query['sort']=='lastrun' ? $query['task'] : false,$links['sort_lastrun']],
-					[static::$lang['nextrun'],$query['sort']=='nextrun' ? $query['task'] : false,$links['sort_nextrun']]
+					[static::$lang['lastrun'],$query['sort']=='lastrun' ? $query['order'] : false,$links['sort_lastrun']],
+					[static::$lang['nextrun'],$query['sort']=='nextrun' ? $query['order'] : false,$links['sort_nextrun']]
 				);
 
 			foreach($items as $k=>$v)

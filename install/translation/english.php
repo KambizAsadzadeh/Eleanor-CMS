@@ -83,6 +83,8 @@ Unfortunately, without connection, it is impossible to check MySQL version.<br /
 	'db'=>'Datebase',
 	'gen_data'=>'Main site data',
 	'timezone'=>'Time zone',
+	'mbstring.func_overload'=>'Overloading functions mbstring is on. In php.ini set option value mbstring.func_overload to 0',
+
 	'EMPTY_NAME'=>'Login field blank',
 	'EMPTY_PASSWORD'=>'Password field blank',
 	'EMAIL_ERROR'=>'E-mail address entered incorrectly',

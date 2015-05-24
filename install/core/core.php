@@ -79,6 +79,10 @@ function CheckEnv()
 	if(!function_exists('mysqli_connect'))
 		$result[]=$lang['no_db_driver'];
 
+	#mbstring.func_overload
+	if(ini_get('mbstring.func_overload')>0)
+		$result[]=$lang['mbstring.func_overload'];
+
 	$towrite=$toexist=[];
 
 	#Каталог с логами

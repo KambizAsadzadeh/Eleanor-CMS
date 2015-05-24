@@ -83,6 +83,8 @@ return[
 	'db'=>'База даних',
 	'gen_data'=>'Основні дані сайту',
 	'timezone'=>'Часовий пояс',
+	'mbstring.func_overload'=>'Увімкнено опцію перезавантаження функцій mbstring. В php.ini встановіть опцію mbstring.func_overload у 0',
+
 	'EMPTY_NAME'=>'Поле логіна залишено порожнім',
 	'EMPTY_PASSWORD'=>'Поле пароля залишено порожнім!',
 	'EMAIL_ERROR'=>'E-mail введено невірно!',

@@ -10,13 +10,29 @@ return[
 		1=>'Admin',
 	],
 	'subject'=>[
-		'russian'=>'Обратная связь: {s}',
-		'english'=>'Feedback: {s}',
-		'ukrainian'=>'Зворотній зв&apos;язок: {s}',
+		'russian'=>'Обратная связь: {site}',
+		'english'=>'Feedback: {site}',
+		'ukrainian'=>'Зворотній зв&apos;язок: {site}',
 	],
 	'text'=>[
-		'russian'=>'{text}<hr />[user]{user} - [/user]{ip}',
-		'english'=>'{text}<hr />[user]{user} - [/user]{ip}',
-		'ukrainian'=>'{text}<hr />[user]{user} - [/user]{ip}',
-	]
+		'russian'=>'{text}
+<hr />
+[userlink]<a href="{userlink}">{name}</a>[-userlink]{name}[/userlink] - <a href="https://eleanor-cms.ru/whois/{ip}">{ip}</a>',
+		'english'=>'{text}
+<hr />
+[userlink]<a href="{userlink}">{name}</a>[-userlink]{name}[/userlink] - <a href="https://eleanor-cms.ru/whois/{ip}">{ip}</a>',
+		'ukrainian'=>'{text}
+<hr />
+[userlink]<a href="{userlink}">{name}</a>[-userlink]{name}[/userlink] - <a href="https://eleanor-cms.ru/whois/{ip}">{ip}</a>',
+	],
+	'document_title'=>[
+		'russian'=>'',
+		'english'=>'',
+		'ukrainian'=>'',
+	],
+	'meta_descr'=>[
+		'russian'=>'',
+		'english'=>'',
+		'ukrainian'=>'',
+	],
 ];

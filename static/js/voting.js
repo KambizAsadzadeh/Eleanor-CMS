@@ -77,7 +77,7 @@ function Voting(opts)
 			if(opts.qcnt==cnt)
 				th.Load("vote",CORE.Inputs2object($(this)));
 			else
-				alert(CORE.Lang("noaq"));
+				alert(CORE.Lang("ANSWER_MISSED"));
 		}
 		return false;
 	});

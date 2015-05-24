@@ -20,10 +20,11 @@ class Contacts
 	 *  [string|array subject] Формат темы получаемого письма
 	 *  [string|array text] Формат текста письма
 	 * @param callback $Editor Генератор Editor-a, параметры аналогичны Editor->Area
+	 * @param \Eleanor\Classes\StringCallback $Uploader Загрузчик файлов
 	 * @param array $errors Ошибки формы
 	 * @param bool $saved Флаг успешного сохранения
 	 * @return string */
-	public static function Contacts($values,$Editor,$errors,$saved)
+	public static function Contacts($values,$Editor,$Uploader,$errors,$saved)
 	{
 		#SpeedBar
 		T::$data['speedbar']=[
@@ -60,21 +61,72 @@ class Contacts
 			$er_def=T::$T->Alert(static::$lang['form-errors'],'warning',true);
 		#/Errors
 
+		if(Eleanor::$vars['multilang'])
+		{
+			$input=[];
+
+			foreach(Eleanor::$langs as $lng=>$v)
+			{
+				$input['subject'][$lng]=Html::Input("subject[{$lng}]",$values['subject'][$lng],
+					['class'=>'form-control need-tabindex input-lg','id'=>'subject-'.$lng]);
+				$input['text'][$lng]=$Editor("text[{$lng}]",$values['text'][$lng],
+					['class'=>'form-control need-tabindex','id'=>'text-'.$lng,'rows'=>5]);
+				$input['document_title'][$lng]=Html::Input("document_title[{$lng}]",$values['document_title'][$lng],
+					['class'=>'form-control need-tabindex','id'=>'docuemnt-title-'.$lng]);
+				$input['meta_descr'][$lng]=Html::Input("meta_descr[{$lng}]",$values['meta_descr'][$lng],
+					['class'=>'form-control need-tabindex','id'=>'meta-descr-'.$lng]);
+				$input['info'][$lng]=$Editor("info[{$lng}]",$values['info'][$lng],
+					['class'=>'form-control need-tabindex','id'=>'info-'.$lng,'rows'=>10]);
+			}
+
+			$input['subject']=T::$T->LangEdit($input['subject'],'subject');
+			$input['text']=T::$T->LangEdit($input['text'],'text');
+			$input['document_title']=T::$T->LangEdit($input['document_title'],'document-title');
+			$input['meta_descr']=T::$T->LangEdit($input['meta_descr'],'meta-descr');
+			$input['info']=T::$T->LangEdit($input['info'],'info');
+		}
+		else
+			$input=[
+				'subject'=>Html::Input('subject',$values['subject'],['id'=>'subject','class'=>'form-control need-tabindex input-lg']),
+				'text'=>$Editor('text',$values['text'],['class'=>'form-control need-tabindex','id'=>'text','rows'=>5]),
+				'document_title'=>Html::Input('document_title',$values['document_title'],['class'=>'form-control need-tabindex','id'=>'document-title']),
+				'meta_descr'=>Html::Input('meta_descr',$values['meta_descr'],['class'=>'form-control need-tabindex','id'=>'meta-descr']),
+				'info'=>$Editor('info',$values['info'],['class'=>'form-control need-tabindex','id'=>'info','rows'=>10]),
+			];
+
 		return<<<HTML
 		{$er_def}
 			<form method="post">
 				<div id="mainbar">
 					<div class="block">
-						{$er_title}
-						{$input['title']}
+						{$er_subject}
+						{$input['subject']}
 						<br />
 						<div class="form-group">
 							<label id="label-text" for="text">{$c_lang['text']}</label>
 							{$er_text}
 							{$input['text']}
 						</div>
+						<div class="alert alert-info">{$c_lang['vars']}</div>
 					</div>
+					<div class="block-t expand">
+						<p class="btl" data-toggle="collapse" data-target="#info">{$c_lang['info']}</p>
+						<div id="info" class="collapse in">
+							<div class="bcont">
+								{$input['info']}
+							</div>
+						</div>
+					</div>
+					<div class="block-t expand">
+						<p class="btl" data-toggle="collapse" data-target="#recipients">{$c_lang['recipients']}</p>
+						<div id="recipients" class="collapse in">
+							<div class="bcont">
+								<div class="form-group">
 
+								</div>
+							</div>
+						</div>
+					</div>
 					<div class="modal fade draggable" id="modal-uploader" tabindex="-1">
 						<div class="modal-dialog">
 							<div class="modal-content">
@@ -95,10 +147,6 @@ class Contacts
 						<div id="seo" class="collapse in">
 							<div class="bcont">
 								<div class="form-group">
-									<label id="label-uri" for="uri">URI</label>
-									{$input['uri']}
-								</div>
-								<div class="form-group">
 									<label id="label-document-title" for="document-title">Document title</label>
 									{$input['document_title']}
 								</div>
@@ -109,38 +157,20 @@ class Contacts
 							</div>
 						</div>
 					</div>
-{$input['language']}
-					<div class="block-t expand">
-						<p class="btl collapsed" data-toggle="collapse" data-target="#b3">{$c_lang['position']}</p>
-						<div id="b3" class="collapse">
-							<div class="bcont">
-								<div class="form-group">
-									<label for="parent-0">{$t_lang['parent']}</label>
-									{$input['parent']}
-								</div>
-								<div class="form-group">
-									<label for="pos">{$c_lang['pos']}</label>
-									{$input['pos']}
-								</div>
-							</div>
-						</div>
-					</div>
-
 				</div>
 				<!-- FootLine -->
 				<div class="submit-pane">
-					{$back}<button type="submit" class="btn btn-success need-tabindex"><b>{$success}</b></button>
-					<select name="status" class="form-control pim">{$stopts}</select>{$delete}{$draft}
+					<button type="submit" class="btn btn-success need-tabindex"><b>{$t_lang['save']}</b></button>
 					<button type="button" class="btn btn-primary pull-right" id="modal-uploader-trigger">{$t_lang['uploader']}</button>
 				</div>
 				<!-- FootLine [E] -->
 			</form>
 		<script>$(function(){
 $("#modal-uploader-trigger").click(DraggableModal($("#modal-uploader")));
-ParentsWithPos();{$pim}{$uri} })</script>
+})</script>
 HTML;
 	}
 }
-Contacts::$lang=Eleanor::$Language->Load(__DIR__.'/../translation/static-*.php',false);
+Contacts::$lang=Eleanor::$Language->Load(__DIR__.'/../translation/contacts-*.php',false);
 
 return Contacts::class;

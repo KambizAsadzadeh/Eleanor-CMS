@@ -355,10 +355,9 @@ ORDER BY `{$sort}` {$order}{$limit}");
 				'sort_expire'=>SortDynUrl('expire',$query,$defsort,$deforder),
 				'sort_enter'=>SortDynUrl('enter',$query,$defsort,$deforder),
 				'sort_location'=>SortDynUrl('location',$query,$defsort,$deforder),
-				'form_items'=>$Url($query+['page'=>$page>1 ? $page : false]),
+				'form_items'=>$Url($query+['page'=>$page>1 ? $page : null]),
 				'pp'=>function($n)use($Url,$query){ $query['per-page']=$n; return$Url($query); },
-				'first_page'=>$Url($query),
-				'pagination'=>function($n)use($Url,$query){ return$Url($query+['page'=>$n]); },
+				'pagination'=>function($n)use($Url,$query){ return$Url($query+['page'=>$n===1 ? null : $n]); },
 			];
 			$query['sort']=$sort;
 			$query['order']=$order;

@@ -120,7 +120,7 @@ HTML;
 	public static function BlocksGroup($gid,$blocks,$ids,$group,$tpls,$errors,$hasdraft,$saved,$links)
 	{
 		static::Menu('main');
-		$GLOBALS['scripts'][]='js/admin_blocks.js';
+		$GLOBALS['scripts'][]='js/blocks.js';
 		$ltpl=T::$lang;
 
 		$images=Eleanor::$Template->default['theme'].'images/';
@@ -330,7 +330,7 @@ $(window).load(function(){
 	public static function ShowList($items,$groups,$cnt,$pp,$qs,$page,$links)
 	{
 		static::Menu('list');
-		array_push($GLOBALS['scripts'],'js/checkboxes.js','js/jquery.poshytip.js','js/admin_blocks.js');
+		array_push($GLOBALS['scripts'],'js/checkboxes.js','js/jquery.poshytip.js','js/blocks.js');
 		$ltpl=T::$lang;
 
 		$qs+=array(''=>array());
@@ -453,7 +453,7 @@ $(function(){
 	public static function AddEdit($id,$values,$errors,$bypost,$hasdraft,$uploader,$back,$links)
 	{
 		static::Menu($id ? '' : 'add');
-		array_push($GLOBALS['scripts'],'addons/autocomplete/jquery.autocomplete.js','js/admin_blocks.js');
+		array_push($GLOBALS['scripts'],'addons/autocomplete/jquery.autocomplete.js','js/blocks.js');
 		$GLOBALS['head'][__class__.__function__]='<link rel="stylesheet" type="text/css" href="addons/autocomplete/style.css" />';
 
 		$ltpl=T::$lang;

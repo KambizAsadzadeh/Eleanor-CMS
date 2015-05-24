@@ -21,6 +21,7 @@ return[
 	'parent'=>'Parent',
 	'options'=>'Options',
 	'uploader'=>'File manager',
+	'save'=>'Save',
 	'successfully-saved'=>'Data was successfully stored',
 
 	'all'=>'all',

@@ -1,12 +1,12 @@
 <?php
 defined('CMS\STARTED')||die;
 
-$newpass='<span class="alert-link">{site}</span> - site name<br />
-<span class="alert-link">{name}</span> - username<br />
-<span class="alert-link">{fullname}</span> - full name<br />
-<span class="alert-link">{userlink}</span> - link to user account<br />
-<span class="alert-link">{pass}</span> - user password<br />
-<span class="alert-link">{link}</span> - link to site';
+$newpass='<b>{site}</b> - site name<br />
+<b>{name}</b> - username<br />
+<b>{fullname}</b> - full name<br />
+<b>{userlink}</b> - link to user account<br />
+<b>{pass}</b> - user password<br />
+<b>{link}</b> - link to site';
 
 return[
 	#Для шаблона Classes/Users.php
@@ -45,12 +45,12 @@ return[
 	'register'=>'Register date',
 	'vars-created'=>$newpass,
 	'vars-newpass'=>$newpass,
-	'vars-renamed'=>'<span class="alert-link">{site}</span> - site name<br />
-<span class="alert-link">{oldname}</span> - old username<br />
-<span class="alert-link">{name}</span> - new username<br />
-<span class="alert-link">{fullname}</span> - full name<br />
-<span class="alert-link">{userlink}</span> - link to user account<br />
-<span class="alert-link">{link}</span> - link to site',
+	'vars-renamed'=>'<b>{site}</b> - site name<br />
+<b>{oldname}</b> - old username<br />
+<b>{name}</b> - new username<br />
+<b>{fullname}</b> - full name<br />
+<b>{userlink}</b> - link to user account<br />
+<b>{link}</b> - link to site',
 	'who'=>'Who',
 	'enter'=>'Enter date',
 	'location'=>'Page address',

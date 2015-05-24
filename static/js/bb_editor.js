@@ -134,7 +134,7 @@ CORE.BBEditor=function(id,textarea,buttons)
 		if(link==null)
 			return;
 
-		if(!$("<input type='email'>").val(link).get(0).checkValidity() && !confirm(CORE.Lang('wrong_email')))
+		if(!$("<input type='email'>").val(link).get(0).checkValidity() && !confirm(CORE.Lang('WRONG_EMAIL')))
 			return this.Mail();
 
 		text=prompt(CORE.Lang('link_text'),link);

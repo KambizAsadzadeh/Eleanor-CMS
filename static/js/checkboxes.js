@@ -7,9 +7,10 @@ function CheckGroup(obj)
 {
 	if($(obj).find(":checked").size()==0)
 	{
-		alert(CORE.Lang('nothing_selected'));
+		alert(CORE.Lang('NOTHING_SELECTED'));
 		return false;
 	}
+
 	return true;
 }
 

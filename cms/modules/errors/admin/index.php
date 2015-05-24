@@ -794,8 +794,7 @@ else
 			'sort_id'=>SortDynUrl('id',$query,$defsort,$deforder),
 			'form_items'=>$Url($query+['page'=>$page>1 ? $page : false]),
 			'pp'=>function($n)use($Url,$query){ $query['per-page']=$n; return$Url($query); },
-			'first_page'=>$Url($query),
-			'pagination'=>function($n)use($Url,$query){ return$Url($query+['page'=>$n]); },
+			'pagination'=>function($n)use($Url,$query){ return$Url($query+['page'=>$n==1 ? false : $n]); },
 		];
 		$query['sort']=$sort;
 		$query['order']=$order;

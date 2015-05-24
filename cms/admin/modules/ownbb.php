@@ -406,10 +406,9 @@ else
 			'sort_handler'=>SortDynUrl('handler',$query,$defsort,$deforder),
 			'sort_pos'=>SortDynUrl('pos',$query,$defsort,$deforder),
 			'sort_status'=>SortDynUrl('status',$query,$defsort,$deforder),
-			'form_items'=>$Url($query+['page'=>$page>1 ? $page : false]),
+			'form_items'=>$Url($query+['page'=>$page>1 ? $page : null]),
 			'pp'=>function($n)use($Url,$query){ $query['per-page']=$n; return$Url($query); },
-			'first_page'=>$Url($query),
-			'pagination'=>function($n)use($Url,$query){ return$Url($query+['page'=>$n]); },
+			'pagination'=>function($n)use($Url,$query){ return$Url($query+['page'=>$n===1 ? null : $n]); },
 		];
 		$query['sort']=$sort;
 		$query['order']=$order;

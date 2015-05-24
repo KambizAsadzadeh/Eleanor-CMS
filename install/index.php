@@ -150,6 +150,26 @@ HTML;
 				$all_ok=false;
 			}
 
+			$content.=<<<HTML
+				</tr>
+				<tr class="tsline">
+					<td class="label"><b>mbstring.func_overload</b><br />off</td>
+HTML;
+
+			if(ini_get('mbstring.func_overload')>1)
+			{
+				$content.=<<<HTML
+					<td>{$lang['mbstring.func_overload']}</td>
+					<td><img src="{$warn}" alt="{$lang['error']}" title="{$lang['error']}" /></td>
+HTML;
+				$all_ok=false;
+			}
+			else
+				$content.=<<<HTML
+						<td class="sense">+</td>
+						<td><img src="{$ok}" alt="Ok" title="Ok" /></td>
+HTML;
+
 			if(function_exists('apache_get_modules'))
 			{
 				$content.=<<<HTML

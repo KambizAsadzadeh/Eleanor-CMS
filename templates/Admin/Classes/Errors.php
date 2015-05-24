@@ -53,7 +53,6 @@ class Errors
 	 *  [string sort_id] Ссылка на сортировку списка по ID
 	 *  [string form_items] Ссылка для параметра action формы, внтури которой происходит отображение перечня $items
 	 *  [callback pp] Генератор ссылок на изменение количества пунктов отображаемых на странице
-	 *  [string first_page] Ссылка на первую страницу
 	 *  [callback pagination] Генератор ссылок на остальные страницы
 	 * @return string */
 	public static function ShowList($items,$notempty,$cnt,$pp,$query,$page,$links)

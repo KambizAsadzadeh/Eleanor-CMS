@@ -16,6 +16,7 @@ CORE.Lang({
 	},
 	"copy-and-paste":"Скопіюйте і вставте",
 	"input-folder-name":"Введіть назву папки",
+
 	SESSION_WAS_NOT_FOUND:"Втрачено сесія! Оновіть сторінку.",
 	RENAME_FAIL:"Переіменування не вдалося",
 	CREATE_FOLDER_FAIL:"Не вдалося створити папку",

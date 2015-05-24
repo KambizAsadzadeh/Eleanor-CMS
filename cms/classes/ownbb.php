@@ -5,6 +5,8 @@
 	info@eleanor-cms.ru
 */
 namespace CMS;
+use Eleanor\Classes\EE;
+
 defined('CMS\STARTED')||die;
 
 /** Реализация специальных BB кодов, которые обрабатываются каждый раз при показе страницы */
@@ -54,6 +56,10 @@ class OwnBB extends \Eleanor\BaseClass
 	 * @return string */
 	public static function ParseBBCodes($s,$type,array$handlers=[])
 	{
+		if(ini_get('mbstring.func_overload')>0)
+			throw new EE('mbstring.func_overload is on',EE::ENV,
+				['hint'=>'in php.ini set option mbstring.func_overload to 0']);
+
 		switch($type)
 		{
 			case static::EDIT:

@@ -31,6 +31,10 @@ class SafeHtml extends \Eleanor\BaseClass
 	 * @return string */
 	public static function Make($html)
 	{
+		if(ini_get('mbstring.func_overload')>0)
+			throw new EE('mbstring.func_overload is on',EE::ENV,
+				['hint'=>'in php.ini set option mbstring.func_overload to 0']);
+
 		#Сначала идут комментарии, а только потом CDATA, потому что мы заменяем текст на комментарии!
 		$exclude=[
 			#Не убирать пробелы! Возможны XSS типа <!--[if gte IE 4]>\br<SCRIPT>alert('XSS');</SCRIPT>\br<![endif]-->

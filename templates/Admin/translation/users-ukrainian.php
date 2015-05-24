@@ -2,12 +2,12 @@
 namespace Eleanor\Classes\Language;
 defined('CMS\STARTED')||die;
 
-$newpass='<span class="alert-link">{site}</span> - назва сайту<br />
-<span class="alert-link">{name}</span> - ім&apos;я користувача<br />
-<span class="alert-link">{fullname}</span> - повне ім&apos;я користувача<br />
-<span class="alert-link">{userlink}</span> - посилання на користувача<br />
-<span class="alert-link">{pass}</span> - пароль користувача<br />
-<span class="alert-link">{link}</span> - посилання на сайт';
+$newpass='<b>{site}</b> - назва сайту<br />
+<b>{name}</b> - ім&apos;я користувача<br />
+<b>{fullname}</b> - повне ім&apos;я користувача<br />
+<b>{userlink}</b> - посилання на користувача<br />
+<b>{pass}</b> - пароль користувача<br />
+<b>{link}</b> - посилання на сайт';
 
 return[
 	#Для шаблона Classes/Users.php
@@ -46,12 +46,12 @@ return[
 	'register'=>'Дата реєстріції',
 	'vars-created'=>$newpass,
 	'vars-newpass'=>$newpass,
-	'vars-renamed'=>'<span class="alert-link">{site}</span> - назва сайту<br />
-<span class="alert-link">{oldname}</span> - старе ім&apos;я користувача<br />
-<span class="alert-link">{name}</span> - нове ім&apos;я користувача<br />
-<span class="alert-link">{fullname}</span> - повне ім&apos;я користувача<br />
-<span class="alert-link">{userlink}</span> - посилання на користувача<br />
-<span class="alert-link">{link}</span> - посилання на сайт',
+	'vars-renamed'=>'<b>{site}</b> - назва сайту<br />
+<b>{oldname}</b> - старе ім&apos;я користувача<br />
+<b>{name}</b> - нове ім&apos;я користувача<br />
+<b>{fullname}</b> - повне ім&apos;я користувача<br />
+<b>{userlink}</b> - посилання на користувача<br />
+<b>{link}</b> - посилання на сайт',
 	'who'=>'Хто',
 	'enter'=>'Дата входу',
 	'location'=>'Адреса сторінки',

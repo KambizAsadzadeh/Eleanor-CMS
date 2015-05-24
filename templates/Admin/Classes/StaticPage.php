@@ -60,7 +60,6 @@ class StaticPage
 	 *  [string sort_id] Ссылка на сортировку списка по ID
 	 *  [string form_items] Ссылка для параметра action формы, внтури которой происходит отображение перечня $items
 	 *  [callback pp] Генератор ссылок на изменение количества пунктов отображаемых на странице
-	 *  [string first_page] Ссылка на первую страницу
 	 *  [callback pagination] Генератор ссылок на остальные страницы
 	 * @return string */
 	public static function ShowList($items,$navi,$notempty,$cnt,$pp,$query,$page,$links)
@@ -340,15 +339,15 @@ HTML;
 
 			foreach(Eleanor::$langs as $lng=>$v)
 			{
-				$input['title'][$lng]=Html::Input('title['.$lng.']',$values['title'][$lng],
+				$input['title'][$lng]=Html::Input("title[{$lng}]",$values['title'][$lng],
 					['class'=>'form-control need-tabindex input-lg pim','id'=>'title-'.$lng,'placeholder'=>static::$lang['title-placeholder']]);
-				$input['uri'][$lng]=Html::Input('uri['.$lng.']',$values['uri'][$lng],
+				$input['uri'][$lng]=Html::Input("uri[{$lng}]",$values['uri'][$lng],
 					['class'=>'form-control need-tabindex pim','id'=>'uri-'.$lng]);
-				$input['text'][$lng]=$Editor('text['.$lng.']',$values['text'][$lng],
+				$input['text'][$lng]=$Editor("text[{$lng}]",$values['text'][$lng],
 					['class'=>'form-control need-tabindex pim','id'=>'text-'.$lng,'rows'=>20]);
-				$input['document_title'][$lng]=Html::Input('document_title['.$lng.']',$values['document_title'][$lng],
+				$input['document_title'][$lng]=Html::Input("document_title[{$lng}]",$values['document_title'][$lng],
 					['class'=>'form-control need-tabindex pim','id'=>'docuemnt-title-'.$lng]);
-				$input['meta_descr'][$lng]=Html::Input('meta_descr['.$lng.']',$values['meta_descr'][$lng],
+				$input['meta_descr'][$lng]=Html::Input("meta_descr[{$lng}]",$values['meta_descr'][$lng],
 					['class'=>'form-control need-tabindex pim','id'=>'meta-descr-'.$lng]);
 			}
 

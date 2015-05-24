@@ -16,6 +16,7 @@ CORE.Lang({
 	},
 	"copy-and-paste":"Copy and paste",
 	"input-folder-name":"Input folder name",
+
 	SESSION_WAS_NOT_FOUND:"Session was lost. Reload page",
 	RENAME_FAIL:"Rename failed",
 	CREATE_FOLDER_FAIL:"Creation of folder failed",

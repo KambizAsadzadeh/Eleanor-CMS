@@ -47,7 +47,6 @@ class Services
 	 *  [string sort_name] Ссылка на сортировку списка имени сервиса
 	 *  [string sort_file] Ссылка на сортировку списка по имени файла
 	 *  [callback pp] Генератор ссылок на изменение количества пунктов отображаемых на странице
-	 *  [string first_page] Ссылка на первую страницу
 	 *  [callback pagination] Генератор ссылок на остальные страницы
 	 * @return string */
 	public static function ShowList($items,$notempty,$cnt,$pp,$query,$page,$links)
