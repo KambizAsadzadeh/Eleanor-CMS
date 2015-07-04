@@ -350,10 +350,10 @@ HTML;
 				.Html::Option(static::$lang['include'],'include',$filters['offline']=='include')
 				.Html::Option(static::$lang['only'],'only',$filters['offline']=='only');
 			$filters['offline']=Html::Select('fi[offline]',$opts,['class'=>'form-control','id'=>'fi-offline']);
-			$filters['ip']=Html::Input('fi[ip]',$filters['ip'],['placeholder'=>static::$lang['filter-by-ip'],
+			$filters['ip']=Html::Input('fi[ip]',$filters['ip'],['placeholder'=>static::$lang['filter-by-ip'],'title'=>static::$lang['filter-by-ip'],
 				'class'=>'form-control','id'=>'fi-ip']);
 			$filters['name']=T::$T->Author([$filters['user'],$filters['user_id']],
-				['placeholder'=>static::$lang['filter-by-user'],'id'=>'fi-user','name'=>'fi[user]']);
+				['placeholder'=>static::$lang['filter-by-user'],'title'=>static::$lang['filter-by-user'],'id'=>'fi-user','name'=>'fi[user]']);
 			$filters=<<<HTML
 					<!-- Фильтры -->
 					<div class="filters">
@@ -369,7 +369,7 @@ HTML;
 									<label for="fi-offline">{$c_lang['offline']}</label>
 									{$filters['offline']}
 								</div>
-								<div class="form-group has-feedback author">
+								<div class="form-group has-feedback author cloneable">
 									<label class="control-label" for="fi-user">{$c_lang['name']}</label>
 									{$filters['name']}
 								</div>
@@ -692,24 +692,24 @@ HTML;
 			$nofilter='';
 		}
 
-		$filters['id']=Html::Input('fi[id]',$filters['id'],['placeholder'=>static::$lang['filter-by-id'],'type'=>'number',
+		$filters['id']=Html::Input('fi[id]',$filters['id'],['placeholder'=>static::$lang['filter-by-id'],'title'=>static::$lang['filter-by-id'],'type'=>'number',
 			'class'=>'form-control','id'=>'fi-name','min'=>0]);
-		$filters['name']=Html::Input('fi[name]',$filters['name'],['placeholder'=>static::$lang['filter-by-name'],
+		$filters['name']=Html::Input('fi[name]',$filters['name'],['placeholder'=>static::$lang['filter-by-name'],'title'=>static::$lang['filter-by-name'],
 			'class'=>'form-control','id'=>'fi-name']);
-		$filters['full_name']=Html::Input('fi[full_name]',$filters['full_name'],['placeholder'=>static::$lang['filter-by-name'],
+		$filters['full_name']=Html::Input('fi[full_name]',$filters['full_name'],['placeholder'=>static::$lang['filter-by-name'],'title'=>static::$lang['filter-by-name'],
 			'class'=>'form-control','id'=>'fi-full-name']);
 		$filters['group']=Html::Select('fi[group]',UserManager::GroupsOpts($filters['full_name']),['class'=>'form-control','id'=>'fi-group']);
-		$filters['last_visit_from']=T::$T->DatePicker('fi[last_visit_from]',$filters['last_visit_from'],true,['placeholder'=>static::$lang['from'],
+		$filters['last_visit_from']=T::$T->DatePicker('fi[last_visit_from]',$filters['last_visit_from'],true,['placeholder'=>static::$lang['from'],'title'=>static::$lang['from'],
 			'class'=>'form-control','id'=>'fi-last-visit-from'],false);
-		$filters['last_visit_to']=T::$T->DatePicker('fi[last_visit_to]',$filters['last_visit_to'],true,['placeholder'=>static::$lang['to'],
+		$filters['last_visit_to']=T::$T->DatePicker('fi[last_visit_to]',$filters['last_visit_to'],true,['placeholder'=>static::$lang['to'],'title'=>static::$lang['to'],
 			'class'=>'form-control','id'=>'fi-last-visit-to'],false);
-		$filters['register_from']=T::$T->DatePicker('fi[register_from]',$filters['register_from'],true,['placeholder'=>static::$lang['from'],
+		$filters['register_from']=T::$T->DatePicker('fi[register_from]',$filters['register_from'],true,['placeholder'=>static::$lang['from'],'title'=>static::$lang['from'],
 			'class'=>'form-control','id'=>'fi-register-from'],false);
-		$filters['register_to']=T::$T->DatePicker('fi[register_to]',$filters['register_to'],true,['placeholder'=>static::$lang['to'],
+		$filters['register_to']=T::$T->DatePicker('fi[register_to]',$filters['register_to'],true,['placeholder'=>static::$lang['to'],'title'=>static::$lang['to'],
 			'class'=>'form-control','id'=>'fi-register-to'],false);
-		$filters['ip']=Html::Input('fi[ip]',$filters['ip'],['placeholder'=>static::$lang['filter-by-ip'],
+		$filters['ip']=Html::Input('fi[ip]',$filters['ip'],['placeholder'=>static::$lang['filter-by-ip'],'title'=>static::$lang['filter-by-ip'],
 			'class'=>'form-control','id'=>'fi-ip']);
-		$filters['email']=Html::Input('fi[email]',$filters['email'],['placeholder'=>static::$lang['filter-by-email'],
+		$filters['email']=Html::Input('fi[email]',$filters['email'],['placeholder'=>static::$lang['filter-by-email'],'title'=>static::$lang['filter-by-email'],
 			'class'=>'form-control','id'=>'fi-email']);
 		$filters=<<<HTML
 				<!-- Фильтры -->
@@ -864,7 +864,7 @@ HTML;
 		$extra_html=$Extra2Html();
 		$groups_html=$Groups2Html();
 		$input=[
-			'name'=>Html::Input('name',$values['name'],['id'=>'name','class'=>'form-control need-tabindex input-lg pim','placeholder'=>$c_lang['input_name'],'required'=>true]),
+			'name'=>Html::Input('name',$values['name'],['id'=>'name','class'=>'form-control need-tabindex input-lg pim','placeholder'=>$c_lang['input_name'],'title'=>$c_lang['input_name'],'required'=>true]),
 			'full_name'=>Html::Input('full_name',$values['full_name'],['id'=>'full_name','class'=>'form-control need-tabindex pim']),
 			'email'=>Html::Input('email',$values['email'],['id'=>'email','type'=>'email','class'=>'form-control need-tabindex pim','required'=>true]),
 			'language'=>'',
@@ -872,7 +872,7 @@ HTML;
 			'_group'=>Select2::Select('_group',$GroupsOpts($values['_group']),['id'=>'group','class'=>'need-tabindex pim']),
 			'groups'=>Select2::Items('groups',$GroupsOpts($values['groups']),['id'=>'groups','class'=>'need-tabindex pim']),
 			'banned_until'=>Eleanor::$Template->DatePicker('banned_until',$values['banned_until'],true,['id'=>'banned-until','class'=>'form-control need-tabindex pim']),
-			'ban_explain'=>Html::Text('ban_explain',$values['ban_explain'],['placeholder'=>$c_lang['input-ban-explain'],'id'=>'ban-explain','class'=>'form-control need-tabindex pim']),
+			'ban_explain'=>Html::Text('ban_explain',$values['ban_explain'],['placeholder'=>$c_lang['input-ban-explain'],'title'=>$c_lang['input-ban-explain'],'id'=>'ban-explain','class'=>'form-control need-tabindex pim']),
 		];
 
 		#Выбор языка
@@ -915,10 +915,6 @@ HTML;
 			'extra'=>[],
 			'groups'=>[],
 		];
-
-
-
-
 
 		#Формирование блоков с экстра-параметрами
 		$part='';
@@ -971,10 +967,6 @@ HTML;
 HTML;
 		unset($part);
 		#/Формирование блоков с экстра-параметрами
-
-
-
-
 
 		#Формирование блоков с переопределением параметров групп
 		$part='';

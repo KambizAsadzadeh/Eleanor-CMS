@@ -391,7 +391,7 @@ class Eleanor extends Framework
 				$v=preg_quote($v,'#');
 			unset($v);
 
-			if(preg_match('#^[a-z]+://('.join('|',$domains).')'.\Eleanor\SITEDIR.'#',$r)==0)
+			if(preg_match('#^[a-z]+://('.join('|',$domains).')'.(isset($_SERVER['HTTP_ORIGIN']) ? '' : \Eleanor\SITEDIR).'#',$r)==0)
 				self::$ourquery=false;
 		}
 

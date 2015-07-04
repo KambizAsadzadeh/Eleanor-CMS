@@ -16,9 +16,9 @@ return[
 	 *  размера. При каждом запросе, текст на капче меняется - таким образом, их можно перезагружать при нечитаемости */
 	'Captcha'=>function(array$data)use($lang)
 	{
-		return'<img onclick="this.a;if(!this.a)this.a=this.src;this.src=this.a+\'&amp;new=\'+Math.random()" src="'
-			.$data['src'].'&amp;w=120&amp;h=60" alt="" style="cursor:pointer;" id="'.$data['name']
-			.'" title="'.$lang['captcha_click'].'" /><br />'
+		return<<<HTML
+<img onclick="this.a;if(!this.a)this.a=this.src;this.src=this.a+'&amp;new='+Math.random()" src="{$data['src']}&amp;w=120&amp;h=60" alt="" style="cursor:pointer;" id="{$data['name']}" title="{$lang['captcha_click']}" /><br />
+HTML
 			.Html::Input($data['name'].'[t]','',['class'=>'need-tabindex', 'style'=>'width:120px'])
 			.Html::Input($data['name'].'[s]',$data['session'],['type'=>'hidden']);
 	},

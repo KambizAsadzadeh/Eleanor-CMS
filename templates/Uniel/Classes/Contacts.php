@@ -1,84 +1,154 @@
 <?php
-/*
-	Eleanor CMS © 2014
-	http://eleanor-cms.ru
-	info@eleanor-cms.ru
-
-	Шаблон для пользователей модуля "обратная связь"
+/**
+	Eleanor CMS © 2015
+	http://elanor-cms.ru
+	info@eleanor-ecms.ru
 */
-class TplUserContacts
-{
-	public static
-		$lang;
-	/*
-		Основная страница обратной связи
+namespace CMS\Templates\Uniel;
+use CMS\Eleanor, Eleanor\Classes\Html;
 
-		$canupload - флаг возможности загрузки файла
-		$info - информация по обратной связи, заполняемая в админке
-		$whom - массив выбора получателя письма. Формат id=>имя получателя
-		$values - массив значений формы, ключи:
-			subject - тема сообщения
-			message - текст сообщения
-			whom - идентификатор получателя
-			sess - идентификатор сессии
-		$bypost - флаг загрузки содержимого из POST запроса
-		$errors - массив ошибок
-		$isu - флаг пользователя (не гостя)
-		$captcha - captcha при отправке сообщения
-	*/
-	public static function Contacts($canupload,$info,$whom,$values,$bypost,$errors,$isu,$captcha)
+include_once __DIR__.'/../../html.php';
+
+/** Шаблон для пользователей модуля "обратная связь" */
+class Contacts
+{
+	/** @var array Языковые параметры */
+	public static $lang;
+
+	/** Основная страница обратной связи
+	 * @param string $info Текстовая информация для связи
+	 * @param int|bool $canupload Максимальный размер загружаемых файлов в байтах, false - загружать файлы нельзя
+	 * @param array $recipient Получатели
+	 * @param array $values Значения полей формы:
+	 *  [string subject] Тема письма
+	 *  [string message] Текст письма
+	 *  [int recipient] ID получателя
+	 *  [string session] ID сессии (hidden поле)
+	 *  [string|null from] e-mail отправителя, ключ присутствует только если пользователь не залогинен (гость на сайте)
+	 * @param array $errors Ошибки формы
+	 * @param callback $Editor Генератор Editor-a, параметры аналогичны Editor->Area
+	 * @param \Eleanor\Interfaces\Captcha | \Eleanor\Interfaces\Captcha_Image | null $captcha Капча
+	 * @return string */
+	public static function Contacts($info,$maxupload,$recipient,$values,$errors,$Editor,$captcha)
 	{
-		$content=Eleanor::$Template->Menu(array(
-			'title'=>$GLOBALS['Eleanor']->module['title'],
-		));
+		$content=T::$T->Menu([
+			'title'=>is_array($GLOBALS['title']) ? end($GLOBALS['title']) : $GLOBALS['title'],
+		]);
+
 		if($info)
-		{
-			$content->OpenTable();
-			$content.=$info.Eleanor::$Template->CloseTable();
-		}
-		if($whom)
+			$content.=T::$T->OpenTable().\CMS\Templates\Content($info).T::$T->CloseTable();
+
+		if($recipient)
 		{
 			if($errors)
 			{
 				foreach($errors as $k=>&$v)
 					if(is_int($k) and is_string($v) and isset(static::$lang[$v]))
 						$v=static::$lang[$v];
-				$content.=Eleanor::$Template->Message($errors,'error');
+
+				$content.=T::$T->Message($errors,'error');
 			}
 
-			$wh='';
-			if(count($whom)>1)
-				foreach($whom as $k=>&$v)
-					$wh.=Eleanor::Option($v,$k,$k==$values['whom']);
+			$rec='';
+			if(count($recipient)>1)
+				foreach($recipient as $k=>&$v)
+					$rec.=Html::Option($v,$k,$k==$values['recipient']);
 
-			$Lst=Eleanor::LoadListTemplate('table-form')->form($canupload ? array('enctype'=>'multipart/form-data') : array())->begin();
-			if(!$isu)
-				$Lst->item(array(static::$lang['email'],Eleanor::Input('from',$values['from'],array('type'=>'email','tabindex'=>1)),'tip'=>static::$lang['email_']));
-			if($wh)
-				$Lst->item(static::$lang['whom'],Eleanor::Select('whom',$wh,array('tabindex'=>2)));
-			$Lst
-				->item(static::$lang['subject'],Eleanor::Input('subject',$values['subject'],array('tabindex'=>3)))
-				->item(static::$lang['message'],$GLOBALS['Eleanor']->Editor->Area('message',$values['message'],array('post'=>$bypost,'no'=>array('tabindex'=>4))));
+			$c_lang=static::$lang;
+			$enctype=$maxupload ? ' enctype="multipart/form-data"' : '';
+			$ti=0;
+			$guest=isset($values['from']);
+			$input=[
+				'from'=>$guest ? Html::Input('from',$values['from'],['type'=>'email','tabindex'=>++$ti]) : null,
+				'recipient'=>$rec ? Html::Select('whom',$rec,['tabindex'=>++$ti]) : null,
+				'subject'=>Html::Input('subject',$values['subject'],['tabindex'=>++$ti,'required'=>true]),
+				'message'=>$Editor('message',$values['message'],['tabindex'=>++$ti,'required'=>true]),
+				'file'=>$maxupload ? Html::Input('file[]',false,['type'=>'file','tabindex'=>++$ti,'multiple'=>true]) : null,
+				'button'=>Html::Input('session',$values['session'],['type'=>'hidden']).Html::Button(static::$lang['send'],'submit',['tabindex'=>++$ti]),
+			];
+			$max_text=is_bool($maxupload) ? '' : '<br /><span class="small">'.sprintf(static::$lang['max-upload%'],\Eleanor\Classes\Files::BytesToSize($maxupload)).'</span>';
 
-			if($canupload)
-				$Lst->item(array(static::$lang['file'],Eleanor::Input('file',false,array('type'=>'file')),'descr'=>$canupload===true ? '' : sprintf(static::$lang['maxfs'],Files::BytesToSize($canupload))));
+			$from=$guest ? <<<HTML
+<tr>
+	<td class="class">{$c_lang['email']}<br /><span class="small">{$c_lang['email_']}</span></td>
+	<td>{$input['from']}</td>
+</tr>
+HTML
+				: '';
+			$recipient=$rec ? <<<HTML
+<tr>
+	<td class="class">{$c_lang['whom']}</td>
+	<td>{$input['recipient']}</td>
+</tr>
+HTML
+				: '';
+			$file=$maxupload ? <<<HTML
+<tr>
+	<td class="class">{$c_lang['files']}{$max_text}</td>
+	<td>{$input['file']}</td>
+</tr>
+HTML
+				: '';
 
 			if($captcha)
-				$Lst->item(array(static::$lang['captcha'],$captcha.'<br />'.Eleanor::Input('check','',array('tabindex'=>5)),'descr'=>static::$lang['captcha_']));
+				$captcha=<<<HTML
+<tr>
+	<td class="class">{$c_lang['captcha']}<br /><span class="small">{$c_lang['captcha_']}</span></td>
+	<td class="captcha">{$captcha}</td>
+</tr>
+HTML;
 
-			$content.=$Lst->end()->submitline(Eleanor::Input('sess',$values['sess'],array('type'=>'hidden')).Eleanor::Button(static::$lang['send'],'submit',array('tabindex'=>6)))->endform();
+			$content.=<<<HTML
+<form id="contacts-form" method="post"{$enctype}>
+<table class="tabstyle tabform">{$from}{$recipient}
+<tr>
+	<td class="class">{$c_lang['subject']}</td>
+	<td>{$input['subject']}</td>
+</tr>
+<tr>
+	<td class="class">{$c_lang['message']}</td>
+	<td>{$input['message']}</td>
+</tr>{$file}{$captcha}
+</table>
+<div class="submitline">{$input['button']}</div>
+</form>
+HTML;
+
+			if($maxupload)
+				$content.=<<<HTML
+<script>$(function(){
+	$("#contacts-form").submit(function(e){
+		var i,current=0;
+
+		$(":file",this).each(function(){
+			for(i in this.files)
+				current+=this.files[i].size;
+		});
+
+		if(current>{$maxupload})
+		{
+			e.preventDefault();
+			alert("{$c_lang['FILES_TOO_BIG']}");
 		}
+	});
+})</script>
+HTML;
+		}
+
 		return$content;
 	}
 
-	/*
-		Страница с информацией о том, что сообщение успешно отправлено
-	*/
-	public static function Sent()
+	/** Страница с информацией о том, что сообщение успешно отправлено
+	 * @param array $links Ссылки
+	 *  [string send] Ссылка на "отправить еще сообщение"
+	 * @return string */
+	public static function Sent($links)
 	{
-		return Eleanor::$Template->Menu(array(
-			'title'=>Eleanor::$Language['contacts']['st'],
-		))->Message(sprintf(static::$lang['sent'],$GLOBALS['Eleanor']->Url->Prefix()),'info');
+		return T::$T->Menu([
+			'title'=>is_array($GLOBALS['title']) ? end($GLOBALS['title']) : $GLOBALS['title'],
+		])->Message(sprintf(static::$lang['sent%'],$links['send']),'info');
 	}
 }
-TplUserContacts::$lang=Eleanor::$Language->Load(Eleanor::$Template->default['theme'].'langs/contacts-*.php',false);
+Contacts::$lang=Eleanor::$Language->Load(__DIR__.'/../translation/contacts-*.php',false);
+
+return Contacts::class;

@@ -19,7 +19,8 @@ defined('CMS\STARTED')||die;
 
 $lang=Eleanor::$Language->Load(__DIR__.'/../translation/bbeditor-*.php',false);
 $GLOBALS['scripts'][]=T::$http['static'].'js/bb_editor.js';
-$textid=isset($extra['id']) ? $extra['id'] : $id;?><div class="bb-top" id="editor-<?=$id?>">
+$textid=isset($extra['id']) ? $extra['id'] : $id;?>
+<div class="bb-top" id="editor-<?=$id?>">
 	<div class="bb-right">
 		<button class="bb bb-fullscreen" title="<?=$lang['fullscreen']?>"><span class="ico-fullscreen"></span></button>
 		<button class="bb" title="<?=$lang['preview']?>" data-url="<?=$preview?>"><span class="ico-view"></span></button>

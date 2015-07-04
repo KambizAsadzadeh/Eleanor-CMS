@@ -7,21 +7,21 @@ return[
 	],
 	'recipient'=>[
 		#Форматы: ID=>'Title', 'e-mail'=>'Title', ID=>['russian'=>'Title'], 'e-mail'=>['english'=>'Title']
-		1=>'Admin',
+		1=>'Site admin',
 	],
 	'subject'=>[
-		'russian'=>'Обратная связь: {site}',
-		'english'=>'Feedback: {site}',
-		'ukrainian'=>'Зворотній зв&apos;язок: {site}',
+		'russian'=>'Обратная связь: {site} - {subject}',
+		'english'=>'Feedback: {site} - {subject}',
+		'ukrainian'=>'Зворотній зв&apos;язок: {site} - {subject}',
 	],
 	'text'=>[
-		'russian'=>'{text}
+		'russian'=>'{message}
 <hr />
 [userlink]<a href="{userlink}">{name}</a>[-userlink]{name}[/userlink] - <a href="https://eleanor-cms.ru/whois/{ip}">{ip}</a>',
-		'english'=>'{text}
+		'english'=>'{message}
 <hr />
 [userlink]<a href="{userlink}">{name}</a>[-userlink]{name}[/userlink] - <a href="https://eleanor-cms.ru/whois/{ip}">{ip}</a>',
-		'ukrainian'=>'{text}
+		'ukrainian'=>'{message}
 <hr />
 [userlink]<a href="{userlink}">{name}</a>[-userlink]{name}[/userlink] - <a href="https://eleanor-cms.ru/whois/{ip}">{ip}</a>',
 	],

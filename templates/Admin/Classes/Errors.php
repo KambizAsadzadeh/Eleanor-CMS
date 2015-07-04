@@ -151,9 +151,9 @@ HTML;
 				$nofilter='';
 			}
 
-			$filters['title']=Html::Input('fi[title]',$filters['title'],['placeholder'=>T::$lang['filter-by-name'],
+			$filters['title']=Html::Input('fi[title]',$filters['title'],['placeholder'=>T::$lang['filter-by-name'],'title'=>T::$lang['filter-by-name'],
 				'class'=>'form-control','id'=>'fi-title']);
-			$filters['email']=Html::Input('fi[email]',$filters['email'],['placeholder'=>static::$lang['filter-by-email'],
+			$filters['email']=Html::Input('fi[email]',$filters['email'],['placeholder'=>static::$lang['filter-by-email'],'title'=>static::$lang['filter-by-email'],
 				'class'=>'form-control','id'=>'fi-email']);
 			$filters=<<<HTML
 					<!-- Фильтры -->
@@ -234,7 +234,7 @@ HTML;
 			foreach(Eleanor::$langs as $lng=>$v)
 			{
 				$input['title'][$lng]=Html::Input('title['.$lng.']',$values['title'][$lng],
-					['class'=>'form-control need-tabindex input-lg pim','id'=>'title-'.$lng,'placeholder'=>static::$lang['title-placeholder']]);
+					['class'=>'form-control need-tabindex input-lg pim','id'=>'title-'.$lng,'placeholder'=>static::$lang['title-placeholder'],'title'=>static::$lang['title-placeholder']]);
 				$input['uri'][$lng]=Html::Input('uri['.$lng.']',$values['uri'][$lng],
 					['class'=>'form-control need-tabindex pim','id'=>'uri-'.$lng]);
 				$input['text'][$lng]=$Editor('text['.$lng.']',$values['text'][$lng],
@@ -277,7 +277,7 @@ HTML;
 		}
 		else
 			$input=[
-				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control need-tabindex input-lg pim','placeholder'=>static::$lang['title-placeholder']]),
+				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control need-tabindex input-lg pim','placeholder'=>static::$lang['title-placeholder'],'title'=>static::$lang['title-placeholder']]),
 				'uri'=>Html::Input('uri',$values['uri'],['id'=>'uri','class'=>'form-control need-tabindex pim']),
 				'text'=>$Editor('text',$values['text'],['class'=>'form-control need-tabindex pim','id'=>'text','rows'=>20]),
 				'document_title'=>Html::Input('document_title',$values['document_title'],['class'=>'form-control need-tabindex pim','id'=>'document-title']),

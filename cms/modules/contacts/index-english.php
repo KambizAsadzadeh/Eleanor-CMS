@@ -1,6 +1,7 @@
 <?php
-return array(
-	#For user/index.php
-	'FILE_TOO_BIG'=>'File size exceeds the maximum available size %s. The size of your file is %s',
-	'st'=>'Successfully sent',
-);
+return[
+	#For index/index.php
+	'contacts'=>'Feedback',
+	'successfully-send'=>'Successfully sent',
+	'ATTACH_TOO_BIG'=>'Files size (%2$s) exceeds the maximum available size in %1$s.',
+];

@@ -1,6 +1,6 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
@@ -346,15 +346,17 @@ function QuitExecute($Func)
  * @param string $n Имя сессии */
 function StartSession($id='',$n='')
 {
-	ini_set('session.use_cookies',0);
-	ini_set('session.use_trans_sid',0);
-
 	if(isset($_SESSION))
 	{
 		if(session_id()==$id and !$n || session_name()==$n)
 			return;
 
 		session_write_close();
+	}
+	else
+	{
+		ini_set('session.use_cookies',0);
+		ini_set('session.use_trans_sid',0);
 	}
 
 	if($n and preg_match('#^[a-z0-9]+$#i',$n)>0)

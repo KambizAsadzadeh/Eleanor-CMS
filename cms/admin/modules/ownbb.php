@@ -156,7 +156,7 @@ elseif(isset($_GET['edit']))
 				Eleanor::$Db->Update($table,['!pos'=>'`pos`+1'],'`pos`>='.$values['pos']);
 			}
 
-			Eleanor::$Db->Update($table, $values, '`id`='.$id.' LIMIT 1');
+			Eleanor::$Db->Update($table, $values, "`id`={$id} LIMIT 1");
 		}
 		else
 		{

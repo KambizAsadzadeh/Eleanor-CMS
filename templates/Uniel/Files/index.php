@@ -10,12 +10,13 @@ use CMS, CMS\Eleanor, CMS\Language, CMS\Templates\Uniel\T;
 defined('CMS\STARTED')||die;
 
 /** Скелет основного шаблона
+ * @var string $js Путь к каталогу js
  * @var string $css Пусть к каталогу css
  * @var string $images Путь к каталогу images
  * @var string $content Содержимое модуля*/
 include_once __DIR__.'/../../html.php';
 
-$GLOBALS['scripts'][]=T::$http['static'].'js/menu_multilevel.js';?><!DOCTYPE html>
+array_push($GLOBALS['scripts'],T::$http['static'].'js/menu_multilevel.js',$js.'index.js');?><!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#">
 <head>
 	<script src="//cdn.jsdelivr.net/g/jquery"></script>

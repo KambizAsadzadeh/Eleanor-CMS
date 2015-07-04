@@ -161,7 +161,8 @@ HTML;
 				$nofilter='';
 			}
 
-			$filters=Html::Input('fi[title]',$filters['title'],['placeholder'=>T::$lang['filter-by-name'],'class'=>'form-control','id'=>'fi-title']);
+			$filters=Html::Input('fi[title]',$filters['title'],['placeholder'=>T::$lang['filter-by-name'],'title'=>T::$lang['filter-by-name'],
+				'class'=>'form-control','id'=>'fi-title']);
 			$filters=<<<HTML
 					<!-- Фильтры -->
 					<div class="filters">
@@ -277,9 +278,9 @@ HTML;
 		#Элементы формы
 		$html=$Controls2Html();
 		$input=[
-			'style'=>Html::Input('style',$values['style'],['id'=>'style','class'=>'form-control need-tabindex pim','placeholder'=>$c_lang['style_plh']]),
+			'style'=>Html::Input('style',$values['style'],['id'=>'style','class'=>'form-control need-tabindex pim','placeholder'=>$c_lang['style_plh'],'title'=>$c_lang['style_plh']]),
 			'style_inherit'=>Html::Check('_inherit[]',in_array('style',$values['_inherit']),['title'=>$c_lang['inherit'],'value'=>'style','class'=>'inherit need-tabindex']),
-			'parent'=>Select2::Select('parent','<option></option>'.$parents,['class'=>'need-tabindex pim','id'=>'parent','placeholder'=>$t_lang['no-parent'],'disabled'=>!$parents],'{allowClear:true}'),
+			'parent'=>Select2::Select('parent','<option></option>'.$parents,['class'=>'need-tabindex pim','id'=>'parent','placeholder'=>$t_lang['no-parent'],'title'=>$t_lang['no-parent'],'disabled'=>!$parents],'{allowClear:true}'),
 		];
 
 		if(Eleanor::$vars['multilang'])
@@ -287,7 +288,7 @@ HTML;
 			foreach(Eleanor::$langs as $lng=>$v)
 			{
 				$input['title'][$lng]=Html::Input('title['.$lng.']',$values['title'][$lng],
-					['class'=>'form-control need-tabindex pim input-lg','id'=>'title-'.$lng,'placeholder'=>$c_lang['title']]);
+					['class'=>'form-control need-tabindex pim input-lg','id'=>'title-'.$lng,'placeholder'=>$c_lang['title'],'title'=>$c_lang['title']]);
 				$input['descr'][$lng]=$Editor('descr['.$lng.']',$values['descr'][$lng],
 					['class'=>'form-control need-tabindex pim','id'=>'descr-'.$lng]);
 			}
@@ -297,7 +298,7 @@ HTML;
 		}
 		else
 			$input+=[
-				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control pim need-tabindex input-lg','placeholder'=>$c_lang['title']]),
+				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control pim need-tabindex input-lg','placeholder'=>$c_lang['title'],'title'=>$c_lang['title']]),
 				'descr'=>$Editor('descr',$values['descr'],['id'=>'descr','class'=>'form-control pim need-tabindex']),
 			];
 		#/Элементы формы

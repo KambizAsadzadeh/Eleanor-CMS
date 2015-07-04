@@ -1,52 +1,64 @@
 <?php
-/*
-	Элемент шаблона: вывод "шапки модуля" с названием и меню.
-
-	@var array(
-		title - название в шапке
-		menu - массив элементов меню по названиям. Каждый элемент - массив с ключами:
-			0 - ссылка пункта меню, либо false
-			1 - текст элемента меню
-			extra - массив дополнительных параметров тега a, меню
-			submenu - рекурсивный массив внутреннего меню элемента
-	)
-*/
+namespace CMS;
 defined('CMS\STARTED')||die;
-$mainmenu='';
+
+/** Элемент шаблона: вывод "шапки модуля" с названием и меню
+ * @var string $title Название в шапке
+ * @var array $menu Элементы меню:
+ *  [string 0] Ссылка
+ *  [string 1] Анкор
+ *  [array extra] Дополнительные параметры тега a
+ *  [array submenu] Подменю
+ */
+
+$main='';
+
 if(isset($menu))
 {
-	if(!function_exists('TPLFMenu'))
+	$Menu=function(array$menu)use(&$Menu)
 	{
-		function TPLFMenu(array$menu)
-		{
-			$c='';
-			foreach($menu as &$v)
-				if(is_array($v) and $v)
-				{
-					if(!empty($v['act']) and !isset($v['extra']['class']))
-						$v['extra']['class']='active';
+		$c='';
 
-					$a=isset($v['extra']) ? Eleanor::TagParams($v['extra']) : '';
-					$c.='<li>'.($v[0]===false ? '<span'.$a.'>'.$v[1].'</span>' : '<a href="'.$v[0].'"'.$a.'>'.$v[1].'</a>')
-						.(empty($v['submenu']) ? '' : '<ul>'.TPLFMenu($v['submenu']).'</ul>')
-						.'</li>';
-				}
-			return$c;
-		}
-	}
-	$menu=TPLFMenu($menu);
+		foreach($menu as $item)
+			if(is_array($item) and $item)
+			{
+				if(!empty($item['act']) and !isset($item['extra']['class']))
+					$item['extra']['class']='active';
+
+				$submenu=empty($item['submenu']) ? '' : '<ul>'.$Menu($item['submenu']).'</ul>';
+				$a=isset($item['extra']) ? \Eleanor\Classes\Html::TagParams($item['extra']) : '';
+
+				if($item[0]===false)
+					$link=<<<HTML
+<span{$a}>{$item[1]}</span>
+HTML;
+				else
+					$link=<<<HTML
+<a href="{$item[0]}"{$a}>{$item[1]}</a>
+HTML;
+
+				$c.="<li>{$link}{$submenu}</li>";
+			}
+
+		return$c;
+	};
+
+	$menu=$Menu($menu);
+
 	if($menu)
 	{
-		$GLOBALS['scripts'][]='js/menu_multilevel.js';
+		$GLOBALS['scripts'][]=Template::$http['js'].'menu_multilevel.js';
 		$u=uniqid();
-		$mainmenu='<ul id="menu-'.$u.'" class="modulemenu">'.$menu.'</ul><script>/*<![CDATA[*/$(function(){$("#menu-'.$u.'").MultiLevelMenu();});//]]></script>';
+		$main=<<<HTML
+<ul id="menu-{$u}" class="modulemenu">{$menu}</ul><script>$(function(){ $("#menu-{$u}").MultiLevelMenu(); });</script>
+HTML;
 	}
 }
 ?>
 <div class="base">
 	<div class="heading2"><div class="binner">
-		<h6><?php echo$title?></h6>
+		<h6><?=$title?></h6>
 		<div class="clr"></div>
 	</div></div>
-	<nav><?php echo$mainmenu?></nav>
+	<nav><?=$main?></nav>
 </div>

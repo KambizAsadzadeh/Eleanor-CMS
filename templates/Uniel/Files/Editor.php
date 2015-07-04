@@ -1,10 +1,10 @@
 <?php
 /**
-	Eleanor CMS © 2014
-	http://eleanor-cms.ru
-	info@eleanor-cms.ru
-*/
-namespace CMS\Templates\Uniel;
+Eleanor CMS © 2014
+http://eleanor-cms.ru
+info@eleanor-cms.ru
+ */
+namespace CMS\Templates\Admin;
 use \Eleanor\Classes\EE;
 
 defined('CMS\STARTED')||die;
@@ -27,9 +27,9 @@ if(!isset($var_0,$var_1,$var_2,$var_3))
 
 #Smiles
 $smiles='';
-foreach($var_2 as $v)
-	if($v['show'])
-		$smiles.='<button data-em="'.reset($v['emotion']).'" style="background-image: url('.T::$http['static'].$v['path'].');"></button>	';
+foreach($var_2 as $smile)
+	if($smile['show'])
+		$smiles.='<button data-em="'.reset($smile['emotion']).'" style="background-image: url('.T::$http['static'].$smile['path'].');"></button>';
 
 if($smiles)
 	$smiles=<<<HTML
@@ -46,7 +46,7 @@ HTML;
 $ownbb='';
 $n=0;
 
-foreach($var_3 as $k=>$v)
+foreach($var_3 as $k=>$tag)
 {
 	switch($k)
 	{
@@ -57,7 +57,10 @@ foreach($var_3 as $k=>$v)
 			$k='youtube';
 	}
 
-	$ownbb.='<button class="bb"'.($v['l'] ? ' title="'.$v['l'].'"' : '').' data-code="'.$v['t'].'" data-single="'.$v['s'].'"><span class="ico-'.$k.'"></span></button>';
+	$title=$tag['l'] ? ' title="'.$tag['l'].'"' : '';
+	$ownbb.=<<<HTML
+<button class="bb"{$title} data-code="{$tag['t']}" data-single="{$tag['s']}"><span class="ico-{$k}"></span></button>
+HTML;
 
 	if(++$n%4==0)
 		$ownbb.='<span class="bb-sep"></span>';
@@ -109,5 +112,4 @@ $(function(){
 		EDITOR.Insert("[block-"+c+"]","[/block-"+c+"]",false,"{$var_0}");
 	});
 })//]]></script>
-HTML
-;
+HTML;

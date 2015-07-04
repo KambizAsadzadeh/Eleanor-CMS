@@ -211,7 +211,7 @@ HTML;
 			foreach(Eleanor::$langs as $lng=>$v)
 			{
 				$input['title'][$lng]=Html::Input('title['.$lng.']',$values['title'][$lng],
-					['class'=>'form-control need-tabindex pim input-lg','id'=>'title-'.$lng,'placeholder'=>$c_lang['name']]);
+					['class'=>'form-control need-tabindex pim input-lg','id'=>'title-'.$lng,'placeholder'=>$c_lang['name'],'title'=>$c_lang['name']]);
 				$input['descr'][$lng]=Html::Text('descr['.$lng.']',$values['descr'][$lng],
 					['class'=>'form-control need-tabindex pim','id'=>'descr-'.$lng]);
 			}
@@ -221,7 +221,7 @@ HTML;
 		}
 		else
 			$input=[
-				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control input-lg pim need-tabindex','placeholder'=>$c_lang['name']]),
+				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control input-lg pim need-tabindex','placeholder'=>$c_lang['name'],'title'=>$c_lang['name']]),
 				'descr'=>Html::Text('descr',$values['descr'],['id'=>'descr','class'=>'form-control pim need-tabindex']),
 			];
 

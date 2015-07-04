@@ -33,6 +33,11 @@ $GLOBALS['head']['author']=<<<'HTML'
 			a.css("pointer-events","auto").removeClass("text-muted");
 		}
 
+		var input=$('input:text',this),
+			new_int=input.clone().insertAfter(input);
+
+		input.remove();
+
 		$('input:text',this).typeahead({
 			source:function(query,cb){
 				if(query in cache)
@@ -60,7 +65,11 @@ HTML;
 
 $value+=['',''];
 $name=isset($extra['name']) ? (string)$extra['name'] : 'author';
-$name_id=substr($name,-1)==']' ? substr_replace($name,'_id',-1,0) : $name.'_id';
+
+if(substr($name,-3)=='][]')
+	$name_id=substr_replace($name,'_id',-3,0);
+else
+	$name_id=substr($name,-1)==']' ? substr_replace($name,'_id',-1,0) : $name.'_id';
 
 if(!isset($value[2]))
 	$value[2]=$value[0] && $value[1] ? \CMS\UserLink($value[1],$value[0],'admin') : '#';

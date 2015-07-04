@@ -242,7 +242,7 @@ ORDER BY `pos` ASC");
 							if($R->num_rows>0)
 								$value='';
 						}
-						break;
+					break;
 					case'title':
 						$value=GlobalsWrapper::Filter($value);
 

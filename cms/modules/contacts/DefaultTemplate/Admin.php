@@ -7,7 +7,7 @@
 namespace CMS\Templates\ContactsTemplate;
 
 /** Шаблон по умолчанию для админки модуля обратной связи. Рекомендуется скопировать этот файл в
- * templates/[шаблон админки]/Classes/Errors.php и там уже править. Если такой файл уже существует - правьте его.*/
+ * templates/[шаблон админки]/Classes/Contacts.php и там уже править. Если такой файл уже существует - правьте его.*/
 class Contacts
 {
 	/** Основная страница правки обратной связи
@@ -16,12 +16,15 @@ class Contacts
 	 *  [array recipient] Возможные получатели письма
 	 *  [string|array subject] Формат темы получаемого письма
 	 *  [string|array text] Формат текста письма
+	 * @param array $recipient Перечень пользователей для списка получателей:
+	 *  [string name] Логин
+	 *  [string _a] Ссылка на пользователя
 	 * @param callback $Editor Генератор Editor-a, параметры аналогичны Editor->Area
 	 * @param \Eleanor\Classes\StringCallback $Uploader Загрузчик файлов
 	 * @param array $errors Ошибки формы
 	 * @param bool $saved Флаг успешного сохранения
 	 * @return string */
-	public static function Contacts($values,$Editor,$Uploader,$errors,$saved)
+	public static function Contacts($values,$recipient,$Editor,$Uploader,$errors,$saved)
 	{
 
 	}

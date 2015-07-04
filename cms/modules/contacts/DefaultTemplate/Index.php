@@ -1,42 +1,43 @@
 <?php
-#ToDo! Исправить файл
-/*
-	Eleanor CMS © 2014
+/**
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Шаблон по умолчанию для пользователей модуля "обратная связь"
-	Рекомендуется скопировать этот файл в templates/[шаблон пользовательской части]/Classes/[имя этого файла] и там уже начинать править.
-	В случае если такой файл уже существует - правьте его.
 */
-class TplUserContacts
-{
-	/*
-		Основная страница обратной связи
+namespace CMS\Templates\ContactsTemplate;
 
-		$canupload - флаг возможности загрузки файла
-		$info - информация по обратной связи, заполняемая в админке
-		$whom - массив выбора получателя письма. Формат id=>имя получателя
-		$values - массив значений формы, ключи:
-			subject - тема сообщения
-			message - текст сообщения
-			whom - идентификатор получателя
-			sess - идентификатор сессии
-		$bypost - флаг загрузки содержимого из POST запроса
-		$errors - массив ошибок
-		$isu - флаг пользователя (не гостя)
-		$captcha - captcha при отправке сообщения
-	*/
-	public static function Contacts($canupload,$info,$whom,$values,$bypost,$errors,$isu,$captcha)
+/** Шаблон по умолчанию для публичной части модуля обратной связи. Рекомендуется скопировать этот файл в
+ * templates/[шаблон публичной части]/Classes/Contacts.php и там уже править. Если такой файл уже существует - правьте его.*/
+
+class Contacts
+{
+	/** Основная страница обратной связи
+	 * @param string $info Текстовая информация для связи
+	 * @param int|bool $canupload Максимальный размер загружаемых файлов в байтах, false - загружать файлы нельзя
+	 * @param array $recipient Получатели
+	 * @param array $values Значения полей формы:
+	 *  [string subject] Тема письма
+	 *  [string message] Текст письма
+	 *  [int recipient] ID получателя
+	 *  [string session] ID сессии (hidden поле)
+	 *  [string|null from] e-mail отправителя, ключ присутствует только если пользователь не залогинен (гость на сайте)
+	 * @param array $errors Ошибки формы
+	 * @param callback $Editor Генератор Editor-a, параметры аналогичны Editor->Area
+	 * @param \Eleanor\Interfaces\Captcha | \Eleanor\Interfaces\Captcha_Image | null $captcha Капча
+	 * @return string */
+	public static function Contacts($info,$maxupload,$recipient,$values,$errors,$Editor,$captcha)
 	{
 
 	}
 
-	/*
-		Страница с информацией о том, что сообщение успешно отправлено
-	*/
-	public static function Sent()
+	/** Страница с информацией о том, что сообщение успешно отправлено
+	 * @param array $links Ссылки
+	 *  [string send] Ссылка на "отправить еще сообщение"
+	 * @return string */
+	public static function Sent($links)
 	{
 
 	}
 }
+
+return Contacts::class;

@@ -27,6 +27,7 @@ T::$lang=Eleanor::$Language->Load(__DIR__.'/translation/*.php',false);
 T::$T=new Template(__DIR__.'/Files');
 T::$T->classes=__DIR__.'/Classes/';
 T::$T->default=[
+	'js'=>Template::$http['templates'].$name.'/js/',#HTTP путь к js шаблона
 	'css'=>Template::$http['templates'].$name.'/css/',#HTTP путь к css шаблона
 	'images'=>Template::$http['templates'].$name.'/images/',#HTTP путь к картинкам шаблона
 ];

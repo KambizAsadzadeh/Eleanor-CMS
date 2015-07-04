@@ -1,5 +1,5 @@
 ﻿/**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */

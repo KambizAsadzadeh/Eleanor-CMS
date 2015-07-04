@@ -109,11 +109,11 @@ function UserLink($id=0,$name='',$service='index')
 /** В зависимости от настроек системы, возвращается HTML код капчи
  * @param bool $forced Обязательное отображение капчи вне настроек пользователя
  * @param string|bool $type Тип капчи (ReCaptcha, KeyCaptcha, Eleanor)
- * @return \Eleanor\Interfaces\Captcha | \Eleanor\Interfaces\Captcha_Image */
+ * @return \Eleanor\Interfaces\Captcha | \Eleanor\Interfaces\Captcha_Image | null */
 function Captcha($forced=false,$type='Eleanor')
 {
 	if(!$forced and Eleanor::$Permissions->HideCaptcha())
-		return false;
+		return null;
 
 	switch($type)
 	{
@@ -137,19 +137,25 @@ if(AJAX or ANGULAR)
 	Eleanor::$bsodtype='json';
 
 	/** Вывод результата для AJAX
-	 * @param mixed $data Данные для вывода */
-	function Response($data)
+	 * @param mixed $data Данные для вывода
+	 * @param bool $withhead Включить в ответ содержимое переменных $scripts и $head */
+	function Response($data,$withhead=true)
 	{global$scripts,$head;
-		$scripts=array_unique($scripts);
+		if($withhead)
+		{
+			$scripts=array_unique($scripts);
 
-		foreach($scripts as &$v)
-			$v=addcslashes($v,"\n\r\t\"\\");
+			foreach($scripts as &$v)
+				$v=addcslashes($v,"\n\r\t\"\\");
 
-		$out=[
-			'data'=>$data,
-			'!scripts'=>$scripts ? '["'.join('","',$scripts).'"]' : '[]',
-			'head'=>$head,
-		];
+			$out=[
+				'data'=>$data,
+				'!scripts'=>$scripts ? '["'.join('","',$scripts).'"]' : '[]',
+				'head'=>$head,
+			];
+		}
+		else
+			$out=$data;
 
 		OutPut::SendHeaders('application/json');
 
@@ -184,7 +190,8 @@ else
 
 		#Мегафикс: поисковики не понимают тег <base href...>, и всегда лишний раз переходят по ссылке без его учета
 		$out=preg_replace_callback('%(href|src)=(["\'])([^\'"#/][^\'"]+)%i',function($match){
-			if(strpos($match[3],'://')===false)
+			#Фильтр на полноценные ссылки и всякие mailto
+			if(preg_match('#^[a-z]+:#',$match[3])==0)
 				return$match[1].'='.$match[2].\Eleanor\SITEDIR.$match[3];
 
 			return$match[0];

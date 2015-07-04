@@ -201,15 +201,20 @@ var uagent=navigator.userAgent.toLowerCase(),
 		$.each(O,function(k,v){
 			var emp="",
 				LR=R;
+
 			k=k.replace(/\+\d+$/,"");
+
 			$.each(k ? k.replace(/^\[|\]/g,"").split("[") : [],function(kk,vv){
 				if(vv=="")
 				{
 					emp+="*";
+
 					if(typeof ef!="object")
 						ef={};
+
 					if(!(emp in ef))
 						ef[emp]=0;
+
 					vv=ef[emp]++;
 				}
 				else
@@ -217,8 +222,10 @@ var uagent=navigator.userAgent.toLowerCase(),
 
 				if(typeof LR[vv]!="object")
 					LR[vv]={};
+
 				LR=LR[vv];
 			});
+
 			LR[""]=v;
 		});
 		CORE.NormObj(R);

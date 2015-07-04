@@ -185,11 +185,11 @@ HTML;
 				$nofilter='';
 			}
 
-			$filters['title']=Html::Input('fi[title]',$filters['title'],['placeholder'=>static::$lang['filter-by-title'],
+			$filters['title']=Html::Input('fi[title]',$filters['title'],['placeholder'=>static::$lang['filter-by-title'],'title'=>static::$lang['filter-by-title'],
 				'class'=>'form-control','id'=>'fi-title']);
-			$filters['handler']=Html::Input('fi[handler]',$filters['handler'],['placeholder'=>static::$lang['filter-by-handler'],
+			$filters['handler']=Html::Input('fi[handler]',$filters['handler'],['placeholder'=>static::$lang['filter-by-handler'],'title'=>static::$lang['filter-by-handler'],
 				'class'=>'form-control','id'=>'fi-handler']);
-			$filters['tags']=Html::Input('fi[tags]',$filters['tags'],['placeholder'=>static::$lang['filter-by-tags'],
+			$filters['tags']=Html::Input('fi[tags]',$filters['tags'],['placeholder'=>static::$lang['filter-by-tags'],'title'=>static::$lang['filter-by-tags'],
 				'class'=>'form-control','id'=>'fi-tags']);
 
 			$filters=<<<HTML
@@ -280,13 +280,13 @@ HTML;
 
 			foreach(Eleanor::$langs as $lng=>$v)
 				$input['title'][$lng]=Html::Input("title[{$lng}]",$values['title'][$lng],
-					['class'=>'form-control need-tabindex input-lg','id'=>'title-'.$lng,'placeholder'=>static::$lang['title-plh']]);
+					['class'=>'form-control need-tabindex input-lg','id'=>'title-'.$lng,'placeholder'=>static::$lang['title-plh'],'title'=>static::$lang['title-plh']]);
 
 			$input['title']=T::$T->LangEdit($input['title'],'title');
 		}
 		else
 			$input=[
-				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control need-tabindex input-lg','placeholder'=>static::$lang['title-plh']]),
+				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control need-tabindex input-lg','placeholder'=>static::$lang['title-plh'],'title'=>static::$lang['title-plh']]),
 			];
 
 		#Обработчики

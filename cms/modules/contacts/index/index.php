@@ -5,35 +5,48 @@
 	info@eleanor-cms.ru
 */
 namespace CMS;
+
+use Eleanor\Classes\BBCode, Eleanor\Classes\Email, Eleanor\Classes\Files;
+
 defined('CMS\STARTED')||die;
 global$Eleanor,$title;
 
-$lang=Eleanor::$Language->Load(__DIR__.'/index-*.php',$config['n']);
-Eleanor::$Template->queue[]='UserContacts';
+/** @var array $config */
+
+$isu=Eleanor::$Login->IsUser();
+$lang=Eleanor::$Language->Load($Eleanor->module['path'].'index-*.php',$config['n']);
+$data=include $config['data'];
+$maxupload=5*1024*1024;//Eleanor::$Permissions->MaxUpload();
+$errors=[];
+$values=[
+	'subject'=>'',
+	'message'=>'',
+	'recipient'=>0,
+	'session'=>'',
+	'from'=>$isu ? null : '',
+];
+$Eleanor->module['origurl']=rtrim($Eleanor->Url->prefix,'/');
+$Captcha=Captcha();
 
 if($_SERVER['REQUEST_METHOD']=='POST')
 {
-	$isu=Eleanor::$Login->IsUser();
-	$Eleanor->Editor->ownbb=$Eleanor->Editor->smiles=$Eleanor->Editor->antilink=false;
-	$Eleanor->Editor_result->ownbb=$Eleanor->Editor_result->smiles=$Eleanor->Editor_result->antilink=false;
-	$values=array(
+	$Saver=new Saver(null,false,false);
+
+	$values=[
 		'subject'=>isset($_POST['subject']) ? trim((string)Eleanor::$POST['subject']) : '',
-		'message'=>$Eleanor->Editor_result->GetHtml('message'),
-		'whom'=>isset($_POST['whom']) ? (int)$_POST['whom'] : 0,
-		'sess'=>isset($_POST['sess']) ? (string)$_POST['sess'] : false,
+		'message'=>isset($_POST['message']) ? $Saver->Save((string)$_POST['message']) : '',
+		'recipient'=>isset($_POST['recipient']) ? (int)$_POST['recipient'] : 0,
+		'session'=>isset($_POST['session']) ? (string)$_POST['session'] : false,
 		'from'=>isset($_POST['from']) && !$isu ? (string)$_POST['from'] : '',
-	);
-	$whom=FilterLangValues($config['whom']);
-	$errors=array();
+	];
+
 	do
 	{
 		#Защита от F5
-		if($values['sess'])
-			Eleanor::StartSession($values['sess']);
-		if(empty($_SESSION['can']))
-			break;
+		if($values['session'])
+			\Eleanor\StartSession($values['session']);
 
-		if(!$whom)
+		if(empty($_SESSION['can']) or !$data['recipient'])
 			break;
 
 		if($values['from'])
@@ -42,11 +55,11 @@ if($_SERVER['REQUEST_METHOD']=='POST')
 				$errors[]='WRONG_EMAIL';
 		}
 		else
-			$values['from']=$isu ? Eleanor::$Login->Get('email',false) : false;
+			$values['from']=$isu ? Eleanor::$Login->Get('email') : false;
 
-		$whom=array_keys($whom);
-		if(!isset($whom[$values['whom']]))
-			$errors[]='WRONG_RESPONDER';
+		$recipient=array_keys($data['recipient']);
+		if(!isset($recipient[ $values['recipient'] ]))
+			$errors[]='WRONG_RECIPIENT';
 
 		if(!$values['subject'])
 			$errors[]='EMPTY_SUBJECT';
@@ -54,82 +67,117 @@ if($_SERVER['REQUEST_METHOD']=='POST')
 		if(!isset($values['message'][7]))
 			$errors[]='SHORT_MESSAGE';
 
-		$canupload=Eleanor::$Permissions->MaxUpload();
-		if($canupload===true)
-			$canupload=5*1024*1024;#5 Mb жесткий предел
-
-		$files=array();
-		if($canupload and isset($_FILES['file']) and is_uploaded_file($_FILES['file']['tmp_name']))
-			if($canupload!==true and $_FILES['file']['size']>$canupload)
-				$errors['FILE_TOO_BIG']=sprintf($lang['FILE_TOO_BIG'],Files::BytesToSize($canupload),Files::BytesToSize($_FILES['file']['size']));
-			else
-				$files=array($_FILES['file']['name']=>file_get_contents($_FILES['file']['tmp_name']));
-
-		$cach=$Eleanor->Captcha->Check(isset($_POST['check']) ? (string)$_POST['check'] : '');
-		$Eleanor->Captcha->Destroy();
-		if(!$cach)
+		if($Captcha and !$Captcha->Check())
 			$errors[]='WRONG_CAPTCHA';
+
+		$files=[];
+		$size=0;
+
+		if($maxupload and isset($_FILES['file']) and is_array($_FILES['file']['name']))
+			foreach($_FILES['file']['name'] as $k=>$name)
+			{
+				$size+=$_FILES['file']['size'][$k];
+				$files[ $name ]=file_get_contents($_FILES['file']['tmp_name'][$k]);
+			}
+
+		if($size>$maxupload)
+			$errors['ATTACH_TOO_BIG']=sprintf($lang['FILE_TOO_BIG'],Files::BytesToSize($maxupload),Files::BytesToSize($size));
 
 		if($errors)
 			break;
 
-		$subject=Eleanor::FilterLangValues($config['subject']);
-		Email::Simple($whom[$values['whom']],Eleanor::ExecBBLogic($subject,array('s'=>$values['subject'])),$values['message'],array('files'=>$files,'from'=>$values['from']));
+		if(is_int($recipient[ $values['recipient'] ]))
+		{
+			$table=P.'users_site';
+			$R=Eleanor::$Db->Query("SELECT `email` FROM `{$table}` WHERE `id`={$recipient[ $values['recipient'] ]} LIMIT 1");
+			if(!list($email)=$R->fetch_row())
+			{
+				$errors[]='WRONG_RECIPIENT';
+				break;
+			}
+		}
+		else
+			$email=$recipient[ $values['recipient'] ];
+
+		$user=$isu ? Eleanor::$Login->Get(['id','name']) : false;
+		$subject=is_array($data['subject']) ? FilterLangValues($data['subject']) : $data['subject'];
+		$text=is_array($data['text']) ? FilterLangValues($data['text']) : $data['text'];
+
+		$repl=[
+			'subject'=>$values['subject'],
+			'message'=>$values['message'],
+			'name'=>$isu ? htmlspecialchars($user['name'],ENT,\Eleanor\CHARSET) : '',
+			'userlink'=>$isu ? \Eleanor\PROTOCOL.\Eleanor\PUNYCODE.\Eleanor\SITEDIR.UserLink($user['name'],$user['id']) : '',
+			'ip'=>Eleanor::$ip,
+			'site'=>Eleanor::$vars['site_name'],
+			'link'=>\Eleanor\PROTOCOL.\Eleanor\PUNYCODE.\Eleanor\SITEDIR,
+		];
+
+
+		Email::Simple($email,
+			BBCode::ExecLogic($subject,$repl),
+			BBCode::ExecLogic($text,$repl),
+			['files'=>$files,'from'=>$values['from']]);
+
 		$_SESSION['can']=false;
 
-		$title[]=$lang['st'];
-		$s=Eleanor::$Template->Sent();
-		Start();
-		echo$s;
-		return;
+		$links=[
+			'send'=>$Eleanor->module['origurl'],
+		];
+		$title[]=$lang['successfully-send'];
+		$c=Eleanor::$Template->Sent($links);
+		Response($c);
+
+		return 1;
 	}while(false);
-	Contacts($config,$errors);
 }
+
+if($errors)
+{
+	include_once DIR.'crud.php';
+
+	if(!is_array($errors))
+		$errors=[];
+
+	$postdata=[
+		'subject'=>'string',
+		'message'=>'string',
+		'recipient'=>'int',
+		'session'=>'string',
+	];
+
+	if(!$isu)
+		$postdata['from']='string';
+
+	PostValues($values,$postdata);
+}
+
+if(is_array($data['document_title']))
+	$data['document_title']=FilterLangValues($data['document_title']);
+
+if($data['document_title'])
+	$title=$data['document_title'];
 else
-	Contacts($config);
+	$title[]=$lang['contacts'];
 
-function Contacts($config,$errors=array())
-{global$Eleanor,$title;
-	$isu=Eleanor::$Login->IsUser();
-	$bypost=false;
-	if($errors)
-	{
-		$bypost=true;
-		if($errors===true)
-			$errors=array();
-		$values=array(
-			'subject'=>isset($_POST['subject']) ? (string)$_POST['subject'] : '',
-			'message'=>isset($_POST['message']) ? (string)$_POST['message'] : '',
-			'whom'=>isset($_POST['whom']) ? (int)$_POST['whom'] : 0,
-			'sess'=>isset($_POST['sess']) ? (string)$_POST['sess'] : '',
-			'from'=>isset($_POST['from']) && !$isu ? (string)$_POST['from'] : '',
-		);
-	}
-	else
-		$values=array(
-			'subject'=>'',
-			'message'=>'',
-			'whom'=>0,
-			'sess'=>'',
-			'from'=>'',
-		);
+$info=is_array($data['info']) ? FilterLangValues($data['info']) : $data['info'];
+$recipient=$data['recipient'] ? array_values($data['recipient']) : null;
 
-	$title[]=$Eleanor->module['title'];
-	$canupload=Eleanor::$Permissions->MaxUpload();
-	$info=Eleanor::FilterLangValues($config['info']);
-	$whom=Eleanor::FilterLangValues($config['whom']);
-	$whom=$whom ? array_values($whom) : false;
-	$Eleanor->Editor->ownbb=$Eleanor->Editor->smiles=false;
+foreach($recipient as &$v)
+	if(is_array($v))
+		$v=FilterLangValues($v);
+unset($v);
 
-	if($canupload===true)
-		$canupload=5*1024*1024;#5 Mb жесткий предел
+\Eleanor\StartSession($values['session']);
+$_SESSION['can']=true;
+$values['session']=session_id();
 
-	Eleanor::StartSession($values['sess']);
-	$_SESSION['can']=true;
-	$values['sess']=session_id();
+$Editor=function($name)use($Eleanor){
+	$Editor=new Editor(null,false,false);
+	return call_user_func_array([$Editor,'Area'],func_get_args());
+};
 
-	$Eleanor->origurl=PROTOCOL.Eleanor::$punycode.Eleanor::$site_path.$Eleanor->Url->Prefix(true);
-	$s=Eleanor::$Template->Contacts($canupload,OwnBB::Parse($info),$whom,$values,$bypost,$errors,$isu,$Eleanor->Captcha->disabled ? false : $Eleanor->Captcha->GetCode());
-	Start();
-	echo$s;
-}
+$Eleanor->module['description']=is_array($data['meta_descr']) ? FilterLangValues($data['meta_descr']) : $data['meta_descr'];
+
+$c=Eleanor::$Template->Contacts($info,$maxupload,$recipient,$values,$errors,$Editor,$Captcha->GetCode());
+Response($c);

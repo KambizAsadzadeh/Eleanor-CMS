@@ -86,6 +86,7 @@ class Language extends Eleanor\BaseClass implements \ArrayAccess
 	 * @param string|array $path Путь к файлу, в котором вместо * будет подставлено название языка.
 	 * @param string|false $file Название файла (секции) в случае multiple (пример $L['file']['param']), в случае false
 	 * языковые параметры будут просто возвращены без сохранения локальной копии в dump-е.
+	 * @throws EE
 	 * @return array */
 	public function Load($path,$file='')
 	{

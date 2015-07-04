@@ -1,9 +1,9 @@
 <?php
 /**
-	Eleanor CMS © 2014
-	http://eleanor-cms.ru
-	info@eleanor-cms.ru
-*/
+Eleanor CMS © 2014
+http://eleanor-cms.ru
+info@eleanor-cms.ru
+ */
 namespace CMS\Templates\Admin;
 use \Eleanor\Classes\EE;
 
@@ -31,8 +31,8 @@ foreach($var_2 as $smile)
 	if($smile['show'])
 		$smiles.='<button data-em="'.reset($smile['emotion']).'" style="background-image: url('.T::$http['static'].$smile['path'].');"></button>';
 
-	if($smiles)
-		$smiles=<<<HTML
+if($smiles)
+	$smiles=<<<HTML
 <div class="bb-right">
 	<div class="bb-combo dropdown dropup">
 		<button data-toggle="dropdown" class="bb" title="Вставить смайл"><span class="ico-smile"></span></button>
@@ -40,7 +40,7 @@ foreach($var_2 as $smile)
 	</div>
 </div>
 HTML;
-	#/Smiles
+#/Smiles
 
 #OwnBB
 $ownbb='';
@@ -52,7 +52,7 @@ foreach($var_3 as $k=>$tag)
 	{
 		case'script':
 			$k='js';
-		break;
+			break;
 		case'onlinevideo':
 			$k='youtube';
 	}
@@ -82,7 +82,7 @@ if($var_3)
 	</ul>
 </div>
 HTML;
-	#/OwnBB
+#/OwnBB
 
 $foot=$smiles|| $ownbb ? '<div class="bb-foot" id="foot-'.$var_0.'">'.$smiles.$ownbb.'</div>' : '';
 

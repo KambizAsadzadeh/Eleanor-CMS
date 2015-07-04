@@ -82,16 +82,18 @@ HTML;
 			}
 		}
 		else
-			$opts=' ';
+			$opts='<option></option>';
 
 		if($js_obj==='tags')
-			$js_obj=',ajax:{url:location.href,cache:"true",processResults:function(pre){
+			$js_obj=<<<'HTML'
+, tokenSeparators: ['\t',','],ajax:{url:location.href,cache:"true",processResults:function(pre){
 				var data=[];
 				$.each(pre,function(i,v){
 					data.push("string"===typeof v ? {id:v,text:v} : v);
 				});
 				return{results: data};
-			}}';
+			}}
+HTML;
 		else
 		{
 			$js_obj=trim($js_obj,',');
@@ -100,7 +102,7 @@ HTML;
 				$js_obj=','.$js_obj;
 		}
 
-		return static::Items($n,$opts,$a,"{tags: true, tokenSeparators: ['\\t',',']{$js_obj}}");
+		return static::Items($n,$opts,$a,"{tags: true{$js_obj}}");
 	}
 }
 

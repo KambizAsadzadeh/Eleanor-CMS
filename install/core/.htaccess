@@ -31,13 +31,13 @@ ErrorDocument 504 {full_}errors/504
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 
-	#Редиректы с index.php и index.html
+	#Редиректы с themes.php и index.html
 	RewriteCond %{THE_REQUEST} ^GET\ .*/index\.(php|html?)\ HTTP
 	RewriteRule ^index\.(php|html?)$ {full} [R=301,L]
 
 	#Редирект для чужих доменов
 	RewriteCond %{HTTP_HOST} !^{shost}$
-	RewriteRule ^(.*)$ {full}$1 [R=301,L]
+	RewriteRule ^(.*)$ {full_}$1 [R=301,L]
 
 	#Правила для скачивания: отдаем любой контент только через скрипт
 	#НЕ УДАЛЯЙТЕ И НЕ КОММЕНТИРУЙТЕ СТРОКУ НИЖЕ!!!! ЭТО ЧРЕВАТО ВЗЛОМОМ!!!

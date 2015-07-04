@@ -53,8 +53,8 @@ class Url extends \Eleanor\Classes\Url
 		if(!$l)
 			$l=Language::$main;
 
-		if(Eleanor::$vars['trans_uri'] and method_exists('CMS\\'.$l,'Translit'))
-			$s='CMS\\'.$l::Translit($s);
+		if(Eleanor::$vars['trans_uri'] and method_exists('Eleanor\\Classes\\Language\\'.$l,'Translit'))
+			$s=call_user_func(['Eleanor\\Classes\\Language\\'.$l,'Translit'],$s);
 
 		if($rep===null)
 			$rep=Eleanor::$vars['url_rep_space'];

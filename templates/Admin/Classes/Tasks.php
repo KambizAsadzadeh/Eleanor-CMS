@@ -218,8 +218,8 @@ HTML;
 				$nofilter='';
 			}
 
-			$filters['task']=Html::Input('fi[task]',$filters['task'],['placeholder'=>static::$lang['filter-by-task'],'class'=>'form-control','id'=>'fi-task']);
-			$filters['title']=Html::Input('fi[title]',$filters['title'],['placeholder'=>T::$lang['filter-by-name'],'class'=>'form-control','id'=>'fi-title']);
+			$filters['task']=Html::Input('fi[task]',$filters['task'],['placeholder'=>static::$lang['filter-by-task'],'title'=>static::$lang['filter-by-task'],'class'=>'form-control','id'=>'fi-task']);
+			$filters['title']=Html::Input('fi[title]',$filters['title'],['placeholder'=>T::$lang['filter-by-name'],'title'=>T::$lang['filter-by-name'],'class'=>'form-control','id'=>'fi-title']);
 			$filters=<<<HTML
 					<!-- Фильтры -->
 					<div class="filters">
@@ -301,13 +301,13 @@ HTML;
 
 			foreach(Eleanor::$langs as $lng=>$v)
 				$input['title'][$lng]=Html::Input("title[{$lng}]",$values['title'][$lng],
-					['class'=>'form-control need-tabindex input-lg','id'=>'title-'.$lng,'placeholder'=>static::$lang['title-plh']]);
+					['class'=>'form-control need-tabindex input-lg','id'=>'title-'.$lng,'placeholder'=>static::$lang['title-plh'],'title'=>static::$lang['title-plh']]);
 
 			$input['title']=T::$T->LangEdit($input['title'],'title');
 		}
 		else
 			$input=[
-				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control need-tabindex input-lg','placeholder'=>static::$lang['title-plh']]),
+				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control need-tabindex input-lg','placeholder'=>static::$lang['title-plh'],'title'=>static::$lang['title-plh']]),
 			];
 
 		#Обработчики
@@ -327,7 +327,7 @@ HTML;
 					['class'=>'form-control need-tabindex','id'=>'run-hour-select']
 				),
 				'input'=>Html::Input('',1,['type'=>'number','class'=>'form-control need-tabindex task','id'=>'run-hour-num','min'=>1,'max'=>100,'required'=>true])
-					.Html::Input('','',['class'=>'form-control need-tabindex','id'=>'run-hour-text','placeholder'=>static::$lang['example-plh']])],
+					.Html::Input('','',['class'=>'form-control need-tabindex','id'=>'run-hour-text','placeholder'=>static::$lang['example-plh'],'title'=>static::$lang['example-plh']])],
 			'run_minute'=>['select'=>Html::Input('run_minute',$values['run_minute'],['type'=>'hidden','id'=>'run-minute','class'=>'pim'])
 				.Html::Select('',
 						Html::Option(static::$lang['minute-*'],'*').
@@ -336,7 +336,7 @@ HTML;
 					['class'=>'form-control need-tabindex','id'=>'run-minute-select']
 				),
 				'input'=>Html::Input('',1,['type'=>'number','class'=>'form-control need-tabindex task','id'=>'run-minute-num','min'=>1,'max'=>100,'required'=>true])
-					.Html::Input('','',['class'=>'form-control need-tabindex','id'=>'run-minute-text','placeholder'=>static::$lang['example-plh']])],
+					.Html::Input('','',['class'=>'form-control need-tabindex','id'=>'run-minute-text','placeholder'=>static::$lang['example-plh'],'title'=>static::$lang['example-plh']])],
 			'run_second'=>['select'=>Html::Input('run_second',$values['run_second'],['type'=>'hidden','id'=>'run-second','class'=>'pim'])
 				.Html::Select('',
 						Html::Option(static::$lang['second-*'],'*').
@@ -345,7 +345,7 @@ HTML;
 					['class'=>'form-control need-tabindex','id'=>'run-second-select']
 				),
 				'input'=>Html::Input('',1,['type'=>'number','class'=>'form-control need-tabindex task','id'=>'run-second-num','min'=>1,'max'=>100,'required'=>true])
-					.Html::Input('','',['class'=>'form-control need-tabindex','id'=>'run-second-text','placeholder'=>static::$lang['example-plh']])],
+					.Html::Input('','',['class'=>'form-control need-tabindex','id'=>'run-second-text','placeholder'=>static::$lang['example-plh'],'title'=>static::$lang['example-plh']])],
 			'run_month'=>['select'=>Html::Input('run_month',$values['run_month'],['type'=>'hidden','id'=>'run-month','class'=>'pim'])
 				.Html::Select('',
 						Html::Option(static::$lang['month-*'],'*').
@@ -354,7 +354,7 @@ HTML;
 					['class'=>'form-control need-tabindex','id'=>'run-month-select']
 				),
 				'input'=>Html::Input('',1,['type'=>'number','class'=>'form-control need-tabindex task','id'=>'run-month-num','min'=>1,'max'=>100,'required'=>true])
-					.Html::Input('','',['class'=>'form-control need-tabindex','id'=>'run-month-text','placeholder'=>static::$lang['example-plh']])],
+					.Html::Input('','',['class'=>'form-control need-tabindex','id'=>'run-month-text','placeholder'=>static::$lang['example-plh'],'title'=>static::$lang['example-plh']])],
 			'run_day'=>['select'=>Html::Input('run_day',$values['run_day'],['type'=>'hidden','id'=>'run-day','class'=>'pim'])
 				.Html::Select('',
 						Html::Option(static::$lang['day-*'],'*').
@@ -363,7 +363,7 @@ HTML;
 					['class'=>'form-control need-tabindex','id'=>'run-day-select']
 				),
 				'input'=>Html::Input('',1,['type'=>'number','class'=>'form-control need-tabindex task','id'=>'run-day-num','min'=>1,'max'=>100,'required'=>true])
-					.Html::Input('','',['class'=>'form-control need-tabindex','id'=>'run-day-text','placeholder'=>static::$lang['example-plh']])],
+					.Html::Input('','',['class'=>'form-control need-tabindex','id'=>'run-day-text','placeholder'=>static::$lang['example-plh'],'title'=>static::$lang['example-plh']])],
 		];
 
 		#Pim поля, которые сабмитятся только если изменились
@@ -439,7 +439,7 @@ HTML;
 						<br />
 						<div class="form-group">
 							<label for="handler">{$c_lang['handler']}</label>
-							<div>{$input['handler']}</div>
+							{$input['handler']}
 						</div>
 						{$er_run}{$er_hour}
 						<div class="form-group">

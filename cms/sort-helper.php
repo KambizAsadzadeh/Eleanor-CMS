@@ -42,7 +42,7 @@ function PerPage(&$query)
  * @return array [$sort,$order,$limit,$offset,$pp] */
 function SortOrderLimit($total,&$page,array&$query,array$sorting,$defsort,$deforder='desc',$pp=null)
 {
-	if(!$pp)
+	if(!is_int($pp))
 		$pp=PerPage($query);
 
 	if($page<=0)

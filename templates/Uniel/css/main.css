@@ -200,11 +200,11 @@ div.count span {
 .tooltip .tip-arrow-left { margin-top:6px; margin-left:-10px; background-position: -30px 0; }
 
 /*tabs*/
-.linetabs { padding: 0 4px; margin: 0 0 5px 0; height: 33px; overflow: hidden; background: #e4e5e5 url("../../Audora/images/htools.png") repeat-x 0 -342px; }
+.linetabs { padding: 0 4px; margin: 0 0 5px 0; height: 33px; overflow: hidden; background: #e4e5e5 url("../images/htools.png") repeat-x 0 -342px; }
 .linetabs li { display: inline; }
 .linetabs a, .linetabs a b { float: left; height: 23px; cursor: pointer; font-weight: normal; text-decoration: none; }
-.linetabs a { color: #505252; line-height: 22px; margin: 9px 1px 0 0; background: #c6c6c6 url("../../Audora/images/htools.png") no-repeat 0 -421px; }
-.linetabs a b { background: url("../../Audora/images/htools.png") no-repeat 100% -375px; padding: 0 12px; }
+.linetabs a { color: #505252; line-height: 22px; margin: 9px 1px 0 0; background: #c6c6c6 url("../images/htools.png") no-repeat 0 -421px; }
+.linetabs a b { background: url("../images/htools.png") no-repeat 100% -375px; padding: 0 12px; }
 
 .linetabs a:hover { background-position: 0 -444px; background-color: #fdfdfd; }
 .linetabs a:hover b { background-position: 100% -398px; }
@@ -225,25 +225,25 @@ div.count span {
 .tabstyle td, .tabstyle th, .filtertable td { padding: 7px 10px; }
 .tabform .first td { padding-top: 3px; }
 .tabstyle th { text-align: center; }
-.tabstyle td, .filtertable td { border: 1px solid #dbdbdb; background: url("../../Audora/images/tablerow.png") repeat-x 0 100%; }
+.tabstyle td, .filtertable td { border: 1px solid #dbdbdb; background: url("../images/tablerow.png") repeat-x 0 100%; }
 .tabstyle td table.inside td { background: none; padding: 0; border: 0 none; }
 .tabstyle .tabletrline2:hover td, .tabstyle .tabletrline1:hover td { background: #f1f1f1; }
 .filtertable td { border-width: 0 0 1px 0; }
 
 .tabform td { border-width: 0 0 1px 0; vertical-align: top; }
-.tabform .tabletrline2:hover td, .tabform .tabletrline1:hover td { background: url("../../Audora/images/tablerow.png") repeat-x 0 100%; }
+.tabform .tabletrline2:hover td, .tabform .tabletrline1:hover td { background: url("../images/tablerow.png") repeat-x 0 100%; }
 
-.tablethhead th { padding: 5px 10px; color: #fff; font-size: 0.9em; border: 1px solid #373839; background: #57595a url("../../Audora/images/tablethhead.png") repeat-x 0 100%; }
+.tablethhead th { padding: 5px 10px; color: #fff; font-size: 0.9em; border: 1px solid #373839; background: #57595a url("../images/tablethhead.png") repeat-x 0 100%; }
 .tablethhead th a { color: #fff; }
 .infolabel td { background: none; padding-top: 14px; border-bottom: 2px solid #9fa3aa; text-align: left; font-size: 1.5em; padding-top:15px !important;}
 
 .function { text-align: right; }
 .function img { vertical-align: middle; margin: 0 2px; }
 
-.submitline { padding: 10px 8px 5px 8px; text-align: center; background: url("../../Audora/images/submitline.png") repeat-x 0 0; }
+.submitline { padding: 10px 8px 5px 8px; text-align: center; background: url("../images/submitline.png") repeat-x 0 0; }
 button, input[type=button], input[type=submit] {
 	border: 1px solid #bdbdbd; color: #747474; font-weight: bold; cursor: pointer;
-	background: #fff url("../../Audora/images/buttons.png") repeat-x 0 100%;
+	background: #fff url("../images/buttons.png") repeat-x 0 100%;
 	padding-bottom: 3px; padding-top: 3px;
 	-o-border-radius:4px;
 	-moz-border-radius:4px;
@@ -255,7 +255,7 @@ button.button:hover, input.button:hover { color: #4c4c4c; background: #fff; }
 .label { font-weight: bold; text-align: right; vertical-align: top; width: 90px; color: #525252; }
 .label .small { font-weight: normal; line-height: 1.3em; }
 .imp { color: #d34b4b; font-weight: normal; }
-.labinfo {cursor:help;display: inline-block; white-space: nowrap; margin: -2px 2px 0 0; vertical-align: middle; line-height: 40px; height: 13px; width: 16px; overflow: hidden; background: url("../../Audora/images/labinfo.png") no-repeat 0 0; }
+.labinfo {cursor:help;display: inline-block; white-space: nowrap; margin: -2px 2px 0 0; vertical-align: middle; line-height: 40px; height: 13px; width: 16px; overflow: hidden; background: url("../images/labinfo.png") no-repeat 0 0; }
 
 /*upload image*/
 .screenblock { color: #757575; vertical-align: middle; text-align: center; display: table-cell; background-color: #ebe9e5; border: 1px solid #c9c7c3; }
@@ -1136,10 +1136,10 @@ a.bbe_ytext:hover span { background-position: 100% -63px; }
 	font-weight: bold;
 	text-align: center;
 	color: #6d6a65;
-	background: #f5f5f5 url(../../../images/uploader/uppanel_btn.png) no-repeat left top;
+	background: #f5f5f5 url(../images/uploader/uppanel_btn.png) no-repeat left top;
 	text-decoration:none;
 }
-a.imagebtn:hover { color: #6d6a65; background: #fafafa url(../../../images/uploader/uppanel_btn.png) no-repeat left -27px;text-decoration:none; }
+a.imagebtn:hover { color: #6d6a65; background: #fafafa url(../images/uploader/uppanel_btn.png) no-repeat left -27px;text-decoration:none; }
 
 /* inputs */
 input.error { background:#FF8377; border-color:#DB8180; }
@@ -1147,3 +1147,6 @@ input.ok { background:#E0F5BD; border-color:#B3D577; }
 
 /* AgregateRating */
 .hidden { visibility:hidden }
+
+.captcha > * { display: block; }
+.captcha > input { margin-top:5px; width:111px; }

@@ -213,7 +213,7 @@ HTML;
 				$nofilter='';
 			}
 
-			$filters=Html::Input('fi[title]',$filters['title'],['placeholder'=>T::$lang['filter-by-name'],'class'=>'form-control','id'=>'fi-title']);
+			$filters=Html::Input('fi[title]',$filters['title'],['placeholder'=>T::$lang['filter-by-name'],'title'=>T::$lang['filter-by-name'],'class'=>'form-control','id'=>'fi-title']);
 			$filters=<<<HTML
 					<!-- Фильтры -->
 					<div class="filters">
@@ -340,7 +340,7 @@ HTML;
 			foreach(Eleanor::$langs as $lng=>$v)
 			{
 				$input['title'][$lng]=Html::Input("title[{$lng}]",$values['title'][$lng],
-					['class'=>'form-control need-tabindex input-lg pim','id'=>'title-'.$lng,'placeholder'=>static::$lang['title-placeholder']]);
+					['class'=>'form-control need-tabindex input-lg pim','id'=>'title-'.$lng,'placeholder'=>static::$lang['title-placeholder'],'title'=>static::$lang['title-placeholder']]);
 				$input['uri'][$lng]=Html::Input("uri[{$lng}]",$values['uri'][$lng],
 					['class'=>'form-control need-tabindex pim','id'=>'uri-'.$lng]);
 				$input['text'][$lng]=$Editor("text[{$lng}]",$values['text'][$lng],
@@ -374,7 +374,7 @@ HTML;
 		}
 		else
 			$input=[
-				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control need-tabindex input-lg pim','placeholder'=>static::$lang['title-placeholder']]),
+				'title'=>Html::Input('title',$values['title'],['id'=>'title','class'=>'form-control need-tabindex input-lg pim','placeholder'=>static::$lang['title-placeholder'],'title'=>static::$lang['title-placeholder']]),
 				'uri'=>Html::Input('uri',$values['uri'],['id'=>'uri','class'=>'form-control need-tabindex pim']),
 				'text'=>$Editor('text',$values['text'],['class'=>'form-control need-tabindex pim','id'=>'text','rows'=>20]),
 				'document_title'=>Html::Input('document_title',$values['document_title'],['class'=>'form-control need-tabindex pim','id'=>'document-title']),
@@ -397,7 +397,7 @@ HTML;
 		}
 
 		foreach($input['parent'] as $k=>&$parent)
-			$parent=Select2::Select('parent','<option></option>'.$parent,['data-parent'=>$k,'id'=>'parent-'.$k,'class'=>'parents','placeholder'=>T::$lang['to-root'],'disabled'=>!$parent],
+			$parent=Select2::Select('parent','<option></option>'.$parent,['data-parent'=>$k,'id'=>'parent-'.$k,'class'=>'parents','placeholder'=>T::$lang['to-root'],'title'=>T::$lang['to-root'],'disabled'=>!$parent],
 				'{allowClear:true}');
 
 		$input['parent']=join('',$input['parent']);

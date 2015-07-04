@@ -10,10 +10,9 @@ use\Eleanor\Classes\Output;
 defined('CMS\STARTED')||die;
 
 /** @var array $config */
-
 global$Eleanor,$title;
 
-$lang=Eleanor::$Language->Load(__DIR__.'/index-*.php',$config['n']);;
+$lang=Eleanor::$Language->Load($Eleanor->module['path'].'/index-*.php',$config['n']);
 $uid=Eleanor::$Login->Get('id');
 $Eleanor->module['links']=[
 	'rss'=>Eleanor::$services['rss']['file'].'?'.Url::Query([
@@ -70,7 +69,7 @@ if(isset($Eleanor->module['general']))
 		foreach($substance as $k=>&$v)
 			$v['_a']=$Api->GetUrl($k,$Eleanor->Url);
 
-		if(isset($Eleanor->module['general']))
+		if(!isset($Eleanor->module['general']))
 			$Eleanor->module['origurl']=rtrim($Eleanor->Url->prefix,'/');
 
 		$etag=md5($uid.join(',',array_keys($substance)));

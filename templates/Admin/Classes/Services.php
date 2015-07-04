@@ -146,9 +146,9 @@ HTML;
 				$nofilter='';
 			}
 
-			$filters['name']=Html::Input('fi[name]',$filters['name'],['placeholder'=>static::$lang['filter-by-name'],
+			$filters['name']=Html::Input('fi[name]',$filters['name'],['placeholder'=>static::$lang['filter-by-name'],'title'=>static::$lang['filter-by-name'],
 				'class'=>'form-control','id'=>'fi-name']);
-			$filters['file']=Html::Input('fi[file]',$filters['file'],['placeholder'=>static::$lang['filter-by-file'],
+			$filters['file']=Html::Input('fi[file]',$filters['file'],['placeholder'=>static::$lang['filter-by-file'],'title'=>static::$lang['filter-by-file'],
 				'class'=>'form-control','id'=>'fi-file']);
 
 			$filters=<<<HTML
@@ -229,7 +229,7 @@ HTML;
 			'login'=>Html::Select('login',$logins,['class'=>'form-control need-tabindex pim','id'=>'login']),
 			'file'=>Html::Input('file',$values['file'],['class'=>'pim form-control need-tabindex','id'=>'file','list'=>'files'])
 				.'<datalist id="files">'.$files.'</datalist>',
-			'name'=>Html::Input('name',$values['name'],['class'=>'pim form-control need-tabindex','id'=>'name','placeholder'=>static::$lang['name']]),
+			'name'=>Html::Input('name',$values['name'],['class'=>'pim form-control need-tabindex','id'=>'name','placeholder'=>static::$lang['name'],'title'=>static::$lang['name']]),
 			'protected'=>Html::Check('protected',$values['protected'],['class'=>'need-tabindex','disabled'=>(bool)$service]),
 		];
 

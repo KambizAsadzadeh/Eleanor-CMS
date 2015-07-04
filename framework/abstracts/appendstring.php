@@ -33,6 +33,7 @@ abstract class AppendString extends Eleanor\BaseClass
 	{
 		$s=$this->s;
 		$this->s='';
+
 		return$s;
 	}
 
@@ -43,6 +44,7 @@ abstract class AppendString extends Eleanor\BaseClass
 	public function __invoke()
 	{
 		$n=func_num_args();
+
 		if($n>0)
 		{
 			$a=func_get_args();
