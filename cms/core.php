@@ -426,12 +426,13 @@ class Eleanor extends Framework
 				else
 					$m=self::$vars['blocked_message'];
 
-				if(IPMatchMask(self::$ip,$bip))
-					static::$ban=[ 'type'=>'ip', 'explain'=>$m ];
-				else
-					foreach(self::$ips as &$ip)
-						if(IPMatchMask($ip,$bip))
-							static::$ban=[ 'type'=>'ip', 'explain'=>$m ];
+				if(!\Eleanor\CLI)
+					if(IPMatchMask(self::$ip,$bip))
+						static::$ban=[ 'type'=>'ip', 'explain'=>$m ];
+					else
+						foreach(self::$ips as &$ip)
+							if(IPMatchMask($ip,$bip))
+								static::$ban=[ 'type'=>'ip', 'explain'=>$m ];
 			}
 
 			unset(self::$vars['blocked_ips']);
@@ -456,11 +457,11 @@ class Eleanor extends Framework
 if(ANGULAR and !$_POST)
 	$_POST=json_decode(trim(file_get_contents('php://input')),true);
 
-if($_SERVER['REQUEST_METHOD']=='POST')
+if(isset($_SERVER['REQUEST_METHOD']) and $_SERVER['REQUEST_METHOD']=='POST')
 	Eleanor::$POST=new GlobalsWrapper('_POST');
 
 #Detect IP
-Eleanor::$ip=filter_var($_SERVER['REMOTE_ADDR'],FILTER_VALIDATE_IP) ? inet_pton($_SERVER['REMOTE_ADDR']) : 0;
+Eleanor::$ip=isset($_SERVER['REMOTE_ADDR']) && filter_var($_SERVER['REMOTE_ADDR'],FILTER_VALIDATE_IP) ? inet_pton($_SERVER['REMOTE_ADDR']) : 0;
 foreach(['HTTP_X_FORWARDED_FOR','HTTP_X_FORWARDED','HTTP_FORWARDED_FOR','HTTP_FORWARDED','HTTP_X_COMING_FROM',
 		'HTTP_COMING_FROM','HTTP_CLIENT_IP','HTTP_X_CLUSTER_CLIENT_IP','HTTP_PROXY_USER','HTTP_XROXY_CONNECTION',
 		'HTTP_PROXY_CONNECTION','HTTP_USERAGENT_VIA','HTTP_X_REAL_IP'] as $v)

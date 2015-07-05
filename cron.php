@@ -18,6 +18,43 @@ function Image()
 	return 1;
 }
 
+/** Завершение работы скрипта
+ * @param bool $again Флаг повторного запуска */
+function Finish($again=false)
+{
+	if($again)
+	{#http://php.net/manual/en/features.commandline.options.php
+
+		$php='php';#путь к php
+		$script=__FILE__;//путь к скрипту
+
+		if(\Eleanor\W)
+		{
+			#PHP необходимо добавить в переменную PATH системы, если это OpenServer или его аналог, то ненужно
+			$path=explode(';', $_SERVER['PATH']);
+			foreach($path as $v)
+				if(is_file($v.'\php.exe'))
+				{
+					$php=$v.'\php.exe';
+					break;
+				}
+
+			#http://www.somacon.com/p395.php
+			pclose(popen('start /b "" "'.$php.'" -q '.$script,'r'));
+		}
+		else
+			`$php -q $script > /dev/null &`;
+	}
+
+	if(isset($_GET['return']) and Eleanor::$ourquery)
+	{
+		header('Cache-Control: no-store');
+		header('Location: '.(string)$_GET['return'],true,301);
+	}
+	else
+		Image();
+}
+
 require __DIR__.'/cms/core.php';
 
 $Eleanor=new Eleanor(true);
@@ -44,7 +81,7 @@ elseif(isset($_REQUEST['module']) and is_string($_REQUEST['module']))
 	$Eleanor->modules=GetModules();
 
 	if(!isset($Eleanor->modules['uri2id'][$uri]))
-		return Image();
+		return Finish();
 
 	$id=$Eleanor->modules['uri2id'][$uri];
 	$module=$Eleanor->modules['id2module'][$id];
@@ -62,12 +99,13 @@ elseif(isset($_REQUEST['module']) and is_string($_REQUEST['module']))
 	if(is_file($path))
 		\Eleanor\AwareInclude($path);
 	else
-		return Image();
+		return Finish();
 }
 else
 {
 	$t=time();
 	$table=P.'tasks';
+	$again=false;
 
 	if(isset($_GET['id']))
 	{
@@ -80,7 +118,7 @@ else
 		Eleanor::$Db->Update($table,['free'=>1,'locked'=>0],"`status`=1 AND `locked`=1 AND `free`=0 AND `nextrun`<FROM_UNIXTIME({$t}-7200)");
 
 		$date=date('Y-m-d H:i:s');
-		$R=Eleanor::$Db->Query("SELECT `id`, `task`, `free`, `options`, `data`, `run_month`, `run_day`, `run_hour`, `run_minute`, `run_second`, `do` FROM `{$table}` WHERE `status`=1 AND `locked`=0 AND `free`=1 AND `nextrun`>'{$date}' ORDER BY `free` ASC, `nextrun` ASC");
+		$R=Eleanor::$Db->Query("SELECT `id`, `task`, `free`, `options`, `data`, `run_month`, `run_day`, `run_hour`, `run_minute`, `run_second`, `do` FROM `{$table}` WHERE `status`=1 AND `locked`=0 AND `nextrun`<'{$date}' ORDER BY `free` ASC, `nextrun` ASC");
 	}
 
 	if($task=$R->fetch_assoc())do
@@ -103,7 +141,7 @@ else
 			$res=true;
 
 		$update=[
-			'free'=>$res,
+			'free'=>$res ? 1 : 0,
 			'locked'=>0,
 			'!lastrun'=>'NOW()',
 		];
@@ -123,6 +161,8 @@ else
 
 			$update['!nextrun']='FROM_UNIXTIME('.(int)$nr.')';
 		}
+		else
+			$again=true;
 
 		$update['data']=$T->GetNextRunInfo();
 		$update['data']=$update['data'] ? json_encode($update['data'],JSON) : '';
@@ -131,12 +171,5 @@ else
 	}while(false);
 
 	Tasks::UpdateNextRun();
-
-	if(isset($_GET['return']) and Eleanor::$ourquery)
-	{
-		header('Cache-Control: no-store');
-		header('Location: '.(string)$_GET['return'],true,301);
-	}
-	else
-		Image();
+	Finish($again);
 }

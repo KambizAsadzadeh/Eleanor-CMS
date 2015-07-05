@@ -20,6 +20,9 @@ defined('Eleanor\PROTOCOL')||define('Eleanor\PROTOCOL',isset($_SERVER['HTTPS']) 
 /** Тут есть некоторые глюки... */
 define('Eleanor\W',stripos(PHP_OS,'win')===0);
 
+/** PHP CLI? */
+define('Eleanor\CLI',php_sapi_name()==='cli');
+
 /** Базовый класс, от которого рекомендуется наследовать все остальные: содержит необходимые заглушки, облегчающие поиск
  * багов и их исправление */
 abstract class BaseClass

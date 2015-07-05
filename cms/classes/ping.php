@@ -99,7 +99,7 @@ class Ping extends \Eleanor\BaseClass
 				$v['methods']=(array)$v['methods'];
 
 			$f='<?xml version="1.0" encoding="'.\Eleanor\CHARSET.'"?>';
-			$categs=isset($a['categories']) ? '<param><value>'.$a['categories'].'</value></param>' : '';
+			$categs=isset($a['categories']) ? "<param><value>{$a['categories']}</value></param>" : '';
 
 			if(in_array('weblogUpdates.extendedPing',$v['methods']) and $nech and $nerss)
 				$f.=<<<XML
