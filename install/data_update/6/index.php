@@ -8,7 +8,7 @@
 	=====
 	*Pseudonym
 */
-if(!defined('CMS'))die;
+defined('CMS\STARTED')||die;
 
 class Update_6 extends UpdateClass
 {

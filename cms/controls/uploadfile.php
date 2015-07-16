@@ -66,7 +66,7 @@ class ControlUploadFile extends BaseClass implements ControlsBase
 						$a['value']=preg_replace('#^'.Eleanor::$uploads.'/?#','',$a['value']);
 					return$a;
 				},
-				'append'=>'<script type="text/javascript">//<![CDATA[
+				'append'=>'<script>
 $(function(){
 	$(".uploadfile-path:first").removeClass("uploadfile-path").autocomplete({
 		serviceUrl:CORE.ajax_file,
@@ -78,7 +78,7 @@ $(function(){
 			path:"'.Eleanor::$uploads.'"
 		}
 	});
-});//]]></script>'
+})</script>'
 			),
 			'types'=>array(
 				'title'=>static::$Language['file_types'],

@@ -1,12 +1,13 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
 namespace CMS\OwnBB;
 defined('CMS\STARTED')||die;
 
+/** Вставка в текст исполняемого JavaScript */
 class Script extends \CMS\Abstracts\OwnBbCode
 {
 	/** Обработка информации перед показом на странице
@@ -29,9 +30,11 @@ class Script extends \CMS\Abstracts\OwnBbCode
 			return static::RestrictDisplay($t,$p,$c);
 
 		if(isset($p['src']))
-			return'<script src="'.$p['src'].'"></script>';
+			return<<<HTML
+<script src="{$p['src']}"></script>
+HTML;
 
-		return'<script>/*<![CDATA[*/'.$c.'//]]></script>';
+		return"<script>{$c}</script>";
 	}
 
 	/** Обработка информации перед её сохранением

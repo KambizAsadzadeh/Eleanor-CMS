@@ -171,7 +171,7 @@ function AddEditBlock()
 		tr.clone(false).find("input[type=text],textarea").val("").end().insertAfter(tr);
 	}).on("click",".sb-minus",function(){
 		var tr=$(this).closest("tr");
-		if($("#vars tr").size()>2)
+		if($("#vars tr").length>2)
 			tr.remove();
 		else
 			tr.find("input[type=text],textarea").val("");
@@ -387,7 +387,7 @@ $.fn.EleanorVisualBlocks=function(opts)
 			Activate.call(pl);
 		});
 
-		zindex=site.children(opts.place).size();
+		zindex=site.children(opts.place).length;
 		if(zindex>0)
 		{
 			var i,a=[];
@@ -429,7 +429,7 @@ $.fn.EleanorVisualBlocks=function(opts)
 				if(dragged)
 				{
 					var ne=dragged.next(opts.block);
-					if(this!=dragged.get(0) && (ne.size()>0 && this!=ne.get(0) || ne.size()==0 && this!=dragged.closest(opts.place).get(0)))
+					if(this!=dragged.get(0) && (ne.length>0 && this!=ne.get(0) || ne.length==0 && this!=dragged.closest(opts.place).get(0)))
 					{
 						e.dataTransfer.dropEffect=e.ctrlKey ? "copy" : "move";
 						can=true;

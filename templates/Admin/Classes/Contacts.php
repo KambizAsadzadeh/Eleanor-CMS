@@ -40,7 +40,7 @@ class Contacts
 
 		$GLOBALS['scripts'][]='//cdn.jsdelivr.net/sortable/latest/Sortable.min.js';
 		$GLOBALS['head']['sortable-table']=<<<HTML
-<script>/*<![CDATA[*/$(function(){
+<script>$(function(){
 	new Sortable($("#recipients tbody").get(0), {
 		handle:".pos-lines",
 		draggable:"tr",
@@ -51,7 +51,7 @@ class Contacts
 			});
 		}
 	});
-})//]]></script>
+})</script>
 HTML;
 
 		#Errors
@@ -252,7 +252,7 @@ $("#modal-uploader-trigger").click(DraggableModal($("#modal-uploader")));
 $("#recipients").on("click",".ib-delete",function(){
 	var tr=$(this).closest("tr");
 
-	if($("#recipients .ib-delete").size()>1)
+	if($("#recipients .ib-delete").length>1)
 		tr.remove();
 	else
 		tr.find(":input").val("");
@@ -274,7 +274,7 @@ $("#add-contact").click(function(){
 			return v.replace(/\-\d+\-/,"-"+n+"-");
 		}).end()
 	.appendTo("#recipients tbody")
-		.find(".cloneable").trigger("clone");
+		.find(".cloneable").trigger("clean").trigger("clone");
 });
 })</script>
 HTML;

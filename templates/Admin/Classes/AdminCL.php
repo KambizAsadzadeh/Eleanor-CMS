@@ -107,7 +107,7 @@ class TPLAdminCL
 		<td><b>'.$ltpl['title'].'</b><br />'.Eleanor::Input('fi[from]',$qs['']['fi']['from']).' '.Eleanor::Button($ltpl['apply']).'</td>
 	</tr>
 </table>
-<script type="text/javascript">//<![CDATA[
+<script>
 $(function(){
 	var fitrs=$("#ftable tr:not(.infolabel)");
 	$("#ftable .infolabel a").click(function(){
@@ -116,7 +116,7 @@ $(function(){
 		return false;
 	})'.($fs ? '' : '.click()').';
 	One2AllCheckboxes("#checks-form","#mass-check","[name=\"mass[]\"]",true);
-});//]]></script>
+})</script>
 		</form>'
 		.'<form id="checks-form" action="'.$links['form_items'].'" method="post" onsubmit="return (CheckGroup(this) && confirm(\''.$ltpl['are_you_sure'].'\'))">'
 			.$Lst->end().'<div class="submitline" style="text-align:right"><div style="float:left">'.sprintf(static::$lang['to_pages'],$Lst->perpage($pp,$links['pp'])).'</div>'.$ltpl['with_selected'].Eleanor::Select('op',Eleanor::Option($ltpl['delete'],'k')).Eleanor::Button('Ok').'</div></form>'

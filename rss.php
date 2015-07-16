@@ -275,7 +275,7 @@ elseif(isset($_REQUEST['module']) and is_string($_REQUEST['module']))
 
 	if(is_file($path))
 	{
-		if(Eleanor::$vars['prefix_free_module']!=$module['id'])
+		if(Eleanor::$vars['prefix_free_module']!=$id)
 			$Eleanor->Url->prefix.=Url::Encode($uri).'/';
 
 		\Eleanor\AwareInclude($path);

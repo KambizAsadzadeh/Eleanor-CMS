@@ -4,5 +4,5 @@
 
 	@var текст заголовка
 */
-if(!defined('CMS'))die;?>
+defined('CMS\STARTED')||die;?>
 <h3 class="midtitle"><?php echo$var_0?></h3>

@@ -13,7 +13,7 @@
 	@var количество пользователей онлайн
 	@var количество ботов онлайн
 */
-if(!defined('CMS'))die;
+defined('CMS\STARTED')||die;
 $ltpl=Eleanor::$Language['tpl'];
 $mo=array_keys($GLOBALS['Eleanor']->modules['sections'],'online');
 $mo=reset($mo);

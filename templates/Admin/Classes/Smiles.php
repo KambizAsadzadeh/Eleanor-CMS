@@ -114,7 +114,7 @@ class TPLSmiles
 			$Lst->empty(static::$lang['no_smiles']);
 
 		return Eleanor::$Template->Cover(
-		'<script>/*<![CDATA[*/$(function(){
+		'<script>$(function(){
 	One2AllCheckboxes("#checks-form","#mass-check","[name=\"mass[]\"]",true);
 	$(document).on("mousedown","div.fieldedit a",function(e){
 		if(e.which==1)
@@ -159,7 +159,7 @@ class TPLSmiles
 		if(to)
 			clearTimeout(to);
 	})
-})//]]></script>'.$Lst->end().'<div class="submitline" style="text-align:right"><div style="float:left">'
+})</script>'.$Lst->end().'<div class="submitline" style="text-align:right"><div style="float:left">'
 			.sprintf(static::$lang['smpp'],$Lst->perpage($pp,$links['pp']))
 			.'</div>'.$ltpl['with_selected']
 			.Eleanor::Select('op',Eleanor::Option($ltpl['activate'],'a').Eleanor::Option($ltpl['deactivate'],'d').Eleanor::Option($ltpl['delete'],'k'))
@@ -226,7 +226,7 @@ class TPLSmiles
 			->item(static::$lang['selcat'],Eleanor::Input('folder',$values['folder']).' '.Eleanor::Button('Ok'))
 			->end()->endform();
 
-		$c=$Lst.'<script>//<![CDATA[
+		$c=$Lst.'<script>
 $(function(){
 	$("input[name=folder]").autocomplete({
 		serviceUrl:CORE.ajax_file,
@@ -238,7 +238,7 @@ $(function(){
 			filter:"onlydir"
 		}
 	});
-})//]]></script>'
+})</script>'
 		.($values['added'] ? Eleanor::$Template->Message(static::$lang['smadded'],'info') : '');
 
 		if($values['smiles'])
@@ -260,7 +260,7 @@ $(function(){
 					array(Eleanor::Check('smiles['.$k.'][f]',$v['ch'],array('value'=>$v['v'])),'center')
 				);
 			$c.=$Lst->end().'<div class="submitline">'.Eleanor::Input('folder',$values['folder'],array('type'=>'hidden')).Eleanor::Button(static::$lang['addsels']).'</div></form>
-			<script>/*<![CDATA[*/$(function(){One2AllCheckboxes("#checks-form","#mass-check","[name$=\"[f]\"]",true)});//]]></script>';
+			<script>$(function(){One2AllCheckboxes("#checks-form","#mass-check","[name$=\"[f]\"]",true)})</script>';
 		}
 
 		return Eleanor::$Template->Cover($c,$values['error'],'error');

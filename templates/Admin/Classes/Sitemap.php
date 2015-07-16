@@ -307,7 +307,7 @@ $(function(){
 						if($.inArray(k,mids)>-1)
 						{
 							op=th.find("option[value=\""+k+"\"]").prev();
-							while(op.size()>0)
+							while(op.length>0)
 							{
 								if(typeof msetts[op.val()]!="undefined" && msetts[op.val()].data("showed"))
 								{

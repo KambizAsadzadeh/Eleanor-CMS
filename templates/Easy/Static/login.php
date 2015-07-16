@@ -3,7 +3,7 @@
 	Элемент шаблона: блок логина пользователя. Вынесено в отдельный файл, дабы во-первых не засорять блоки, а во-вторых предоставить дизайнеру
 	возможность разместить этот блок в самом логичном по его мнению месте
 */
-if(!defined('CMS'))die;
+defined('CMS\STARTED')||die;
 $ma=array_keys($Eleanor->modules['sections'],'account');
 $ma=reset($ma);
 if(Eleanor::$Login->IsUser()):
@@ -35,12 +35,12 @@ if(Eleanor::$Login->IsUser()):
 						<?php if(Eleanor::$Permissions->IsAdmin()):?><li><a href="<?=Eleanor::$services['admin']['file']?>"><?=$ltpl['adminka']?></a></li><?php endif; ?>
 <?php if($GLOBALS['Eleanor']->multisite):
 echo '<li>',Eleanor::Select(false,Eleanor::Option($ltpl['msjump'],'',true),array('id'=>'msjump','onchange'=>'CORE.Jump($(this).val())')),'</li>'?>
-<script type="text/javascript">//<![CDATA[
+<script>
 $(function(){
 	$.each(CORE.sites,function(k,v){
 		$("<option>").text(v.title).val(k).appendTo("#msjump");
 	})
-})//]]></script><?php endif?>
+})</script><?php endif?>
 
 					</ul>
 				</div>
@@ -64,7 +64,7 @@ $(function(){
 							</div>
 							<div class="soc-login"><?php include Eleanor::$root.$theme.'Static/external_auth.php';
 							if($GLOBALS['Eleanor']->multisite):?>
-								<script type="text/javascript">//<![CDATA[
+								<script>
 								CORE.MultiSite.done(function(qw){
 									var al=$(".soc-login").append("<br />");
 									$.each(qw,function(k,v){
@@ -81,7 +81,7 @@ $(function(){
 											a=a.clone(true);
 										});
 									})
-								});//]]></script>
+								})</script>
 							<?php endif?>
 							</div>
 						</div>

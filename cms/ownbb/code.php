@@ -1,16 +1,19 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
 namespace CMS\OwnBB;
 defined('CMS\STARTED')||die;
-use Eleanor\Classes\Strings, CMS\OwnBB;
+use CMS\Eleanor, Eleanor\Classes\EE, Eleanor\Classes\Strings, CMS\OwnBB;
 
 /** Вставка кода на страницу с подсветкой синтаксиса */
 class Code extends \CMS\Abstracts\OwnBbCode
 {
+	/** @var string Название шаблона цитаты */
+	public static $template='Code';
+
 	/** Обработка информации перед показом на странице
 	 * @param string $t Тег
 	 * @param string $p Параметры тега
@@ -30,24 +33,15 @@ class Code extends \CMS\Abstracts\OwnBbCode
 		if(!$cu)
 			return static::RestrictDisplay($t,$p,$c);
 
-		$GLOBALS['scripts'][]='//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/highlight.min.js';
-		$GLOBALS['head']['highlight']='<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/default.min.css" />';
-		$GLOBALS['head'][]=<<<HTML
-<script>//<![CDATA[
-hljs.tabReplace="    ";
-$(function(){
-	$("pre code").each(function(){
-		if(!$(this).data("hlled"))
+		try
 		{
-			hljs.highlightBlock(this);
-			$(this).data("hlled",true);
+			$tpl=static::$template;
+			return Eleanor::$Template->$tpl($c,$p);
 		}
-	});
-})//]]></script>
-HTML;
-		return'<pre><code'
-			.(isset($p['auto']) ? '' : ' class="'.(isset($p[$t]) ? 'language-'.$p[$t] : 'no-highlight').'"')
-			.'><!-- NOBR -->'.$c.'</code></pre><!-- NOBR -->';
+		catch(EE$E)
+		{
+			return"<pre><code>{$c}</code></pre>";
+		}
 	}
 
 	/** Обработка информации перед её правкой

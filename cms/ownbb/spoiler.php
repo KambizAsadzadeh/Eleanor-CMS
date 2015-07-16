@@ -1,14 +1,20 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
 namespace CMS\OwnBB;
+use CMS\Eleanor, Eleanor\Classes\EE;
+
 defined('CMS\STARTED')||die;
 
+/** Вставка скрытого по умолчанию текста, который проявляется если пользователь того захочет */
 class Spoiler extends \CMS\Abstracts\OwnBbCode
 {
+	/** @var string Название шаблона скрытого текста */
+	public static $template='Spoiler';
+
 	/** Обработка информации перед показом на странице
 	 * @param string $t Тег
 	 * @param string $p Параметры тега
@@ -20,29 +26,23 @@ class Spoiler extends \CMS\Abstracts\OwnBbCode
 		$p=$p ? \Eleanor\Classes\Strings::ParseParams($p,'t') : [];
 
 		if(isset($p['noparse']))
-			return'['.$t.']'.$c.'[/'.$t.']';
+		{
+			unset($p['noparse']);
+			return parent::PreSave($t,$p,$c,true);
+		}
 
 		if(!$cu)
 			return static::RestrictDisplay($t,$p,$c);
 
-		$ex=isset($p['ex']);
-
-		$GLOBALS['head']['spoiler']='<script>//<![CDATA[
-$(function(){
-	$(this).on("click",".spoiler .top",function(e){
-		e.preventDefault();
-		var th=$(this).toggleClass("sp-expanded sp-contracted");
-		if(th.is(".sp-expanded"))
-			th.next().fadeIn("fast");
-		else
-			th.next().fadeOut("fast");
-	});
-})//]]></script>';
-
-		return'<div class="spoiler">
-<div class="top'.($ex ? ' sp-expanded' : ' sp-contracted').'">'.(isset($p['t']) ? $p['t'] : 'Spoiler').'</div>
-<div class="text"'.($ex ? '' : ' style="display:none"').'>'.$c.'</div>
-</div>';
+		try
+		{
+			$tpl=static::$template;
+			return Eleanor::$Template->$tpl($c,$p);
+		}
+		catch(EE$E)
+		{
+			return"<!-- {$c} -->";
+		}
 	}
 
 	/** Обработка информации перед её сохранением

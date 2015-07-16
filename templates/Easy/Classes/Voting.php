@@ -41,7 +41,7 @@ class TplVoting
 		$GLOBALS['scripts'][]='js/voting.js';
 		$u=uniqid('v');
 		$this->request['votingtpl']=$this->type;
-		return'<form id="'.$u.'">'.$q.'</form><script type="text/javascript">//<![CDATA[
+		return'<form id="'.$u.'">'.$q.'</form><script>
 $(function(){
 	new Voting({
 		form:"#'.$u.'",
@@ -50,7 +50,7 @@ $(function(){
 		request:'.Eleanor::JsVars($this->request,false,true).',
 		qcnt:'.count($this->qs).$this->jparams.'
 	});
-})//]]></script>';
+})</script>';
 	}
 
 	/*
@@ -101,7 +101,7 @@ $(function(){
 				$r.=($percent ? '<p class="vline"><i style="width:'.$percent.'%">'.$percent.'%</i></p>' : '').'</li>';
 			}
 			$r.='</ul>'
-				.($qid ? '<script type="text/javascript">/*<![CDATA[*/new Voting.ChecksLimit("#'.$qid.'",'.$v['maxans'].')//]]></script>' : '');
+				.($qid ? '<script>new Voting.ChecksLimit("#'.$qid.'",'.$v['maxans'].')</script>' : '');
 		}
 		$r.='<div class="vs-buttons">';
 		switch($status)

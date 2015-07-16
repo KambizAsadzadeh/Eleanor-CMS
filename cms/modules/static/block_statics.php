@@ -48,7 +48,7 @@ if(!$ma)
 	return false;
 $ma=reset($ma);
 
-return BlockStatics($Api,array('module'=>$ma),$dump,'<ul class="blockcategories" id="q'.$u.'">').'<script type="text/javascript">//<![CDATA[
+return BlockStatics($Api,array('module'=>$ma),$dump,'<ul class="blockcategories" id="q'.$u.'">').'<script>
 $(function(){
 	$("#q'.$u.' li:has(ul)").addClass("subcat").each(function(){
 		var img=$("<img>").css({cursor:"pointer","margin-right":"3px"}).prop({src:"'.Eleanor::$Template->default['theme'].'images/minus.gif",title:"+"}).prependTo(this).click(function(){
@@ -66,4 +66,4 @@ $(function(){
 		if(CORE.GetCookie("bs")==0)
 			img.prop({src:"'.Eleanor::$Template->default['theme'].'images/plus.gif",title:"+"}).next().next().hide();
 	}).find("ul").css("margin-left","4px");
-});//]]></script>';
+})</script>';

@@ -394,7 +394,7 @@ class TplUserNews
 				->item(static::$lang['sortby'],Eleanor::Select('sort',Eleanor::Option(static::$lang['sdate'],'date',$values['sort']=='date').Eleanor::Option(static::$lang['srel'],'relevance',$values['sort']=='relevance')).'</label>')
 				->button(Eleanor::Button(static::$lang['find']))
 				->end()
-			.'</form><script>//<![CDATA[
+			.'</form><script>
 $(function(){
 	$("#newssearch [name=text]").autocomplete({
 		serviceUrl:CORE.ajax_file,
@@ -405,7 +405,7 @@ $(function(){
 			"do":"searchsuggesions"
 		}
 	});
-})//]]></script>'
+})</script>'
 			.$results;
 	}
 
@@ -527,7 +527,7 @@ $(function(){
 				<div class="noactive">
 					<div class="active" style="width:'.$width.'%;" data-now="'.$width.'%"></div>
 				</div>
-			</div><script>/*<![CDATA[*/$(function(){new Rating("'.$GLOBALS['Eleanor']->module['name'].'",$("#'.$u.'"),'.$id.',['.join(',',$marks).']);});//]]></script>';
+			</div><script>$(function(){new Rating("'.$GLOBALS['Eleanor']->module['name'].'",$("#'.$u.'"),'.$id.',['.join(',',$marks).']);});</script>';
 		}
 		else
 			$r='<div class="rate" title="'.$title.'">

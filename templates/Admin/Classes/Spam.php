@@ -114,7 +114,7 @@ class TPLSpam
 			'<form id="checks-form" action="'.$links['form_items'].'" method="post" onsubmit="return (CheckGroup(this) && confirm(\''.$ltpl['are_you_sure'].'\'))">'
 			.$Lst->end()
 			.'<div class="submitline" style="text-align:right"><div style="float:left">'.sprintf(static::$lang['spp'],$Lst->perpage($pp,$links['pp'])).'</div>'.$ltpl['with_selected'].Eleanor::Select('op',Eleanor::Option($ltpl['delete'],'k'))
-			.Eleanor::Button('Ok').'</div></form><script>/*<![CDATA[*/$(function(){One2AllCheckboxes("#checks-form","#mass-check","[name=\"mass[]\"]",true);new ProgressList("'.$GLOBALS['Eleanor']->module['name'].'","'.Eleanor::$services['cron']['file'].'");})//]]></script>'
+			.Eleanor::Button('Ok').'</div></form><script>$(function(){One2AllCheckboxes("#checks-form","#mass-check","[name=\"mass[]\"]",true);new ProgressList("'.$GLOBALS['Eleanor']->module['name'].'","'.Eleanor::$services['cron']['file'].'");})</script>'
 			.Eleanor::$Template->Pages($cnt,$pp,$page,array($links['pages'],$links['first_page']))
 		);
 	}
@@ -195,7 +195,7 @@ class TPLSpam
 			->item('IDs',Eleanor::Input('fiids',$values['fiids'],$extra+array('tabindex'=>11)))
 			->button(Eleanor::Button(static::$lang['ts'],'button',array('onclick'=>'TryUsers()','tabindex'=>12)).' '.Eleanor::Button(static::$lang['hideres'],'button',array('id'=>'hide','style'=>'display:none','tabindex'=>13,'id'=>'hideres')))
 			->end()
-			.'<div id="tryusers" style="display:none"></div><script>//<![CDATA[
+			.'<div id="tryusers" style="display:none"></div><script>
 function TryUsers(page)
 {
 	var request={direct:"admin",file:"spam",event:"search",page:page||0,pp:$("input[name=\"per_run\"]").val()};
@@ -214,7 +214,7 @@ function TryUsers(page)
 }
 $("#hide").click(function(){
 	$("#tryusers").empty().add("#hideres").hide();
-});//]]></script>';
+})</script>';
 
 		$Lst->begin()
 			->item(array(static::$lang['per_run'],'descr'=>static::$lang['per_run_'],Eleanor::Input('per_run',$values['per_run'],array('tabindex'=>14))))

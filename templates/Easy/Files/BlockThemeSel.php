@@ -4,12 +4,12 @@
 
 	@var массив возможных шаблонов, формат name=>название
 */
-if(!defined('CMS'))die;
+defined('CMS\STARTED')||die;
 $thm=basename(Eleanor::$Template->default['theme']);
 $opts='';
 foreach($var_0 as $k=>&$v)
 	$opts.=Eleanor::Option($v,$k,$k==$thm);
-echo Eleanor::Select(false,$opts,array('id'=>'themesel','style'=>'width:100%')).'<script type="text/javascript">//<![[CDATA[
+echo Eleanor::Select(false,$opts,array('id'=>'themesel','style'=>'width:100%')).'<script>
 $(function(){
 	var n=localStorage.getItem("newtheme");
 	if(n)
@@ -24,4 +24,4 @@ $(function(){
 		window.location="index.php?newtpl="+v;
 	});
 })
-//]]></script>';
+</script>';

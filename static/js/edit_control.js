@@ -130,7 +130,7 @@ var EC={
 				AppDaD();
 			}).on("click",".sb-minus",function(){
 				var tr=$(this).closest("tr");
-				if(t.find("tr").size()>2)
+				if(t.find("tr").length>2)
 					tr.remove();
 				else
 					tr.find("[type=text]").val("");

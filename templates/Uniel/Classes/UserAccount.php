@@ -108,7 +108,7 @@ class TplUserAccount
 				$Lst->item(
 					$icon ? array('<img title="'.$iconh.'" src="'.$icon.'" />','style'=>'width:16px') : false,
 					$icon ? $name : array($name,'colspan'=>2),
-					$isa ? array($ip,'center','href'=>'http://eleanor-cms.ru/whois/'.$ip,'hrefextra'=>array('target'=>'_blank')) : false,
+					$isa ? array($ip,'center','href'=>'http://eleanor-cms.ru/whois/'.$ip,'href-extra'=>array('target'=>'_blank')) : false,
 					array($ltpl['minutes_ago'](floor(($t-strtotime($v['enter']))/60)),'center'),
 					$loc
 				);
@@ -176,7 +176,7 @@ class TplUserAccount
 
 			$Lst->item(
 				$icon ? array('<a href="#" data-ua="'.$ua.'"><img title="'.$iconh.'" src="'.$icon.'" /></a>','style'=>'width:16px') : array('<a href="#" data-ua="'.$ua.'">?</a>','center'),
-				array($v[1],'center','href'=>'http://eleanor-cms.ru/whois/'.$v[1],'hrefextra'=>array('target'=>'_blank')),
+				array($v[1],'center','href'=>'http://eleanor-cms.ru/whois/'.$v[1],'href-extra'=>array('target'=>'_blank')),
 				array(Eleanor::$Language->Date($v[0],'fdt'),'center'),
 				$del
 			);

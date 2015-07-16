@@ -1,6 +1,6 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
@@ -56,14 +56,14 @@ HTML
 		return<<<HTML
 <!DOCTYPE html><html><head><meta http-equiv="content-type" content="text/html; charset={$charset}" />
 <title>{$lang['the_error_occurred']}</title><base href="{$base}">
-<style type="text/css">/*<![CDATA[*/
+<style>
 body, div { color:#1d1a15; font-size: 11px; font-family: Tahoma, Helvetica, sans-serif; }
 body { text-align: left; height: 100%; line-height: 142%; padding: 0; margin: 20px; background-color: #FFFFFF; }
 hr { height: 1px; border: solid #d8d8d8 0; border-top-width: 1px; }
 .copyright { position:fixed; bottom:10px; right:10px; }
 a { text-decoration:none; }
 h1 { font-size:18px }
-/*]]>*/</style></head><body>
+</style></head><body>
 <div class="copyright">Powered by <a href="http://eleanor-cms.ru/" target="_blank">CMS Eleanor</a> &copy; {$year}</div>
 <h1>{$lang['the_error_occurred']}</h1><hr /><code>{$error}{$file}{$line}</code>{$hint}</body></html>
 HTML;

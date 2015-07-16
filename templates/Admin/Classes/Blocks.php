@@ -174,7 +174,7 @@ HTML;
 				if(is_int($k) and is_string($v) and isset(static::$lang[$v]))
 					$v=static::$lang[$v];
 		return Eleanor::$Template->Cover(
-		($saved ? '<div id="saved">'.Eleanor::$Template->Message(static::$lang['gsaved'],'info').'</div><script>/*<![CDATA[*/$(function(){ setTimeout(function(){ $("#saved").fadeOut("slow").remove() },10000) });//]]></script>' : '')
+		($saved ? '<div id="saved">'.Eleanor::$Template->Message(static::$lang['gsaved'],'info').'</div><script>$(function(){ setTimeout(function(){ $("#saved").fadeOut("slow").remove() },10000) })</script>' : '')
 		.'<div class="blocks"><form method="post">
 		<div style="padding:5px">'.static::$lang['curg'].Eleanor::Input('similar','',array('type'=>'hidden')).Eleanor::Select('group',$gopts).rtrim($themes,'| ').($links['del_group'] ? '<div style="float:right;text-align:right;"><a href="'.$links['del_group'].'" onclicl="return confirm(\''.static::$lang['aysdg'].'\')">'.static::$lang['delg'].'</a></div>' : '').'</div>
 		<div class="all" style="height:495px"><div class="available">
@@ -399,7 +399,7 @@ $(window).load(function(){
 					<td style="text-align:center;" colspan="2">'.Eleanor::Button($ltpl['apply']).'</td>
 				</tr>
 			</table>
-<script>//<![CDATA[
+<script>
 $(function(){
 	var fitrs=$("#ftable tr:not(.infolabel)");
 	$("#ftable .infolabel a").click(function(){
@@ -409,7 +409,7 @@ $(function(){
 	})'.($fs ? '' : '.click()').';
 	One2AllCheckboxes("#checks-form","#mass-check","[name=\"mass[]\"]",true);
 	BlocksList();
-});//]]></script>
+})</script>
 		</form><form id="checks-form" action="'.$links['form_items'].'" method="post" onsubmit="return (CheckGroup(this) && confirm(\''.$ltpl['are_you_sure'].'\'))">'
 		.$Lst->end().'<div class="submitline" style="text-align:right"><div style="float:left">'.sprintf(static::$lang['bpp'],$Lst->perpage($pp,$links['pp'])).'</div>'.$ltpl['with_selected'].Eleanor::Select('op',Eleanor::Option($ltpl['activate'],'a').Eleanor::Option($ltpl['deactivate'],'d').Eleanor::Option($ltpl['delete'],'k')).Eleanor::Button('Ok').'</div></form>'
 		.Eleanor::$Template->Pages($cnt,$pp,$page,array($links['pages'],$links['first_page'])));
@@ -546,7 +546,7 @@ $(function(){
 			foreach($errors as $k=>&$v)
 				if(is_int($k) and is_string($v) and isset(static::$lang[$v]))
 					$v=static::$lang[$v];
-		return Eleanor::$Template->Cover($c,$errors,'error').'<script>/*<![CDATA[*/AddEditBlock()//]]></script>';
+		return Eleanor::$Template->Cover($c,$errors,'error').'<script>AddEditBlock()</script>';
 	}
 
 	public static function AjaxBlocksConf($controls,$values)

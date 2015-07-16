@@ -6,5 +6,5 @@
 		title - название блока
 		content - содержимое блока
 */
-if(!defined('CMS'))die;?>
+defined('CMS\STARTED')||die;?>
 <div class="midbanner clrfix"><a href="#" class="lcol"><?=$title?></a><div class="rcol"><?=$content?></div></div>

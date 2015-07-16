@@ -21,4 +21,4 @@ echo Eleanor::Select($service,Eleanor::Option($lang['select_source_code'],'eval'
 	'<br /><div id="s-eval-',$u,'">',Eleanor::Text(($ise=is_array($values['eval'])) ? $values['eval'][0] : $values['eval'],$ise ? $values['eval'][1] : ''),
 	'</div><table id="s-table-',$u,'" class="tabstyle" style="width:420px"><tr class="first tablethhead"><th></th><th>',$lang['select_value'],
 	'</th><th>',$lang['select_value1'],'</th><th style="width:60px">',T::$lang['functs'],'</th></tr>',$trs,
-	'</table><script>/*<![CDATA[*/EC.Select("',$u,'")//]]></script>';
+	'</table><script>EC.Select("',$u,'")</script>';

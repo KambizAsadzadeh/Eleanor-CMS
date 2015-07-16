@@ -13,7 +13,7 @@
 */
 
 #ToDo! А как же размер и цвет?
-if(!defined('CMS'))die;
+defined('CMS\STARTED')||die;
 $lang=Eleanor::$Language->Load($theme.'langs/bbeditor-*.php',false);
 ?>
 							<!-- BB PANEL -->
@@ -47,7 +47,7 @@ $lang=Eleanor::$Language->Load($theme.'langs/bbeditor-*.php',false);
 							<!-- EDITOR TEXTAREA -->
 							<div class="editor-text"><?= Eleanor::Text($service,$value,$extra+array('rows'=>7))?></div>
 							<!-- END EDITOR TEXTAREA -->
-<script type="text/javascript">/*<![CDATA[*/new CORE.BBEditor({id:"<?=$id,'"',$ownbb ? ',ownbb:true' : '',$smiles ? ',smiles:true' : '',',service:"',Eleanor::$service?>",Preview:function(html){
+<script>new CORE.BBEditor({id:"<?=$id,'"',$ownbb ? ',ownbb:true' : '',$smiles ? ',smiles:true' : '',',service:"',Eleanor::$service?>",Preview:function(html){
 	{
 		var pr=$("<div class=\"preview\">").width($("#ed-<?=$id?>").width()).appendTo($("#ed-<?=$id?>").children("div.preview").remove().end()),
 			hide=$("<div style=\"text-align:center\"><input type=\"button\" class=\"button\" value=\""+CORE.Lang('hide')+"\" /></div>").find("input").click(function(){
@@ -55,5 +55,5 @@ $lang=Eleanor::$Language->Load($theme.'langs/bbeditor-*.php',false);
 			}).end();
 		pr.html(html+"<br />").append(hide).show();
 	}
-}});//]]></script>
+}});</script>
 <!-- END BB EDITOR TEXTAREA+PANEL -->

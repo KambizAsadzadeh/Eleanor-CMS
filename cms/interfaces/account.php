@@ -10,15 +10,15 @@ namespace CMS\Interfaces;
 interface Account#Интерфейс для создания медов авторизации
 {
 	/** Получение ссылок на обработчик из меню
-	 * @return array*/
+	 * @return array */
 	public static function Links();
 
 	/** Получение всех URI обработчика
-	 * @return array*/
+	 * @return array */
 	public static function Uris();
 
 	/** Пока контента с обработкой запроса
 	 * @param bool $master Возможность обработки входящего запроса с возможным перенаправлением
-	 * @return array*/
+	 * @return array */
 	public static function Content($master=true);
 }

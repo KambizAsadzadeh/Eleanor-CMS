@@ -1,10 +1,8 @@
 <?php
-/*
+/**
 	Eleanor CMS © 2014
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
-
-	Ядро Eleanor CMS
 */
 namespace CMS;
 use Eleanor\Framework, Eleanor\Classes as FClasses, Eleanor\Classes\EE;
@@ -1018,7 +1016,7 @@ function SetService($name)
 				Eleanor::$UsersDb->SyncTimeZone();
 		}
 
-		if(!Eleanor::$Permissions->IsAdmin() and $banned=Eleanor::$Login->Get('banned') and 0<strtotime($banned)-time())
+		if(!Eleanor::$Permissions->IsAdmin() and $banned=Eleanor::$Login->Get('banned_until') and 0<strtotime($banned)-time())
 		{
 			$explain=Eleanor::$Login->Get('ban_explain');
 			Eleanor::$ban=[ 'type'=>'user', 'explain'=>$explain, 'term'=>$banned ];

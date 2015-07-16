@@ -68,7 +68,7 @@ class Html extends Eleanor\BaseClass
 			$r.=';';
 		}
 
-		return$tags ? "<script>/*<![CDATA[*/{$r}//]]></script>" : $r;
+		return$tags ? "<script>{$r}</script>" : $r;
 	}
 
 	/** Преобразование ассоциативного массива в параметры тега
@@ -189,15 +189,15 @@ class Html extends Eleanor\BaseClass
 	/** Генерация <option> для Select
 	 * @param string $view Выводимое значение
 	 * @param string|null $value Значение
-	 * @param bool $checked Флаг отмеченности
+	 * @param bool $selected Флаг отмеченности
 	 * @param array $extra Ассоциативных массив дополнительных параметров
 	 * @param int $mode Метод вывода значения, подробности описаны в методе ParamValue
 	 * @return string */
-	public static function Option($view,$value=null,$checked=false,array$extra=[],$mode=1)
+	public static function Option($view,$value=null,$selected=false,array$extra=[],$mode=1)
 	{
 		return'<option'.static::TagParams($extra+[
 			'value'=>$value ? static::ParamValue($value,(int)$mode) : $value,
-			'selected'=>(bool)$checked
+			'selected'=>(bool)$selected
 		]).'>'.static::ParamValue($view,(int)$mode).'</option>';
 	}
 

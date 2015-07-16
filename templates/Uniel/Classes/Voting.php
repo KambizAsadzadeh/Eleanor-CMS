@@ -56,7 +56,7 @@ class TplVoting
 				$r.='<li>'.$variant.($percent ? '<div style="width:'.$percent.'%;"><div><div></div></div></div>' : '').'</li>';
 			}
 			$r.='</ul></div>'
-				.($qid ? '<script>/*<![CDATA[*/new Voting.ChecksLimit("#'.$qid.'",'.$v['maxans'].')//]]></script>' : '');
+				.($qid ? '<script>new Voting.ChecksLimit("#'.$qid.'",'.$v['maxans'].')</script>' : '');
 		}
 		switch($status)
 		{
@@ -95,7 +95,7 @@ class TplVoting
 		$u=uniqid('v');
 
 		$GLOBALS['scripts'][]='js/voting.js';
-		return'<form id="'.$u.'">'.$q.'</form><script>//<![CDATA[
+		return'<form id="'.$u.'">'.$q.'</form><script>
 $(function(){
 	new Voting({
 		form:"#'.$u.'",
@@ -104,7 +104,7 @@ $(function(){
 		request:'.Eleanor::JsVars($request,false,true).',
 		qcnt:'.count($qs).'
 	});
-})//]]></script>';
+})</script>';
 	}
 }
 TplVoting::$lang=Eleanor::$Language->Load(Eleanor::$Template->default['theme'].'langs/voting-*.php',false);

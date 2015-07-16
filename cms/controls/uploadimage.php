@@ -71,7 +71,7 @@ class ControlUploadImage extends BaseClass implements ControlsBase
 							$a['value']=preg_replace('#^'.Eleanor::$uploads.'/?#','',$a['value']);
 						return$a;
 					},
-				'append'=>'<script type="text/javascript">//<![CDATA[
+				'append'=>'<script>
 $(function(){
 	$(".uploadfile-path:first").removeClass("uploadfile-path").autocomplete({
 		serviceUrl:CORE.ajax_file,
@@ -83,7 +83,7 @@ $(function(){
 			path:"'.Eleanor::$uploads.'"
 		}
 	});
-});//]]></script>'
+})</script>'
 			),
 			'types'=>array(
 				'title'=>static::$Language['file_types'],
@@ -509,7 +509,7 @@ $(function(){
 		$GLOBALS['scripts'][]='addons/colorbox/jquery.colorbox-min.js';
 		$GLOBALS['head']['colorbox']='<link rel="stylesheet" media="screen" href="addons/colorbox/colorbox.css" />';
 		$u=uniqid();
-		return'<a href="'.$image.'" id="img-'.$u.'"><img style="border:1px solid #c9c7c3;max-width:'.($a['options']['max_image_size'][0]>0 ? $a['options']['max_image_size'][0] : '100%').';max-height:'.($a['options']['max_image_size'][1]>0 ? $a['options']['max_image_size'][1] : '100%').'" src="'.$preview.'" alt="'.$a['options']['alt'].'" /></a><script type="text/javascript">//<![CDATA[
+		return'<a href="'.$image.'" id="img-'.$u.'"><img style="border:1px solid #c9c7c3;max-width:'.($a['options']['max_image_size'][0]>0 ? $a['options']['max_image_size'][0] : '100%').';max-height:'.($a['options']['max_image_size'][1]>0 ? $a['options']['max_image_size'][1] : '100%').'" src="'.$preview.'" alt="'.$a['options']['alt'].'" /></a><script>
 $(function(){
 	$("#img-'.$u.'").colorbox({
 		title: function(){
@@ -520,7 +520,7 @@ $(function(){
 		maxWidth:Math.round(screen.width/1.5),
 		maxHeight:Math.round(screen.height/1.5),
 	});
-});//]]></script>';
+})</script>';
 	}
 
 	/**

@@ -59,6 +59,10 @@ $GLOBALS['head']['author']=<<<'HTML'
 			id.val("");
 			a.css("pointer-events","").addClass("text-muted");
 		});
+	}).on("clean",function(){
+		$(this).removeClass("has-success");
+		$("input[type=hidden]",this).val("");
+		$("a",this).css("pointer-events","").addClass("text-muted");
 	}).trigger("clone");
 })</script>
 HTML;

@@ -119,7 +119,7 @@ if($login->IsUser())
 
 	$lang=Eleanor::$Language['admin'];
 	echo'<div class="clr"></div></div>
-	<script type="text/javascript">//<![CDATA[
+	<script>
 $(function(){
 	$("a.mlink").MainMenu();
 
@@ -152,7 +152,7 @@ $(function(){
 
 		return false;
 	});
-})//]]></script>
+})</script>
 	<div class="adminmenupanel">
 	<div class="backtoadmin" id="adminblockh"><a href="#"></a></div>
 	<a href="',$af,'" class="logotypepanel"><img src="',Template::$http['templates'],'templates/',

@@ -107,7 +107,7 @@ class Comments
 			<div class="paginator"'.($pager ? '>'.$pager : ' style="display:none">').'</div>'
 			.($rights['status'] ? '<fieldset class="moderate select-comments"'.($pagpq[0] ? '>'.static::CommentsModerate($rights) : ' style="display:none">').'</fieldset>' : '')
 			.'<div class="status" id="commentsinfo"></div><div style="text-align:center;margin-bottom:15px"><a href="#" class="link-button cb-lnc" style="width:250px"><b>'.static::$lang['lnp'].'</b></a></div>'
-			.$editor.'</div><script>/*<![CDATA[*/var C;$(function(){C=new CORE.Comments('.Html::JSON([
+			.$editor.'</div><script>var C;$(function(){C=new CORE.Comments('.Html::JSON([
 				'lastpost'=>time(),
 				'postquery'=>$postquery,
 				'!dataquery'=>'["'.join('","',$dataquery).'"]',
@@ -117,7 +117,7 @@ class Comments
 				'pages'=>$pages,
 				'baseurl'=>$links['first_page'],
 				'parent'=>$pagpq[3] ? (int)$pagpq[3]['id'] : 0,
-			],false,true,'').')})//]]></script>';
+			],false,true,'').')})</script>';
 	}
 
 	/*

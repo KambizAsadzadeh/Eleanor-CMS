@@ -53,7 +53,7 @@ function CreateEdit(next_add)
 			e.preventDefault();
 			e.stopPropagation();
 
-			var num=$("#mainbar .delete-site").size(),
+			var num=$("#mainbar .delete-site").length,
 				base=$(this).closest(".block-t");
 
 			if(num>1)
@@ -100,7 +100,7 @@ function CreateEdit(next_add)
 
 	//Сабмит формы
 	$("#create-edit :submit").click(function(e){
-		if($("#mainbar .delete-site").size()==1)
+		if($("#mainbar .delete-site").length==1)
 		{
 			var inputs=$("#mainbar .block-t :input:enabled"),
 				pass=true;

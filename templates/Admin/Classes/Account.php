@@ -98,7 +98,7 @@ class TPLAdminAccount
 				$Lst->item(
 					'<a href="'.$v['_aedit'].'">'.$v['name'].'</a>'.($v['name']==$v['full_name'] ? '' : '<br /><i>'.$v['full_name'].'</i>').(in_array($k,$sletters) ? '<br /><b style="color:green">'.static::$lang['lettersent'].'</b>' : ''),
 					array($v['email'],'center'),
-					array($v['ip'],'center','href'=>'http://eleanor-cms.ru/whois/'.$v['ip'],'hrefextra'=>array('target'=>'_blank')),
+					array($v['ip'],'center','href'=>'http://eleanor-cms.ru/whois/'.$v['ip'],'href-extra'=>array('target'=>'_blank')),
 					$Lst('func',
 						array($v['_aact'],$ltpl['activate'],$images.'active.png'),
 						array($v['_aedit'],$ltpl['edit'],$images.'edit.png'),
@@ -128,7 +128,7 @@ class TPLAdminAccount
 					<td style="text-align:center;vertical-align:middle">'.Eleanor::Button($ltpl['apply']).'</td>
 				</tr>
 			</table>
-<script type="text/javascript">//<![CDATA[
+<script>
 $(function(){
 	var fitrs=$("#ftable tr:not(.infolabel)");
 	$("#ftable .infolabel a").click(function(){
@@ -137,7 +137,7 @@ $(function(){
 		return false;
 	})'.($fs ? '' : '.click()').';
 	One2AllCheckboxes("#checks-form","#mass-check","[name=\"mass[]\"]",true);
-});//]]></script>
+})</script>
 		</form>
 		<form id="checks-form" action="'.$links['form_items'].'" method="post" onsubmit="return (CheckGroup(this) && ($(\'select\',this).val()==\'dr\' || confirm(\''.$ltpl['are_you_sure'].'\')))">'
 		.$Lst->end()

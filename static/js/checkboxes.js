@@ -5,7 +5,7 @@
 */
 function CheckGroup(obj)
 {
-	if($(obj).find(":checked").size()==0)
+	if($(obj).find(":checked").length==0)
 	{
 		alert(CORE.Lang('NOTHING_SELECTED'));
 		return false;
@@ -33,9 +33,9 @@ function One2AllCheckboxes(parents,main,subnames,and)
 		if(scl)
 		{
 			var checks=parents.find(subnames),
-				checked=checks.filter(":checked").size();
+				checked=checks.filter(":checked").length;
 
-			main.prop("checked",and ? checked==checks.size() : checked>0).trigger("change",[false,true]);
+			main.prop("checked",and ? checked==checks.length : checked>0).trigger("change",[false,true]);
 		}
 	});
 

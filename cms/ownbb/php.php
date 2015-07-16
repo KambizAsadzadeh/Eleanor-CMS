@@ -1,15 +1,16 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
 namespace CMS\OwnBB;
 defined('CMS\STARTED')||die;
 
+/** Вставка в текст исполняемого PHP кода */
 class PHP extends \CMS\Abstracts\OwnBbCode
 {
-	/** @var Входные параметры генерируемой функции */
+	/** @var string Входные параметры генерируемой функции */
 	public static $input;
 
 	/** Обработка информации перед показом на странице
@@ -44,7 +45,7 @@ class PHP extends \CMS\Abstracts\OwnBbCode
 		if(!$cu)
 			return static::RestrictDisplay($t,$p,$c);
 
-		return'['.$t.']'.$c.'[/'.$t.']';
+		return"[{$t}]{$c}[/{$t}]";
 	}
 }
 

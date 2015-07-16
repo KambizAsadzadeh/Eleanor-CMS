@@ -188,7 +188,7 @@ class TPLSettings
 						$flags.='<a href="#" data-rel="'.$u.'-'.$vak.'" class="'.$vak.($vak==Language::$main ? ' selected' : '').'" title="'.Eleanor::$langs[$vak]['name'].'"><img src="images/lang_flags/'.$vak.'.png" alt="'.Eleanor::$langs[$vak]['name'].'" /></a>';
 					}
 					$tabs=true;
-					$html.='<div id="div-'.$u.'" class="langtabs">'.$flags.'</div><script>/*<![CDATA[*/$("#div-'.$u.' a").Tabs();//]]></script>';
+					$html.='<div id="div-'.$u.'" class="langtabs">'.$flags.'</div><script>$("#div-'.$u.' a").Tabs()</script>';
 				}
 				else
 					$html.=(isset($errors[$k]) ? Eleanor::$Template->Message($errors[$k],'error').'<br />' : '').$va;
@@ -236,7 +236,7 @@ class TPLSettings
 			.$c.'</table>'.Eleanor::Input('ids',join(',',$ids),array('type'=>'hidden'))
 			.'<div class="submitline">'.Eleanor::Button($ltpl['save']).'</div>'
 			.Eleanor::$Template->CloseTable().'</form>'
-			.($tip ? '<script>//<![CDATA[
+			.($tip ? '<script>
 $(function(){
 	$("span.labinfo").poshytip({
 		className: "tooltip",
@@ -244,7 +244,7 @@ $(function(){
 		offsetY: 16,
 		allowTipHover: false
 	});
-});//]]></script>' : '');
+})</script>' : '');
 	}
 
 	/*
@@ -282,7 +282,7 @@ $(function(){
 			$c.='</td></tr>';
 			$script.='new One2AllCheckboxes("#opts-'.$k.'","#gr-'.$k.'","input[name=\"options[]\"]");';
 		}
-		$c.='</table><div class="submitline">'.static::$lang['ex_with_ex'].Eleanor::Select('update',Eleanor::Option(static::$lang['ex_ignore'],'ignore').Eleanor::Option(static::$lang['ex_update'],'update').Eleanor::Option(static::$lang['ex_full'],'full').Eleanor::Option(static::$lang['ex_delete'],'delete')).' '.Eleanor::Button(static::$lang['do_export']).'</div></form><script>/*<![CDATA[*/$(function(){'.$script.'new One2AllCheckboxes("#table-ch","#all-ch","input[name=\"groups[]\"]",true);})//]]></script>';
+		$c.='</table><div class="submitline">'.static::$lang['ex_with_ex'].Eleanor::Select('update',Eleanor::Option(static::$lang['ex_ignore'],'ignore').Eleanor::Option(static::$lang['ex_update'],'update').Eleanor::Option(static::$lang['ex_full'],'full').Eleanor::Option(static::$lang['ex_delete'],'delete')).' '.Eleanor::Button(static::$lang['do_export']).'</div></form><script>$(function(){'.$script.'new One2AllCheckboxes("#table-ch","#all-ch","input[name=\"groups[]\"]",true);})</script>';
 		return Eleanor::$Template->Cover($c);
 	}
 
@@ -511,7 +511,7 @@ return $a[\'value\'];',array('style'=>'width:100%','readonly'=>'readonly')).'</d
 			foreach($errors as $k=>&$v)
 				if(is_int($k) and is_string($v) and isset(static::$lang[$v]))
 					$v=static::$lang[$v];
-		return Eleanor::$Template->Cover($c,$errors).'<script>//<![CDATA[
+		return Eleanor::$Template->Cover($c,$errors).'<script>
 $(function(){
 	$(".linetabs a").Tabs();
 	var ml=$("[name=multilang]:first").click(function(){
@@ -534,7 +534,7 @@ $(function(){
 	EC.OnChange=function(){
 		ml.triggerHandler("click");
 	};
-});//]]></script>';
+})</script>';
 	}
 }
 TplSettings::$lang=Eleanor::$Language->Load(Eleanor::$Template->default['theme'].'langs/settings-*.php',false);

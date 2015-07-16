@@ -113,7 +113,7 @@ class TplUserAccount
 				$Lst->item(
 					$icon ? array('<img title="'.$iconh.'" src="'.$icon.'" />','style'=>'width:16px') : false,
 					$icon ? $name : array($name,'colspan'=>2),
-					$isa ? array($ip,'center','href'=>'http://eleanor-cms.ru/whois/'.$ip,'hrefextra'=>array('target'=>'_blank')) : false,
+					$isa ? array($ip,'center','href'=>'http://eleanor-cms.ru/whois/'.$ip,'href-extra'=>array('target'=>'_blank')) : false,
 					array($ltpl['minutes_ago'](floor(($t-strtotime($v['enter']))/60)),'center'),
 					$loc
 				);
@@ -183,13 +183,13 @@ class TplUserAccount
 
 			$Lst->item(
 				$icon ? array('<a href="#" data-ua="'.$ua.'"><img title="'.$iconh.'" src="'.$icon.'" /></a>','style'=>'width:16px') : array('<a href="#" data-ua="'.$ua.'">?</a>','center'),
-				array($v[1],'center','href'=>'http://eleanor-cms.ru/whois/'.$v[1],'hrefextra'=>array('target'=>'_blank')),
+				array($v[1],'center','href'=>'http://eleanor-cms.ru/whois/'.$v[1],'href-extra'=>array('target'=>'_blank')),
 				array(Eleanor::$Language->Date($v[0],'fdt'),'center'),
 				$del
 			);
 		}
 
-		return$C.$Lst->end().'<script type="text/javascript">//<![CDATA[
+		return$C.$Lst->end().'<script>
 $(function(){
 	$("#sessions").on("click","a[data-key]",function(){
 		var th=$(this);
@@ -208,7 +208,7 @@ $(function(){
 		alert($(this).data("ua"));
 		return false;
 	});
-});//]]></script>';
+})</script>';
 	}
 
 	/*
@@ -357,7 +357,7 @@ $(function(){
 				),
 				true,false,'CORE.AcRegister.'
 		).$C.$Lst->item('',Eleanor::Button($lang['do_reg'],'submit',array('tabindex'=>7)))->end()->endform()
-		.'<script type="text/javascript">//<![CDATA[
+		.'<script>
 $(function(){
 	var ef={//Error field
 		name:$("#name-error"),
@@ -479,7 +479,7 @@ $(function(){
 	}).blur(function(){
 		$(this).data("old",$(this).val()).trigger("check");
 	});
-});//]]></script>';
+})</script>';
 	}
 
 	/*
@@ -537,13 +537,13 @@ $(function(){
 			$Lst->item(array($lang['captcha'],$captcha.'<br />'.Eleanor::Input('check','',array('tabindex'=>3,'autocomplete'=>'off')),'tip'=>$lang['captcha_']));
 
 		$Lst->button(Eleanor::Button('OK','submit',array('tabindex'=>4)))->end()->endform();
-		return$C.$Lst.'<script type="text/javascript">//<![CDATA[
+		return$C.$Lst.'<script>
 $(function(){
 	$("#rpass a.small").click(function(){
 		$("#tr-email,#tr-name").toggle();
 		return false;
 	});
-})//]]></script>';
+})</script>';
 	}
 
 	/*
@@ -618,7 +618,7 @@ $(function(){
 			$Lst->item(array($lang['captcha'],$captcha.'<br />'.Eleanor::Input('check','',array('tabindex'=>3,'autocomplete'=>'off')),'descr'=>$lang['captcha_']));
 
 		return$C.$Lst->button(Eleanor::Button('OK','submit',array('tabindex'=>4)))->end()->endform()
-			.'<script type="text/javascript">//<!CDATA[
+			.'<script>
 $(function(){
 	var ef={//Error field
 			p:$("#password-error"),
@@ -687,7 +687,7 @@ $(function(){
 	}).blur(function(){
 		$(this).data("old",$(this).val()).trigger("check");
 	});
-})//]]></script>';
+})</script>';
 	}
 
 	/*
@@ -884,7 +884,7 @@ $(function(){
 			->end()
 			->endform();
 
-		return$C.$Lst.'<script type="text/javascript">//<!CDATA[
+		return$C.$Lst.'<script>//<!CDATA[
 $(function(){
 	var ef={//Error field
 			p:$("#password-error"),
@@ -948,7 +948,7 @@ $(function(){
 	}).blur(function(){
 		$(this).data("old",$(this).val()).trigger("check");
 	});
-})//]]></script>';
+})</script>';
 	}
 
 	/*
@@ -1061,7 +1061,7 @@ $(function(){
 					</div>
 				</div>
 				<div id="avatar-upload">'.$avatar.'</div>
-				<script type="text/javascript">//<![CDATA[
+				<script>
 				$(function(){
 					var ai=$("#avatar-input").val();
 					if(ai)
@@ -1153,7 +1153,7 @@ $(function(){
 						$("#avatar-no").show();
 						return false;
 					});
-				});//]]></script>');
+				})</script>');
 
 		$tabs[]=array($lang['avatar'],(string)$Lst->end());
 		$head=false;
@@ -1357,7 +1357,7 @@ $(function(){
 		$s='';
 		foreach($items as &$v)
 			$s.='<span><a href="'.$v['identity'].'" target="_blank" style="font-size:2em">'.(isset($lang[$v['provider']]) ? $lang[$v['provider']] : $v['provider']).'</a><a href="#" data-provider="'.$v['provider'].'" data-uid="'.$v['provider_uid'].'" title="'.$ltpl['delete'].'">X</a> </span>';
-		return $C.'<script type="text/javascript">//<![CDATA[
+		return $C.'<script>
 $(function(){
 	$("#externals").on("click","a[href=#]",function(){
 		var o=$(this);
@@ -1375,7 +1375,7 @@ $(function(){
 		);
 		return false;
 	})
-})//]]></script><script type="text/javascript" src="http://loginza.ru/js/widget.js"></script><div style="text-align:center;">
+})</script><script src="http://loginza.ru/js/widget.js"></script><div style="text-align:center;">
 <img src="http://loginza.ru/img/providers/facebook.png" title="Yandex" />
 <img src="http://loginza.ru/img/providers/yandex.png" title="Yandex" />
 <img src="http://loginza.ru/img/providers/google.png" title="Google Accounts" />

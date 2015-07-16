@@ -134,7 +134,7 @@ class Email
 		$subject='=?'.Eleanor\CHARSET.'?B?'.base64_encode($this->subject).'?=';
 		$headers='MIME-Version: 1.0'.$d
 			.'Date: '.date('r').$d
-			.($this->from ? 'From: '.$this->from : '').$d
+			.($this->from ? 'From: '.$this->from.$d : '')
 			.($this->sender ? 'Sender: '.$this->sender.$d : '')
 			.($a['cc'] ? 'Cc: '.join(', ',$a['cc']).$d : '')
 			.($a['bcc'] && $this->method!='smtp' ? 'Bcc: '.join(', ',$a['bcc']).$d : '')
@@ -143,7 +143,7 @@ class Email
 				: ($a['to'] ? 'To: '.join(', ',$a['to']).$d : '')
 					.'Subject: '.$subject.$d
 			)
-			.($this->from ? 'Return-Path: '.$this->from : '').$d
+			.($this->from ? 'Return-Path: '.$this->from.$d : '')
 			.($this->reply ? 'Reply-To: '.$this->reply.$d : '')
 			.($this->from && $this->notice_on ? 'Return-Receipt-To: '.$this->from.$d : '')
 			.($this->notice_on && $this->notice ? 'Disposition-Notification-To: '.$this->notice.$d : '')
@@ -245,7 +245,7 @@ class Email
 		if(isset($a['multipart']))
 		{#Multipart
 			$b=empty($a['boundary']) ? uniqid() : $a['boundary'];
-			$r.='Content-Type: multipart/'.$a['multipart'].'; boundary="'.$b.'"'.$d.$d.'--'.$b.$d;
+			$r.='Content-Type: multipart/'.$a['multipart'].'; boundary="'.$b.'"'.$d.'--'.$b.$d;
 			$e=(int)max(array_keys($a));
 
 			foreach($a as $k=>&$v)
@@ -257,7 +257,7 @@ class Email
 			$encode=!isset($a['encoding']) || !in_array($a['encoding'],['base64','quoted-printable']);
 
 			if(isset($a['id']))
-				$r.='Content-ID: <'.$a['id'].'>'.$d;
+				$r.="Content-ID: <{$a['id']}>{$d}";
 
 			$r.='Content-Type: '.(isset($a['content-type']) ? $a['content-type'].(isset($a['charset']) ? '; charset='.$a['charset'] : '') : 'text/plain; charset=windows-1251').$d;
 			$dtype=false;
@@ -272,7 +272,7 @@ class Email
 						: 'attachment; filename="=?'.Eleanor\CHARSET.'?B?'
 							.base64_encode(isset($a['filename']) ? $a['filename'] : 'file').'?="').$d;
 
-			$r.='Content-Transfer-Encoding: '.($encode ? 'base64' : $a['encoding']).$d.$d;
+			$r.='Content-Transfer-Encoding: '.($encode ? 'base64' : $a['encoding']).$d;
 
 			if($encode)
 				$r.=chunk_split(base64_encode((string)$a['content']),76,"\n");

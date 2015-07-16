@@ -4,4 +4,4 @@
 
 	@var текст цитаты
 */
-if(!defined('CMS'))die;?><blockquote><?php echo$var_0?></blockquote>
+defined('CMS\STARTED')||die;?><blockquote><?php echo$var_0?></blockquote>

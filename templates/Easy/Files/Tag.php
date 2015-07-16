@@ -8,7 +8,7 @@
 		name - название тега
 	)
 */
-if(!defined('CMS'))die;
+defined('CMS\STARTED')||die;
 if(!isset($cnt) or $cnt<5)
 	$size='xsmall';
 elseif($cnt>=5 and $cnt<10)

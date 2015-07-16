@@ -1,4 +1,6 @@
 <?php
+defined('CMS\STARTED')||die;
+
 /*
 	Обертка для редакторов
 
@@ -35,7 +37,7 @@ if($obb or $smiles)
 	echo'<div class="bb_fpanel clrfix">',
 		$smiles
 			? '<span class="bb_rpanel"><a title="'.$lang['smiles'].'" href="#" class="bb_smiles" id="a-'.$sm.'">'.$lang['smiles'].'</a></span>
-<script type="text/javascript">//<![CDATA[
+<script>//<![CDATA[
 $(function(){
 	var D=new DropDown({
 		selector:"#a-'.$sm.'",

@@ -245,9 +245,16 @@ class Image extends Eleanor\BaseClass
 				$height=$dy;
 		}
 
-		$Magic->resizeImage($width,$height,$params['filter'],$params['blur'],$params['bestfit']);
-		$Magic->writeImage($dest);
-		$Magic->destroy();
+		try
+		{
+			$Magic->resizeImage($width, $height, $params['filter'], $params['blur'], $params['bestfit']);
+			$Magic->writeImage($dest);
+		}
+		catch (\Exception$E){}
+		finally
+		{
+			$Magic->destroy();
+		}
 	}
 
 	/** Установка водяного знака (watermark) на картинку

@@ -76,12 +76,12 @@ HTML;
 
 			$Lst->item(
 				'<a href="'.$v['_aedit'].'">'.htmlspecialchars($v['name'],\CMS\ENT,\Eleanor\CHARSET).'</a>'
-				.($v['name']==$v['full_name'] ? '' : '<br /><i>'.$v['full_name'].'</i>'),
+				.($v['name']==$v['full_name'] ? '' : "<br /><i>{$v['full_name']}</i>"),
 				[$v['email'],'center'],
 				rtrim($grs,' ,'),
 				[Eleanor::$Language->Date($v['register'],'fdt'),'center'],
 				[substr($v['last_visit'],0,-3),'center'],
-				[$v['ip'],'center','href'=>'http://eleanor-cms.ru/whois/'.$v['ip'],'hrefextra'=>['target'=>'_blank']]
+				[$v['ip'],'center','href'=>'http://eleanor-cms.ru/whois/'.$v['ip'],'href-extra'=>['target'=>'_blank']]
 			);
 		}
 
@@ -365,7 +365,7 @@ $(function(){
 		CORE.Ajax({
 				id:div.data("id")
 			},function(){
-				if($(".logs .warning").size()>1)
+				if($(".logs .warning").length>1)
 					div.remove();
 				else
 					$(".submitline :button").click();

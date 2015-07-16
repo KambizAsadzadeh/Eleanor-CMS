@@ -11,6 +11,9 @@ use \CMS\Template, \CMS\Eleanor;
 class T extends Template
 {
 	public static
+		/** @var array Конфиг шаблона */
+		$config,
+
 		/** @var Template Основной объект шаблона */
 		$T,
 
@@ -52,6 +55,7 @@ function ItemAvatar($name)
 
 $name=basename(__DIR__);
 T::$lang=Eleanor::$Language->Load(__DIR__.'/translation/*.php',false);
+T::$config=include __DIR__.'/config.php';
 
 T::$T=new Template(__DIR__.'/Files','Admin');
 T::$T->classes=__DIR__.'/Classes/';

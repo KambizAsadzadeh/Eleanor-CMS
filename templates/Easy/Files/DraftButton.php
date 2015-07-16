@@ -1,11 +1,12 @@
 <?php
+defined('CMS\STARTED')||die;
 /*
 	Элемент шаблона. Кнопка "Сохранить черновик".
 
 	@var URL, куда отправлять сохраняемые данные
 */
 $url=isset($var_0) ? $var_0 : array();
-$GLOBALS['head']['draft']='<script type="text/javascript">//<![CDATA[
+$GLOBALS['head']['draft']='<script>
 CORE.drafts=[];
 $(function(){
 	var first=true,
@@ -34,14 +35,14 @@ $(function(){
 		});
 		return cnt<=0;
 	});
-})//]]></script>';
+})</script>';
 
 if(!isset(Eleanor::$vars['drafts_autosave']))
 	Eleanor::LoadOptions('drafts');
 array_push($GLOBALS['scripts'],'js/eleanor_drafts.js','js/eleanor_drafts-'.Language::$main.'.js');
 $u=uniqid();
 
-echo Eleanor::Button(' ','button',array('id'=>$u,'style'=>'color:lightgray;display:none')),'<script type="text/javascript">//<![CDATA[
+echo Eleanor::Button(' ','button',array('id'=>$u,'style'=>'color:lightgray;display:none')),'<script>
 $(function(){
 	var D',$u,'=new CORE.DRAFT({
 		form:$("#',$u,'").closest("form"),
@@ -63,4 +64,4 @@ $(function(){
 	setTimeout(function(){
 		D',$u,'.enabled=true;
 	},2500);
-});//]]></script>';
+})</script>';

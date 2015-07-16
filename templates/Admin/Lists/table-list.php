@@ -135,12 +135,14 @@ HTML;
 					case'2':#Ссылка
 						if(!isset($arg['href-extra']) or !is_array($arg['href-extra']))
 							$arg['href-extra']=[];
+
 						$arg['href-extra']+=['href'=>$param];
 						$content='<a'.Html::TagParams($arg['href-extra']).'>'.$content.'</a>';
+
 						break;
 					case'href-extra':
 					case'tr-extra':
-						break;
+					break;
 					case'1':#Класс
 						$name='class';
 					default:
@@ -232,9 +234,7 @@ HTML
 	},
 
 	'end'=>'</tbody></table>',
-	'subitems'=>'<script>$(function(){
-InitTableSubitems({0});
-})</script>',
+	'subitems'=>'<script>$(function(){ InitTableSubitems({0}) })</script>',
 	'foot'=>function($itemsopt,$cnt,$pp,$page,$links,$ajaxapge=null){
 		$event=$itemsopt ? <<<HTML
 					<div class="pull-right form-inline">

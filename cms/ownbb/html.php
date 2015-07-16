@@ -8,6 +8,7 @@ namespace CMS\OwnBB;
 defined('CMS\STARTED')||die;
 use CMS;
 
+/** Вставка HTML разметки (без фильтрации) в редактор */
 class Html extends CMS\Abstracts\OwnBbCode
 {
 	/** Обработка информации перед показом на странице
@@ -19,7 +20,11 @@ class Html extends CMS\Abstracts\OwnBbCode
 	public static function PreDisplay($t,$p,$c,$cu)
 	{
 		if(strpos($p,'noparse')!==false)
-			return'['.$t.']'.htmlspecialchars($c,CMS\ENT,\Eleanor\CHARSET,false).'[/'.$t.']';
+		{
+			$c=htmlspecialchars($c, CMS\ENT, \Eleanor\CHARSET, false);
+
+			return"[{$t}]{$c}[/{$t}]";
+		}
 
 		if(!$cu)
 			return static::RestrictDisplay($t,$p,$c);

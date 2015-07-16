@@ -188,7 +188,7 @@ else
 			? (string)Eleanor::$Template->iframe([ 'content'=>$content ])
 			: (string)Eleanor::$Template->index([ 'content'=>$content ]);
 
-		#Мегафикс: поисковики не понимают тег <base href...>, и всегда лишний раз переходят по ссылке без его учета
+		#Мегафикс #1: поисковики не понимают тег <base href...>, и всегда лишний раз переходят по ссылке без его учета
 		$out=preg_replace_callback('%(href|src)=(["\'])([^\'"#/][^\'"]+)%i',function($match){
 			#Фильтр на полноценные ссылки и всякие mailto
 			if(preg_match('#^[a-z]+:#',$match[3])==0)
@@ -196,6 +196,44 @@ else
 
 			return$match[0];
 		},$out);
+
+		#Мегафикс #2: перенос JavaScript из верхних частей страницы в нижние по материалам https://developers.google.com/speed/pagespeed/insights/
+		if(strpos($out,'</body>')!==false and preg_match_all('#\t*<script([^>]*)>(.*?)</script>\n*#is',$out,$m)>0)
+		{
+			$joined=false;
+			$scripts='';
+
+			foreach($m[1] as $k=>$tag)
+			{
+				if(strpos($tag, 'type=')!==false)
+					continue;
+
+				if(strpos($tag, 'src=')!==false)
+				{
+					if(preg_match('#html5shiv\.|respond\.#',$tag)>0)
+						continue;
+
+					if($joined)
+						$scripts.='</script>';
+
+					$joined=false;
+					$scripts.=$m[0][$k];
+				}
+				elseif($m[2][$k])
+				{
+					$scripts.=$joined ? ";\n" : '<script>';
+					$scripts.=trim($m[2][$k],"; \n\r");
+					$joined=true;
+				}
+
+				$out=str_replace($m[0][$k],'',$out);
+			}
+
+			if($joined)
+				$scripts.='</script>';
+
+			$out=str_replace('</body>',$scripts.'</body>',$out);
+		}
 
 		OutPut::SendHeaders('html',$code,$cache);
 		Output::Gzip($out);

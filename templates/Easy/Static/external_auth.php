@@ -2,7 +2,7 @@
 /*
 	Элемент шаблона. Отображает кнопки для осуществления внешней авторизации, используя систему идентификации Loginza. http://loginza.ru
 */
-if(!defined('CMS'))die;?><a class="externals loginza" href="#" style="text-decoration:none">
+defined('CMS\STARTED')||die;?><a class="externals loginza" href="#" style="text-decoration:none">
 <img src="http://loginza.ru/img/providers/vkontakte.png" title="ВКонтакте" alt="ВКонтакте" />
 <img src="http://loginza.ru/img/providers/facebook.png" title="Facebook" alt="Facebook" />
 <img src="http://loginza.ru/img/providers/google.png" title="Google Accounts" alt="Google Accounts" />
@@ -11,7 +11,7 @@ if(!defined('CMS'))die;?><a class="externals loginza" href="#" style="text-decor
 <img src="http://loginza.ru/img/providers/mailru.png" title="Mail.ru" alt="Mail.ru" />
 <img src="http://loginza.ru/img/providers/openid.png" title="OpenID" alt="OpenID" />
 <img src="http://loginza.ru/img/providers/webmoney.png" title="WebMoney" alt="WebMoney" /></a>
-<script type="text/javascript">//<![CDATA[
+<script>//<![CDATA[
 if(typeof CORE.Loginza=="undefined")
 {
 	$(function(){

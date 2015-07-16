@@ -6,7 +6,7 @@
 */
 namespace CMS\OwnBB;
 defined('CMS\STARTED')||die;
-use CMS\Eleanor;
+use CMS\Eleanor, Eleanor\Classes\EE;
 
 /** Вставка скрытого (обычно от гостей) участка текста на странице */
 class Hide extends \CMS\Abstracts\OwnBbCode
@@ -23,7 +23,7 @@ class Hide extends \CMS\Abstracts\OwnBbCode
 	public static function PreDisplay($t,$p,$c,$cu)
 	{
 		if(strpos($p,'noparse')!==false)
-			return'['.$t.']'.$c.'[/'.$t.']';
+			return"[{$t}]{$c}[/{$t}]";
 
 		if(!$cu)
 			return static::RestrictDisplay($t,$p,$c);
@@ -42,7 +42,7 @@ class Hide extends \CMS\Abstracts\OwnBbCode
 		}
 		catch(EE$E)
 		{
-			return'['.$l['hidden'].']';
+			return"[{$l['hidden']}]";
 		}
 	}
 }

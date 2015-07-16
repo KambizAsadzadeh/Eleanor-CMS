@@ -128,10 +128,9 @@ class Minify
 		{
 			$create=false;
 			$mt=filemtime($f);
-			$size=filesize($f);
 
 			foreach((array)$source as $v)
-				if(is_file($v) and (filesize($v)!=$size or filemtime($v)>$mt))
+				if(is_file($v) and filemtime($v)>$mt)
 				{
 					$create=true;
 					Files::Delete($f);

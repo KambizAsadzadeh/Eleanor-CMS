@@ -18,7 +18,7 @@ $GLOBALS['title']=T::$lang['site_close_text'];
 <head>
 	<script src="//cdn.jsdelivr.net/g/jquery"></script>
 	<?=GetHead()?>
-<style type="text/css">/*<![CDATA[*/
+<style>
 body {
 	margin: auto;
 	padding: 0;
@@ -30,7 +30,7 @@ html { height: 100%; }
 h1 { font-weight: normal; font-size: 18px; color: #4f4f4f;}
 .syscopyright { font-size: 10px; color: #c0c0c0; margin-top:10px}
 .syscopyright a { color: #c0c0c0; }
-/*]]>*/</style>
+</style>
 </head>
 
 <body>

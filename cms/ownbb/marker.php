@@ -1,19 +1,25 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
 namespace CMS\OwnBB;
+use CMS\Eleanor, Eleanor\Classes\EE;
+
 defined('CMS\STARTED')||die;
 
+/** Визуальное выделение опредленного участка в теге [code] */
 class Marker extends \CMS\Abstracts\OwnBbCode
 {
 	public static
-		/** @var Цвет выделяемого текста */
+		/** @var string Название шаблона маркера */
+		$template='Marker',
+
+		/** @var string Цвет выделяемого текста */
 		$color='red',
 
-		/** @var Цвет фона */
+		/** @var string Цвет фона */
 		$background='yellow';
 
 	/** Обработка информации перед показом на странице
@@ -41,7 +47,17 @@ class Marker extends \CMS\Abstracts\OwnBbCode
 		if(!isset($p['background']) or preg_match('%^[#a-z0-9\-]+$%i',$p['background'])==0)
 			$p['background']=static::$background;
 
-		return'<span style="color:'.$p['color'].';background-color:'.$p['background'].'">'.$c.'</span>';
+		try
+		{
+			$tpl=static::$template;
+			return Eleanor::$Template->$tpl($c,$p);
+		}
+		catch(EE$E)
+		{
+			return <<<HTML
+<span style="color:{$p['color']};background-color:{$p['background']}">{$c}</span>
+HTML;
+		}
 	}
 }
 

@@ -1,6 +1,6 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
@@ -53,9 +53,13 @@ class Attach extends \CMS\Abstracts\OwnBbCode
 					.'flowplayer/skin/minimalist.css" />';
 				$GLOBALS['scripts'][]=$path3rd.'flowplayer/flowplayer.min.js';
 
-				return'<div class="flowplayer" data-swf="'.$path3rd.'flowplayer/flowplayer.swf"><video><source type="video/'
-					.$type.'" src="'.$p['file'].'" /></video></div>'.(\CMS\AJAX
-						? '<script type="text/javascript">/*<![CDATA[*/$(function(){ $(".flowplayer").flowplayer() })//]]></script>'
+				return<<<HTML
+<div class="flowplayer" data-swf="{$path3rd}flowplayer/flowplayer.swf">
+	<video><source type="video/{$type}" src="{$p['file']}" /></video>
+</div>
+HTML
+				.(\CMS\AJAX
+						? '<script>$(function(){ $(".flowplayer").flowplayer(); })</script>'
 						: '');
 			case'flv':
 				$p['height']=isset($p['height']) ? (int)$p['height'] : 300;
@@ -66,10 +70,11 @@ class Attach extends \CMS\Abstracts\OwnBbCode
 				$align=isset($p['align']) && in_array($p['align'],['left','center','right']) ? 'float:'.$p['align'] : '';
 				$GLOBALS['scripts'][]=$path3rd.'flowplayer/flowplayer-3.2.13.min.js';
 				$pl=uniqid('player_');
+				$autohide=$type=='mp3' ? 'false' : 'true';
 
-				return'<a href="'.$p['file'].'" style="display:block;width:'.$p['width'].'px;height:'.$p['height'].'px;'
-					.$align.'" id="'.$pl.'"></a><script type="text/javascript">//<![CDATA[
-flowplayer("'.$pl.'","'.$path3rd.'flowplayer/flowplayer-3.2.18.swf",{
+				return<<<HTML
+<a href="{$p['file']}" style="display:block;width:{$p['width']}px;height:{$p['height']}px;{$align}" id="{$pl}"></a>
+<script>flowplayer("{$pl}","{$path3rd}flowplayer/flowplayer-3.2.18.swf",{
 	// pause on first frame of the video
 	clip: {
 		autoPlay: false,
@@ -77,10 +82,11 @@ flowplayer("'.$pl.'","'.$path3rd.'flowplayer/flowplayer-3.2.18.swf",{
 	},
 	plugins:{
 		controls:{
-			autoHide: '.($type=='mp3' ? 'false' : 'true').'
+			autoHide: {$autohide}
 		}
 	}
-})//]]></script>';
+})</script>
+HTML;
 			case'jpeg':
 			case'jpg':
 			case'png':
@@ -114,35 +120,20 @@ flowplayer("'.$pl.'","'.$path3rd.'flowplayer/flowplayer-3.2.18.swf",{
 							$pi[$k]=' '.$k.'="'.$v.'"';
 					}
 
-				#ToDo! Заменить на fancybox http://fancyapps.com/fancybox/
 				if(!isset($GLOBALS['head']['colorbox']))
 				{
-					$GLOBALS['scripts'][]=$path3rd.'colorbox/jquery.colorbox-min.js';
-					$GLOBALS['head']['colorbox']='<link rel="stylesheet" media="screen" href="'.$path3rd
-						.'colorbox/colorbox.css" />';
+					$GLOBALS['head']['fancybox.css']='<link rel="stylesheet" href="//cdn.jsdelivr.net/fancybox/2/jquery.fancybox.css" type="text/css" media="screen" />';
+					$GLOBALS['scripts'][]='//cdn.jsdelivr.net/fancybox/2/jquery.fancybox.pack.js';
+
 					$GLOBALS['head'][]=<<<'HTML'
-<script type="text/javascript">//<![CDATA[
-$(function(){
-	var F=function(){
-		$("a.gallery").colorbox({
-			title: function(){
-				var url=$(this).attr("href"),
-					title=$(this).find("img").attr("title");
-				return "<a href='" +url + "' target='_blank'>"+(title ? title : url)+"</a>";
-			},
-			maxWidth:Math.round(screen.width/1.5),
-			maxHeight:Math.round(screen.height/1.5)
-		});
-	}
-	if(CORE.in_ajax.length)
-		CORE.after_ajax.push(F);
-	else
-		F();
-})//]]></script>
+<script>$(function(){ $("a.gallery").fancybox(); })</script>
 HTML;
 				}
-				return'<a href="'.$p['file'].'" target="_blank" data-rel="gallery" class="gallery"><img src="'
-					.$p['preview'].'"'.join(',',$pi).' /></a>';
+
+				$params=join(',',$pi);
+				return<<<HTML
+<a href="{$p['file']}" target="_blank" data-fancybox-group="gallery" data-fancybox-title="{$pi['alt']}" class="gallery"><img src="{$p['preview']}"{$params} /></a>
+HTML;
 			break;
 			case'mpg':
 			case'mpeg':
@@ -151,19 +142,23 @@ HTML;
 			case'mid':
 			case'kar':
 				$p['width']=isset($p['width']) ? (int)$p['width'] : '100%';
-				return'<embed type="application/x-mplayer2" pluginspage="http://www.microsoft.com/windows/mediaplayer/en/default.asp" src="'
-					.$p['file'].'" width="'.$p['width'].'" height="'.$p['height']
-					.'" autostart="0" showcontrols="true" showstatusbar="true" showdisplay="true" />';
+
+				return<<<HTML
+<embed type="application/x-mplayer2" pluginspage="http://www.microsoft.com/windows/mediaplayer/en/default.asp" src="{$p['file']}" width="{$p['width']}" height="{$p['height']}" autostart="0" showcontrols="true" showstatusbar="true" showdisplay="true" />
+HTML;
 			break;
 			case'mov':
 				$p['width']=isset($p['width']) ? (int)$p['width'] : 520;
 				$p['height']=isset($p['height']) ? (int)$p['height'] : 330;
-				return'<embed type="application/x-mplayer2" pluginspage="http://www.apple.com/quicktime/download/indext.html" src="'
-					.$p['file'].'" width="'.$p['width'].'" height="'.$p['height']
-					.'" autostart="0" showcontrols="true" showstatusbar="true" showdisplay="true" />';
+
+				return<<<HTML
+<embed type="application/x-mplayer2" pluginspage="http://www.apple.com/quicktime/download/indext.html" src="{$p['file']}" width="{$p['width']}" height="{$p['height']}" autostart="0" showcontrols="true" showstatusbar="true" showdisplay="true" />
+HTML;
 			break;
 			default:
-				return'<a href="'.$p['file'].'" target="_blank">'.$p['file'].'</a>';
+				return<<<HTML
+<a href="{$p['file']}" target="_blank">{$p['file']}</a>
+HTML;
 		}
 	}
 }

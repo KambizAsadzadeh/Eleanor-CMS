@@ -97,5 +97,5 @@ return array(
 							<ul class="archives"><li>'.join('</li><li>',$v_3).'</li></ul>
 						</div>
 					</div>
-				</div><script type="text/javascript">/*<![CDATA[*/$(function(){ new CORE.Archive({module:"'.$var_1.'",year:'.$var_0['y'].',month:'.$var_0['m'].',container:"#'.$u.'"}); });//]]></script>',
+				</div><script>$(function(){ new CORE.Archive({module:"'.$var_1.'",year:'.$var_0['y'].',month:'.$var_0['m'].',container:"#'.$u.'"}); });</script>',
 );

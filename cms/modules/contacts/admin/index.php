@@ -83,13 +83,13 @@ if($_SERVER['REQUEST_METHOD']=='POST' && Eleanor::$ourquery)
 	else
 	{
 		Saver::$checkup=true;
-		$data['info']=isset($_POST['info']) && is_array($_POST['info']) ? $Saver->Save((string)$_POST['info']) : '';
+		$data['info']=isset($_POST['info']) ? $Saver->Save((string)$_POST['info']) : '';
 
 		Saver::$checkup=false;
-		$data['subject']=isset($_POST['subject']) && is_array($_POST['subject']) ? (string)$_POST['subject'] : '';
-		$data['text']=isset($_POST['text']) && is_array($_POST['text']) ? $Saver->Save((string)$_POST['text']) : '';
-		$data['document_title']=isset($_POST['document_title']) && is_array($_POST['document_title']) ? (string)$_POST['document_title'] : '';
-		$data['meta_descr']=isset($_POST['meta_descr']) && is_array($_POST['meta_descr']) ? (string)$_POST['meta_descr'] : '';
+		$data['subject']=isset($_POST['subject']) ? (string)$_POST['subject'] : '';
+		$data['text']=isset($_POST['text']) ? $Saver->Save((string)$_POST['text']) : '';
+		$data['document_title']=isset($_POST['document_title']) ? (string)$_POST['document_title'] : '';
+		$data['meta_descr']=isset($_POST['meta_descr']) ? (string)$_POST['meta_descr'] : '';
 
 		if($data['subject']==='')
 			$errors['EMPTY_SUBJECT']='';
@@ -178,13 +178,29 @@ foreach($values['recipient'] as $k=>&$v)
 	if(is_int($k))
 		$recipient[]=$k;
 
-	if(Eleanor::$vars['multilang'] xor is_array($v))
+	$isa=is_array($v);
+
+	if(Eleanor::$vars['multilang'] xor $isa)
 		$v=Eleanor::$vars['multilang'] ? [Language::$main=>$v]+$def : FilterLangValues($v);
 	elseif(Eleanor::$vars['multilang'])
 		$v+=$def;
+	elseif($isa)
+		$v=FilterLangValues($v);
 }
 
 unset($v);
+
+foreach(['info','subject','text','document_title','meta_descr'] as $v)
+{
+	$isa=is_array($values[$v]);
+
+	if(Eleanor::$vars['multilang'] xor $isa)
+		$values[$v]=Eleanor::$vars['multilang'] ? [Language::$main=>$values[$v]]+$def : FilterLangValues($values[$v]);
+	elseif(Eleanor::$vars['multilang'])
+		$values[$v]+=$def;
+	elseif($isa)
+		$values[$v]=FilterLangValues($values[$v]);
+}
 
 if($recipient)
 {
@@ -202,6 +218,5 @@ $Editor=function($name)use($Eleanor){
 	return call_user_func_array([$Editor,'Area'],func_get_args());
 };
 
-$title[]=$Eleanor->module['title'];
 $s=Eleanor::$Template->Contacts($values,$recipient,$Editor,$Eleanor->Uploader->Show(),$errors,$saved);
 Response($s);

@@ -187,7 +187,7 @@ var uagent=navigator.userAgent.toLowerCase(),
 
 		if(O instanceof jQuery)
 		{
-			if(O.size()==0)
+			if(O.length==0)
 				return {};
 			var params={};
 			$.each(O.serializeArray(),function(i,n){
@@ -546,7 +546,7 @@ $(function(){
 	CORE.dir=$("head base").attr("href");
 
 	//Определим какие скрипты подключены
-	$("head script").each(function(){
+	$("script[src]").each(function(){
 		if($(this).attr("src"))
 			CORE.scripts.push(this.src.indexOf(CORE.dir)==-1 ? this.src : this.src.substr(CORE.dir.length));
 	});

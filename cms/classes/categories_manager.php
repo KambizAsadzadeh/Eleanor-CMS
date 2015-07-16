@@ -308,7 +308,7 @@ class Categories_Manager extends Categories
 						'id'=>'image',
 					),
 				),
-				'append'=>'<script type="text/javascript">//<![CDATA[
+				'append'=>'<script>
 				$(function(){
 					$("#image").change(function(){
 						var val=$(this).val();
@@ -317,8 +317,7 @@ class Categories_Manager extends Categories
 						else
 							$("#preview").prop("src","images/spacer.png").closest("tr").hide();
 					}).change();
-				})
-				//]]></script>'
+				})</script>'
 			),
 			'preview'=>array(
 				'title'=>$this->Language['preview'],

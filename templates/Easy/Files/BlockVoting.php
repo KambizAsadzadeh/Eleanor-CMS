@@ -1,4 +1,5 @@
 <?php
+defined('CMS\STARTED')||die;
 /*
 	Шаблон блока с опросом
 
@@ -11,7 +12,7 @@ $v_2->type='block';
 $v_2->jparams=',AfterSwitch:'.$u;
 
 $voting=(string)$v_2;
-echo'<script type="text/javascript">//<![CDATA[
+echo'<script>
 var ',$u,'=$.Callbacks();
 $(function(){
 	var p=$("#',$u,'").parent();
@@ -23,4 +24,4 @@ $(function(){
 	',$u,'.add(function(){
 		$(document).trigger("block-votings");
 	});
-});//]]></script><i id="',$u,'"></i>',$voting;
+})</script><i id="',$u,'"></i>',$voting;

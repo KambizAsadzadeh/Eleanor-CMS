@@ -16,7 +16,7 @@ defined('CMS\STARTED')||die;
  * @var array $errors Ошибки формы входа
  * @var string $login Логин входа
  * @var string $password Пароль входа
- * @var \Eleanor\Classes\StringCallback $captcha Капча*/
+ * @var \Eleanor\Classes\StringCallback $captcha Капча */
 
 include_once __DIR__.'/../../html.php';
 

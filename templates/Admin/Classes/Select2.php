@@ -44,7 +44,7 @@ class Select2
 			$a['data-width']='style';
 
 		return Html::Select($n,$o,$a).<<<HTML
-<script>/*<![CDATA[*/$(function(){ $("#{$a['id']}").select2({$js_obj}); });//]]></script>
+<script>$(function(){ $("#{$a['id']}").select2({$js_obj}); })</script>
 HTML;
 	}
 

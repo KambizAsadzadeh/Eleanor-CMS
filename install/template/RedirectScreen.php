@@ -11,6 +11,6 @@ if(strpos($var_0,'//')===false)
 $GLOBALS['head']['redirect']='<meta http-equiv="refresh" content="'.$var_1.'; url='.$var_0.'" />';?>
 <script>
 $(function(){
-	if($("meta[http-equiv=refresh]").size()==0)
+	if($("meta[http-equiv=refresh]").length==0)
 		setTimeout(function(){location.href="<?=$var_0?>"},<?=$var_1?>*1000)
 })</script>

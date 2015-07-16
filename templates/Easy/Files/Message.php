@@ -6,7 +6,7 @@
 	@var отображаемый текст
 	@var error|warning|info определяет тип иконки. По умолчанию тип warning
 */
-if(!defined('CMS'))die;
+defined('CMS\STARTED')||die;
 $type=isset($var_1) ? $var_1 : 'warning';
 $isa=is_array($var_0);
 ?>

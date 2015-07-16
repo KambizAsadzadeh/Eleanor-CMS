@@ -1,12 +1,13 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
 namespace CMS\OwnBB;
 defined('CMS\STARTED')||die;
 
+/** Внутри этого тега, обработка всех BB кодов отключается */
 class NoBB extends \CMS\Abstracts\OwnBbCode
 {
 	/** Обработка информации перед показом на странице
@@ -23,7 +24,7 @@ class NoBB extends \CMS\Abstracts\OwnBbCode
 		if(!$cu)
 			return static::RestrictDisplay($t,$p,$c);
 
-		return'['.$t.']'.$c.'[/'.$t.']';
+		return"[{$t}]{$c}[/{$t}]";
 	}
 
 	/** Обработка информации перед её сохранением

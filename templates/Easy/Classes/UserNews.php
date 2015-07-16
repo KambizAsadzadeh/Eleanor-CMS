@@ -427,7 +427,7 @@ HTML;
 			if(!isset($GLOBALS['head']['rating']))
 			{
 				$GLOBALS['scripts'][]=Eleanor::$Template->default['theme'].'js/rating.js';
-				$GLOBALS['head']['rating']='<script type="text/javascript">/*<![CDATA[*/$(function(){ Rating("'.$GLOBALS['Eleanor']->module['name'].'",'.$min.','.$max.'); });//]]></script>';
+				$GLOBALS['head']['rating']='<script>$(function(){ Rating("'.$GLOBALS['Eleanor']->module['name'].'",'.$min.','.$max.'); });</script>';
 			}
 			$r='<div class="rate-bt rate-bt-'
 				.($sum>0 ? 'up' : 'down')

@@ -25,6 +25,14 @@ function Finish($again=false)
 	if($again)
 	{#http://php.net/manual/en/features.commandline.options.php
 
+		if(!isset($_SESSION))
+			\Eleanor\StartSession();
+
+		foreach(['_GET','_POST','_REQUEST'] as $v)
+			if(!isset($_SESSION[$v]))
+				$_SESSION[$v]=$GLOBALS[$v];
+
+		$sid=session_id();
 		$php='php';#путь к php
 		$script=__FILE__;//путь к скрипту
 
@@ -40,12 +48,11 @@ function Finish($again=false)
 				}
 
 			#http://www.somacon.com/p395.php
-			pclose(popen('start /b "" "'.$php.'" -q '.$script,'r'));
+			pclose(popen('start /b "" "'.$php.'" -q '.$script.' '.$sid,'r'));
 		}
 		else
-			`$php -q $script > /dev/null &`;
+			`$php -q $script $sid > /dev/null &`;
 	}
-
 	if(isset($_GET['return']) and Eleanor::$ourquery)
 	{
 		header('Cache-Control: no-store');
@@ -60,6 +67,15 @@ require __DIR__.'/cms/core.php';
 $Eleanor=new Eleanor(true);
 
 SetService('cron');
+
+if(\Eleanor\CLI and isset($argv[1]))
+{
+	\Eleanor\StartSession($argv[1]);
+
+	foreach(['_GET','_POST','_REQUEST'] as $v)
+		if(isset($_SESSION[$v]) and is_array($_SESSION[$v]))
+			$GLOBALS[$v]=$_SESSION[$v];
+}
 
 if(Eleanor::$vars['multilang'])
 {

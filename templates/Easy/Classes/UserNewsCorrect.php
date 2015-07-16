@@ -141,7 +141,7 @@ class TplUserNewsCorrect
 				.($links['draft'] ? Eleanor::Input('_draft',$id,array('type'=>'hidden')).Eleanor::$Template->DraftButton($links['draft'],1).($hasdraft ? ' <a href="'.$links['nodraft'].'">'.static::$lang['nodraft'].'</a>' : '') : '')
 			)
 			->endform()
-			.'<script type="text/javascript">//<![CDATA[
+			.'<script>
 $(function(){
 	$("#cs").change(function(){
 		var cs=this;
@@ -170,7 +170,7 @@ $(function(){
 			a.setOptions({params:p})
 		});
 	});
-})//]]></script>';
+})</script>';
 	}
 
 	/*

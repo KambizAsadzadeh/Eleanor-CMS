@@ -32,7 +32,7 @@ if($uploaded or $writed)
 {
 	$GLOBALS['scripts'][]='addons/autocomplete/jquery.autocomplete.js';
 	$GLOBALS['head']['autocomplete|style']='<link rel="stylesheet" type="text/css" href="addons/autocomplete/style.css" />';
-	echo'<script>/*<![CDATA[*/';
+	echo'<script>';
 	if($img)
 	{
 		$GLOBALS['head']['colorbox']='<link rel="stylesheet" media="screen" href="addons/colorbox/colorbox.css" />';
@@ -59,7 +59,7 @@ if($uploaded or $writed)
 				file:"autocomplete"
 			}
 		});
-	});//]]></script>';
+	});</script>';
 	$r.='<li><span style="vertical-align:15%">'
 		.sprintf($uploaded ? $lang['uploaded_file'] : $lang['writed_file'],'<a href="'.$value.'" target="_blank"'.($img ? ' id="a-'.$u.'"' : '').'>'.basename($value).'</span></a>');
 

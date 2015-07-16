@@ -58,7 +58,7 @@ $(function(){
 		butt=$("#up-{$u},#down-{$u},#del-{$u}");
 
 	sel.change(function(){
-		if( res.find("[value="+$(this).val()+"]").prop("selected",true).size()>0 )
+		if( res.find("[value="+$(this).val()+"]").prop("selected",true).length>0 )
 			add.hide();
 		else
 			add.show();
@@ -68,7 +68,7 @@ $(function(){
 		butt.hide();
 		if($(this).val())
 		{
-			if($("option",this).size()==1)
+			if($("option",this).length==1)
 				$("#del-{$u}").show();
 			else if($("option:last",this).prop("selected"))
 				$("#up-{$u},#del-{$u}").show();
@@ -82,7 +82,7 @@ $(function(){
 	}).change();
 
 	add.click(function(){
-		if(res.find("[value="+sel.val()+"]").size()==0)
+		if(res.find("[value="+sel.val()+"]").length==0)
 			sel.find("option:selected:first").clone().each(function(){
 				$(this).html($(this).html().replace(/^(&nbsp;|›)+/g,""));
 			}).prop("selected",false).appendTo(res);
@@ -103,7 +103,7 @@ $(function(){
 	$("#up-{$u}").click(function(){
 		res.find("option:selected").each(function(){
 			var th=$(this);
-			if(th.prev().size()==0)
+			if(th.prev().length==0)
 				return false;
 			th.insertBefore(th.prev());
 			UpdateInput();
@@ -114,7 +114,7 @@ $(function(){
 	$("#down-{$u}").click(function(){
 		res.find("option:selected").each(function(){
 			var th=$(this);
-			if(th.next().size()==0)
+			if(th.next().length==0)
 				return false;
 			th.insertAfter(th.next());
 			UpdateInput();

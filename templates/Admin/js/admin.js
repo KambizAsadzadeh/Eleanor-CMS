@@ -114,7 +114,7 @@ function ParentsWithPos()
 		pos=$("#pos"),
 		block=false,
 		SetPos=function(html){
-			pos.html(html).select2("enable", pos.has("optgroup").size()>0 ).trigger("change");
+			pos.html(html).select2("enable", pos.has("optgroup").length>0 ).trigger("change");
 		};
 
 	$(document).on("change","select.parents",function(){
@@ -152,7 +152,7 @@ function ParentsWithPos()
 
 				var next=th.nextAll("select"),F;
 
-				if(next.size()==0)
+				if(next.length==0)
 					next=th.clone(false).empty().html("<option></option>").removeAttr("id").removeAttr("tabindex").removeAttr("name")
 						.prop("placeholder",CORE.Lang("loading")).addClass("need-tabindex").insertAfter(th)
 						.data("parent",val).select2({allowClear: true}).select2("enable",false);
@@ -209,7 +209,7 @@ function ParentsWithPos()
 		poses[ $(this).val() ]=pos.html();
 	});
 
-	pos.select2("enable",pos.has("optgroup").size()>0);
+	pos.select2("enable",pos.has("optgroup").length>0);
 };
 
 function Pim()
@@ -226,7 +226,7 @@ function Pim()
 				var opts=th.find("option:selected"),
 					dis=true;
 
-				if(opts.size()>0)
+				if(opts.length>0)
 				{
 					opts.each(function(){
 						if(!this.defaultSelected)
@@ -369,7 +369,7 @@ function InitTableSubitems(sync_n)
 
 						var whole=$(a.data("target")).html(html),
 							ths=whole.find("thead.empty th"),
-							ths_cnt=ths.size();
+							ths_cnt=ths.length;
 
 						whole.collapse('show');
 						whole.find("table a.td_collapse_link").filter(function(){
@@ -447,7 +447,7 @@ $(function(){
 		{
 			var item=$(location.hash);
 
-			if(item.size()>0)
+			if(item.length>0)
 				$(this).scrollTop(item.offset().top - $("#topbar").height());
 		}catch(E){}
 	});
@@ -707,7 +707,7 @@ $(function(){
 		});
 	});
 
-	$("body").toggleClass("foot_submit_form",$(".submit-pane").size()>0);
+	$("body").toggleClass("foot_submit_form",$(".submit-pane").length>0);
 
 	//Верхнее меню
 	var attached=false;
@@ -724,7 +724,7 @@ $(function(){
 		var ul=$("> ul",this);
 
 		$(document).click(function(e){
-			if($(e.target).closest(ul).size()==0)
+			if($(e.target).closest(ul).length==0)
 			{
 				$("#main-menu, #main-menu > li.dropdown").removeClass("open");
 

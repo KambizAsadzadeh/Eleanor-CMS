@@ -1,6 +1,6 @@
 <?php
-/*
-	Eleanor CMS © 2014
+/**
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
@@ -41,7 +41,9 @@ if($menu===false)
 				if($n>0)
 					$c.='</li>';
 
-				$c.='<li><a href="'.$v['url'].'"'.$v['params'].'>'.$v['title'].'</a>';
+				$c.=<<<HTML
+<li><a href="{$v['url']}"{$v['params']}>{$v['title']}</a>
+HTML;
 				$onp=false;
 			}
 

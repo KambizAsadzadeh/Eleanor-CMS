@@ -281,7 +281,7 @@ INNER JOIN `{$table_ex}` USING(`id`) WHERE `id`={$user['id']} LIMIT 1");
 		}
 
 		#Сброс пароля: пароль прописан жестко в базе длиной до 5 символов, либо поле просто не заполнено.
-		$reset=$user['password_hash']==='' || strlen($pass)<=5 && $pass===$user['password_hash'];
+		$reset=$pass!=='' && ($user['password_hash']==='' || strlen($pass)<=5 && $pass===$user['password_hash']);
 
 		if($reset or password_verify($pass,$user['password_hash']))
 		{

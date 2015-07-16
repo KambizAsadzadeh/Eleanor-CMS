@@ -45,7 +45,7 @@ $Eleanor->sm=array(
 				'id'=>'path-'.$u,
 			),
 		),
-		'append'=>'<script type="text/javascript">//<![CDATA[
+		'append'=>'<script>
 			$(function(){
 				$("#path-'.$u.'").each(function(){
 					var c=(this.value!="images/spacer.png" && this.value.match(/\.(png|jpe?g|gif|bmp)$/gi));
@@ -65,7 +65,7 @@ $Eleanor->sm=array(
 						"types":"jpg,png,gif,bmp,jpeg"
 					}
 				});
-			});//]]></script>'
+			})</script>'
 	),
 	'preview'=>array(
 		'title'=>$lang['preview'],

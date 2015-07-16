@@ -6,7 +6,7 @@
 		title - название блока
 		content - содержимое блока
 */
-if(!defined('CMS'))die;
+defined('CMS\STARTED')||die;
 if(is_array($content))
 {
 	if(isset($content['title']))

@@ -269,7 +269,7 @@ HTML;
 		<td style="text-align:center;vertical-align:middle">'.Eleanor::Button($ltpl['apply']).'</td>
 	</tr>
 </table>
-<script type="text/javascript">//<![CDATA[
+<script>
 $(function(){
 	var fitrs=$("#ftable tr:not(.infolabel)");
 	$("#ftable .infolabel a").click(function(){
@@ -294,7 +294,7 @@ $(function(){
 	$("#ft").change(function(){
 		$("[name^=\"fi[cnt\"]").prop("disabled",!$(this).prop("checked"));
 	}).change();
-});//]]></script>
+})</script>
 		</form><form id="checks-form" action="'.$links['form_items'].'" method="post" onsubmit="return (CheckGroup(this) && confirm(\''.$ltpl['are_you_sure'].'\'))">'
 			.$content
 			.'<div class="submitline" style="text-align:right"><div style="float:left">'.sprintf(static::$lang['nto_pages'],$Lst->perpage($pp,$links['pp'])).'</div>'.$ltpl['with_selected'].Eleanor::Select('op',Eleanor::Option($ltpl['delete'],'k')).Eleanor::Button('Ok').'</div></form>'
@@ -328,9 +328,9 @@ $(function(){
 
 		#ToDo! Конфигурации вынести в генератор контролов
 		#Скрипты - поскольку контролы передаются в чистом виде (без классов).
-		$GLOBALS['head'][]='<script>/*<![CDATA[*/$(function(){
+		$GLOBALS['head'][]='<script>$(function(){
 	$("#content input, #content select").addClass("form-control");
-})//]]></script>';
+})</script>';
 
 		#Menu
 		static::Menu($id ? 'editt' : 'addt');
@@ -500,7 +500,7 @@ HTML;
 		<td style="text-align:center;vertical-align:middle">'.Eleanor::Button($ltpl['apply']).'</td>
 	</tr>
 </table>
-<script type="text/javascript">//<![CDATA[
+<script>
 $(function(){
 	var fitrs=$("#ftable tr:not(.infolabel)");
 	$("#ftable .infolabel a").click(function(){
@@ -509,7 +509,7 @@ $(function(){
 		return false;
 	})'.($fs ? '' : '.click()').';
 	One2AllCheckboxes("#checks-form","#mass-check","[name=\"mass[]\"]",true);
-});//]]></script>
+})</script>
 		</form><form id="checks-form" action="'.$links['form_items'].'" method="post" onsubmit="return (CheckGroup(this) && confirm(\''.$ltpl['are_you_sure'].'\'))">'
 			.$Lst->end().'<div class="submitline" style="text-align:right"><div style="float:left">'.sprintf(static::$lang['tto_pages'],$Lst->perpage($pp,$links['pp'])).'</div>'.$ltpl['with_selected'].Eleanor::Select('op',Eleanor::Option($ltpl['activate'],'a').Eleanor::Option($ltpl['deactivate'],'d').Eleanor::Option($ltpl['delete'],'k').Eleanor::Option(static::$lang['waitmod'],'m')).Eleanor::Button('Ok').'</div></form>'
 			.Eleanor::$Template->Pages($cnt,$pp,$page,array($links['pages'],$links['first_page']))
@@ -567,7 +567,7 @@ $(function(){
 		);
 
 		#Скрипты
-		$GLOBALS['head'][]='<script>//<![CDATA[
+		$GLOBALS['head'][]='<script>
 $(function(){
 	$("select[name=status]").change(function(){
 		var th=$(this).removeClass("published trash wait");
@@ -583,7 +583,7 @@ $(function(){
 				th.addClass("wait");
 		}
 	}).change();
-})//]]></script>';
+})</script>';
 
 		#Menu
 		static::Menu($id ? 'edit' : 'add');
@@ -634,12 +634,12 @@ $(function(){
 		#Tags
 		$tags=Eleanor::$Template->LangEdit($ml['tags'],'tags');
 		if(Eleanor::$vars['multilang'])
-			$tags.='<script>/*<![CDATA[*/$(function(){
+			$tags.='<script>$(function(){
 	var label=$("#tags-label");
 	$("#a-tab-'.Language::$main.'-tags").closest("ul").find("a").on("shown.bs.tab",function(e){
 		label.prop("for","tags-"+$(this).data("language"));
 	});
-})//]]></script>';
+})</script>';
 		#/Tags
 
 		$announce=Eleanor::$Template->LangEdit($ml['announcement'],null);
@@ -1029,7 +1029,7 @@ HTML;
 			if(is_int($k) and is_string($v) and isset(static::$lang[$v]))
 				$v=static::$lang[$v];
 
-		return Eleanor::$Template->Cover($c,$errors,'error').'<script type="text/javascript">//<![CDATA[
+		return Eleanor::$Template->Cover($c,$errors,'error').'<script>
 $(function(){
 	$("#cs").change(function(){
 		var cs=this;
@@ -1058,7 +1058,7 @@ $(function(){
 			a.setOptions({params:p})
 		});
 	});
-})//]]></script>';*/
+})</script>';*/
 	}
 
 	/*

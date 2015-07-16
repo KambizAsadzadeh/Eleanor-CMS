@@ -72,7 +72,7 @@ CORE.Comments=function(opts)
 		HistoryGo,
 		ModerateDo=function()
 		{
-			if(container.find(opts.moderate).size()>0 && !container.find(opts.moderate).is(":empty"))
+			if(container.find(opts.moderate).length>0 && !container.find(opts.moderate).is(":empty"))
 			{
 				var ch=container.find(opts.comments).find("[name=\"mass[]\"]").unbind("click").data("one2all",false);
 				$("#masscheck").unbind("click").prop("checked",false);
@@ -316,7 +316,7 @@ CORE.Comments=function(opts)
 					});
 					if(reload)
 						window.location.reload();
-					else if(container.find(opts.comments).find(opts.comment).size()==0)
+					else if(container.find(opts.comments).find(opts.comment).length==0)
 						GoToPage(opts.page,false,true);
 				}
 			);
@@ -335,7 +335,7 @@ CORE.Comments=function(opts)
 		return false;
 	}).on("click",".cb-gocomment",function(){
 		var id=$(this).data("id");
-		if($("#comment"+id).size()>0)
+		if($("#comment"+id).length>0)
 		{
 			NewHash("#comment"+id);
 			return false;
@@ -451,7 +451,7 @@ CORE.Comments=function(opts)
 			text=EDITOR.Get("text"),
 			captcha={},
 			oau=autoupdate;
-		if(name.size()>0 && name.val()=="")
+		if(name.length>0 && name.val()=="")
 		{
 			alert(CORE.Lang("comments_introduce"));
 			return false;
@@ -536,7 +536,7 @@ CORE.Comments=function(opts)
 		var ids=[],nums=[],reload=false;
 		container.find(opts.comments+","+opts.parent).find("[name=\"mass[]\"]:checked").each(function(){
 			ids.push($(this).val());
-			if($(this).closest(opts.closestparent).size()==0)
+			if($(this).closest(opts.closestparent).length==0)
 				nums.push("#"+$(this).closest(opts.closestcomment).find(".cb-findcomment").text());
 			else
 				reload=true;

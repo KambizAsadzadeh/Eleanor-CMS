@@ -75,7 +75,7 @@ class OwnBB
 			{
 				$GLOBALS['scripts'][]='//cdn.jsdelivr.net/sortable/latest/Sortable.min.js';
 				$GLOBALS['head']['sortable-table']=<<<HTML
-<script>/*<![CDATA[*/$(function(){
+<script>$(function(){
 	new Sortable($(".table.table-list tbody").get(0), {
 		handle:".pos-lines",
 		draggable:"tr",
@@ -91,7 +91,7 @@ class OwnBB
 			},"text");
 		}
 	});
-})//]]></script>
+})</script>
 HTML;
 			}
 

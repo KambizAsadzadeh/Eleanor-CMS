@@ -1,6 +1,6 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
@@ -13,7 +13,7 @@ defined('CMS\STARTED')||die;
  * @var string $js Путь к каталогу js
  * @var string $css Пусть к каталогу css
  * @var string $images Путь к каталогу images
- * @var string $content Содержимое модуля*/
+ * @var string $content Содержимое модуля */
 include_once __DIR__.'/../../html.php';
 
 array_push($GLOBALS['scripts'],T::$http['static'].'js/menu_multilevel.js',$js.'index.js');?><!DOCTYPE html>
@@ -21,14 +21,14 @@ array_push($GLOBALS['scripts'],T::$http['static'].'js/menu_multilevel.js',$js.'i
 <head>
 	<script src="//cdn.jsdelivr.net/g/jquery"></script>
 	<?=GetHead()?>
-<link media="screen" href="<?=$css?>main.css" type="text/css" rel="stylesheet" />
+<link media="screen" type="text/css" href="<?=$css?>main.css" rel="stylesheet" />
 <link rel="shortcut icon" href="favicon.ico" />
 </head>
 
 <body class="page_bg">
 <div id="loading">
 	<span><?=T::$lang['loading']?></span>
-</div><script>//<![CDATA[
+</div><script>
 $(function(){
 	$("#loading").on("show",function(){
 		$(this).css({
@@ -50,7 +50,7 @@ $(function(){
 	$("nav a").filter(function(){
 		return $(this).attr("href")==now && now!="#";
 	}).addClass("active");
-});//]]></script>
+})</script>
 <?php
 if(Eleanor::$Permissions->IsAdmin())
 	include \CMS\DIR.'blocks/block_adminheader.php';
@@ -81,7 +81,7 @@ if(Eleanor::$Permissions->IsAdmin())
 	</div>
 	<nav><ul class="topmenu">
 	<?=include CMS\DIR.'menus/multiline.php'?>
-	</nav><script>/*<![CDATA[*/$(function(){ $(".topmenu").MultiLevelMenu(); });//]]></script>
+	</nav><script>$(function(){ $(".topmenu").MultiLevelMenu(); });</script>
 </div></div></div>
 
 <div class="container">

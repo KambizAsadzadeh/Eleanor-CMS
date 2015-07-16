@@ -1,2 +1,5 @@
 <?php
-return[];
+return[
+	'eleanor'=>true,
+	'downtags'=>true,
+];

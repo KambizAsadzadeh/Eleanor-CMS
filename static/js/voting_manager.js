@@ -70,7 +70,7 @@ function VotingManager(id)
 				AppDaD();
 			}).on("click",".sb-minus",function(){
 				var tr=variants.find("."+$(this).closest("tr").find("input[type=text]").prop("class").split(/ /)[0]).closest("tr"),
-					cnt=variants.eq(0).find("tr:has(td)").size();
+					cnt=variants.eq(0).find("tr:has(td)").length;
 				if(cnt>2)
 				{
 					tr.remove();
@@ -88,7 +88,7 @@ function VotingManager(id)
 					max=d;
 			});
 
-			maxans.prop("max",variants.eq(0).find("tr:has(td)").size());
+			maxans.prop("max",variants.eq(0).find("tr:has(td)").length);
 			AppDaD();
 
 			th.find("[name$=\"[multiple]\"]").change(function(){
@@ -123,7 +123,7 @@ function VotingManager(id)
 					catch(e){}
 				}).end();
 			}).end().find(".deletequestion").click(function(){
-				if(gdiv.find("table.question").size()>1)
+				if(gdiv.find("table.question").length>1)
 					$(this).closest("table.question").remove();
 				else
 					$(this).closest("table.question").find(":input").not("[type=button],[type=submit],[type=number]").val("").end().end().find(".variants").each(ResetVariants);

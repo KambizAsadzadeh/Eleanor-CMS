@@ -31,7 +31,7 @@ class TplVotingManager
 					$Lst->head($v);
 
 		$u=uniqid('vo-');
-		return'<div id="'.$u.'">'.$Lst->end().$values['_questions'].'</div><script>/*<![CDATA[*/$(function(){VotingManager("'.$u.'");})//]]></script>';
+		return'<div id="'.$u.'">'.$Lst->end().$values['_questions'].'</div><script>$(function(){VotingManager("'.$u.'");})</script>';
 	}
 
 	/*
