@@ -81,7 +81,7 @@ class Comments
 					$embed ? false : [Html::Check('mass',false,['id'=>'mass-check']),10]
 				);
 
-			$images=Eleanor::$Template->default['images'];
+			$images=T::$T->default['images'];
 			foreach($items as $k=>$v)
 			{
 				$author=htmlspecialchars($v['author'],\CMS\ENT,\Eleanor\CHARSET);
@@ -106,15 +106,15 @@ class Comments
 			$Lst->end();
 		}
 		else
-			$Lst=Eleanor::$Template->Message(empty($query['fi']) ? static::$lang['cnw'] : static::$lang['cnf'],'info');
+			$Lst=T::$T->Alert(empty($query['fi']) ? static::$lang['cnw'] : static::$lang['cnf'],'info');
 
 		if($embed)
 			return$Lst;
 
 		if($cnt==0)
-			return Eleanor::$Template->Cover($Lst);
+			return T::$T->Cover($Lst);
 
-		return Eleanor::$Template->Cover('<script>//<![CDATA[
+		return T::$T->Cover('<script>//<![CDATA[
 $(function(){
 	One2AllCheckboxes("#checks-form","#mass-check","[name=\"mass[]\"]",true);
 })//]]></script>
@@ -128,7 +128,7 @@ $(function(){
 			.Html::Select('op',Html::Option(T::$lang['delete'],'k').Html::Option(T::$lang['active'],'a')
 				.Html::Option(T::$lang['inactive'],'d').Html::Option(static::$lang['blocked'],'b'))
 			.Html::Button('Ok').'</div></form>'
-			.Eleanor::$Template->Pages($cnt,$pp,$page,[$links['pages'],$links['first_page']]));
+			.T::$T->Pages($cnt,$pp,$page,[$links['pages'],$links['first_page']]));
 	}
 
 	/** Страница редактирования комментария
@@ -175,7 +175,7 @@ $(function(){
 			->end()
 			->endform();
 
-		return Eleanor::$Template->Cover($Lst,$errors);
+		return T::$T->Cover($Lst,$errors);
 	}
 
 	/** Страница удаления комментария
@@ -186,7 +186,7 @@ $(function(){
 	{
 		static::Menu();
 
-		return Eleanor::$Template->Cover(Eleanor::$Template->Confirm(
+		return T::$T->Cover(T::$T->Confirm(
 			sprintf(static::$lang['deleting'],Strings::CutStr(strip_tags($comment['text']),200))
 		,$back));
 	}

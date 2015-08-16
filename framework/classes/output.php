@@ -91,24 +91,14 @@ class Output extends Eleanor\BaseClass
 			{
 				$v=explode('-',trim($v),2);
 
-				if($v[0])
-				{
-					#Если первый предел выходит за рамки размера
-					if($v[0]>$zsize or ($v[1] and $v[0]>$v[1]))
-						continue;
+				$v[0]=(int)$v[0];
+				$v[1]=(int)$v[1];
 
-					if(!$v[1] or $v[1]>$zsize)
-						$v[1]=$zsize;
-				}
-				elseif($v[1])
-				{
-					if(0>$v[0]=$zsize-$v[1])
-						continue;
-
-					$v[1]=$zsize;
-				}
-				else
+				if($v[0]>$zsize or $v[1]>$zsize or $v[0]>$v[1])
 					continue;
+
+				if($v[1]===0)
+					$v[1]=$zsize;
 
 				$range[]=$v;
 			}

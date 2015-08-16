@@ -29,6 +29,9 @@ class Image extends Eleanor\BaseClass
 		if(!is_file($path))
 			throw new EE('Image not found',EE::ENV,[ 'input'=>$path ]);
 
+		if(preg_match('#\.webp$#i',$path)>0)
+			return imagecreatefromwebp($path);
+
 		switch(exif_imagetype($path))
 		{
 			case IMAGETYPE_JPEG:
@@ -58,6 +61,9 @@ class Image extends Eleanor\BaseClass
 			break;
 			case'gif':
 				imagegif($image,$path);
+			break;
+			case'webp':
+				imagewebp($image,$path);
 			break;
 			default:
 				imagepng($image,$path,0,PNG_ALL_FILTERS);

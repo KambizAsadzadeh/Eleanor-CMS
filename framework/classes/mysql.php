@@ -202,7 +202,7 @@ class MySQL extends Eleanor\BaseClass
 	 * @return int Insert ID */
 	public function Insert($t,array$a,$type='IGNORE')
 	{
-		$this->Query('INSERT '.$type.' INTO `'.$t.'`'.$this->GenerateInsert($a));
+		$this->Query("INSERT {$type} INTO `{$t}`".$this->GenerateInsert($a));
 
 		return$this->Driver->insert_id;
 	}
@@ -214,7 +214,7 @@ class MySQL extends Eleanor\BaseClass
 	 * @return int Affected rows */
 	public function Replace($t,array$a,$type='')
 	{
-		$this->Query('REPLACE '.$type.' INTO `'.$t.'` '.$this->GenerateInsert($a));
+		$this->Query("REPLACE {$type} INTO `{$t}` ".$this->GenerateInsert($a));
 
 		return$this->Driver->affected_rows;
 	}

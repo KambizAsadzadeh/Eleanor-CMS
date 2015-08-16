@@ -76,7 +76,7 @@ echo<<<HTML
 <div class="block-t expand">
 	<p class="btl" data-toggle="collapse" data-target="#{$name}">{$title}</p>
 	<div id="{$name}" class="collapse in">
-		<input type="file" accept="image/gif,image/png,image/jpg,image/jpeg" style="display:none" />
+		<input type="file" accept="image/gif,image/png,image/jpg,image/jpeg,image/webp" style="display:none" />
 		<input type="hidden" name="{$name}[type]"{$type} />
 		<input type="hidden" name="{$name}[src]"{$src} />
 

@@ -76,7 +76,7 @@ class Url extends Eleanor\BaseClass
 		if(Eleanor\UTF8)
 			return$s;
 
-		return Eleanor::UTF8 || preg_match('/^.{1}/us',$s)==0 ? $s : mb_convert_encoding($s,Eleanor\CHARSET,'utf-8');
+		return Eleanor\UTF8 || preg_match('/^.{1}/us',$s)==0 ? $s : mb_convert_encoding($s,Eleanor\CHARSET,'utf-8');
 	}
 
 	/** Генерация ссылок

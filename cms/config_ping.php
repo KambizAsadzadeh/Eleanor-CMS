@@ -1,15 +1,15 @@
 <?php
 #http://www.weblogs.com/api.html
-return array(
+return[
 	#http://blogs.yandex.ru/pings/info/
-	'yandex'=>array(
+	'yandex'=>[
 		'url'=>'http://ping.blogs.yandex.ru/RPC2',
 		'methods'=>'weblogUpdates.ping',
-	),
+	],
 
 	#http://www.google.com/help/blogsearch/pinging_API.html
-	'google'=>array(
+	'google'=>[
 		'url'=>'http://blogsearch.google.com/ping/RPC2',
 		'methods'=>'weblogUpdates.extendedPing',
-	)
-);
+	]
+];

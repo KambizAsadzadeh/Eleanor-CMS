@@ -14,7 +14,7 @@ defined('CMS\STARTED')||die;
  * @var string $images Путь к каталогу images
  * @var array $config Конфигурация шаблона
  * @var array $errors Ошибки формы входа
- * @var string $login Логин входа
+ * @var string $login dЛогин входа
  * @var string $password Пароль входа
  * @var \Eleanor\Classes\StringCallback $captcha Капча */
 

@@ -29,43 +29,6 @@ $Eleanor->module['links']=[
 	'options'=>$Url(['do'=>'options']),
 ];
 
-/** Формирование значения аватара (миниатюры) для шаблона
- * @param array $a Входящие данные
- * @return array*/
-function Avatar(array$a)
-{
-	$image=false;
-
-	if($a['avatar'] and $a['avatar_type']) switch($a['avatar_type'])
-	{
-		case'gallery':
-			if(is_file($f=Template::$path['static'].'images/avatars/'.$a['avatar']))
-				$image=[
-					'type'=>'gallery',
-					'path'=>$f,
-					'http'=>Template::$http['static'].'images/avatars/'.$a['avatar'],
-					'src'=>$a['avatar'],
-				];
-		break;
-		case'upload':
-			if(is_file($f=Template::$path['uploads'].'avatars/'.$a['avatar']))
-				$image=[
-					'type'=>'upload',
-					'path'=>$f,
-					'http'=>Template::$http['uploads'].'avatars/'.$a['avatar'],
-					'src'=>$a['avatar'],
-				];
-		break;
-		case'link':
-			$image=[
-				'type'=>'link',
-				'http'=>$a['avatar'],
-			];
-	}
-
-	return$image;
-}
-
 if(isset($_REQUEST['do'])) switch($_REQUEST['do'])
 {
 	case'create':

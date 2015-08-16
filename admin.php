@@ -251,7 +251,7 @@ elseif(Eleanor::$Login->IsUser())
 else
 {
 	$lang=Eleanor::$Language->Load(DIR.'translation/admin_enter-*.php','enter');
-	$login=isset($_POST['login']['name']) ? (string)$_POST['login']['name'] : '';
+	$name=isset($_POST['login']['name']) ? (string)$_POST['login']['name'] : '';
 	$password=isset($_POST['login']['password']) ? (string)$_POST['login']['password'] : '';
 	$errors=[];
 	$Captcha=isset(Eleanor::$Login->BeforeLogin()['captcha']) ? Captcha(true) : false;
@@ -265,7 +265,7 @@ else
 				$errors[]='WRONG_CAPTCHA';
 	}
 
-	if($login and $password==='')
+	if($name and $password==='')
 		$errors[]='EMPTY_PASSWORD';
 
 	if(!$errors and isset($_POST['login']))
@@ -294,7 +294,7 @@ else
 			{
 				case'TEMPORARILY_BLOCKED':
 					$errors['TEMPORARILY_BLOCKED']=$lang['TEMPORARILY_BLOCKED'](
-						htmlspecialchars($login,ENT,\Eleanor\CHARSET),round($E->extra['remain']/60)
+						htmlspecialchars($name,ENT,\Eleanor\CHARSET),round($E->extra['remain']/60)
 					);
 				break;
 				case'CAPTCHA':
@@ -309,7 +309,7 @@ else
 	$title[]=$lang['enter_to'];
 
 	$out=(string)Eleanor::$Template->Enter([
-		'errors'=>$errors,'login'=>$login,'password'=>$password,'captcha'=>$Captcha ? $Captcha->GetCode() : false,
+		'errors'=>$errors,'login'=>$name,'password'=>$password,'captcha'=>$Captcha ? $Captcha->GetCode() : false,
 	]);
 
 	OutPut::SendHeaders('html');

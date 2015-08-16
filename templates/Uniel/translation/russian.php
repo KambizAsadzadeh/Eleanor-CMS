@@ -40,12 +40,6 @@ return[
 	'pages'=>'Страницы:',
 	'goto_page'=>'Перейти на страницу',
 
-	#Для Message.php
-	'warning'=>'Предупреждение',
-	'error'=>'Ошибка',
-	'errors'=>'Ошибки',
-	'info'=>'Информация',
-
 	#Для BlockWhoOnline.php
 	'users'=>function($n){ return$n.Russian::Plural($n,[' пользователь:',' пользователя:',' пользователей:']); },
 	'minutes_ago'=>function($n){ return$n.Russian::Plural($n,[' минуту назад',' минуты назад',' минут назад']); },

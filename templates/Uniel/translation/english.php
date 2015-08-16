@@ -35,12 +35,6 @@ return[
 	'pages'=>'Pages:',
 	'goto_page'=>'Go to page',
 
-	#For Message.php
-	'warning'=>'Warning',
-	'error'=>'Mistake',
-	'errors'=>'Mistaks',
-	'info'=>'Information',
-
 	#For BlockWhoOnline.php
 	'users'=>function($n){ return$n.($n>1 ? ' users:' : ' user:'); },
 	'minutes_ago'=>function($n){ return$n.($n>1 ? ' minutes ago' : ' minute ago'); },

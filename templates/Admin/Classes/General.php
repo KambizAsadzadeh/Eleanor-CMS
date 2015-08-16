@@ -98,8 +98,7 @@ HTML;
 		$menuurl=array_keys($modules['uri2id'],5);#Меню
 		$menuurl=urlencode(reset($menuurl));
 
-		$c=Eleanor::$Template->OpenTable()
-	.'<div class="wbpad twocol"><div class="colomn">
+		$c='<div class="wbpad twocol"><div class="colomn">
 <ul class="reset blockbtns">
 <li><a href="'.DynUrl::$base.'section=modules&amp;module='.$newsurl.'&amp;do=add"><img src="'.Template::$http['static']
 			.'images/modules/news-48x48.png" alt="" /><span>'.static::$lang['crnews'].'</span></a></li>
@@ -119,13 +118,13 @@ HTML;
 			.'</div></div>
 </div>
 <div class="clr"></div>
-</div>'.Eleanor::$Template->CloseTable();
+</div>';
 
 		if($install=file_exists(\CMS\DIR.'../install'))
-			$c.=Eleanor::$Template->Message(static::$lang['install_nd'],'warning');
+			$c.=T::$T->Alert(static::$lang['install_nd'],'warning');
 
 		$GLOBALS['scripts'][]=Template::$http['static'].'js/tabs.js';
-		$c.=Eleanor::$Template->Title(T::$lang['info'])->OpenTable()
+		$c.=T::$T->Title(T::$lang['info'])
 	.'<ul id="stabs" class="reset linetabs">
 	<li><a class="selected" data-rel="stab1" href="#"><b>'.static::$lang['stat'].'</b></a></li>
 	<li><a data-rel="stab2" href="#"><b>'.static::$lang['comments'].'</b></a></li>
@@ -190,16 +189,16 @@ $(function(){
 			th.closest(".wbpad").remove();
 		});
 	});' : '').'
-});//]]></script>'.Eleanor::$Template->CloseTable()->Title(static::$lang['cachem']);
+});//]]></script>'.T::$T->Title(static::$lang['cachem']);
 
 		if($cleaned)
-			$c.=Eleanor::$Template->Message(static::$lang['cache_deleted'],'info');
+			$c.=T::$T->Alert(static::$lang['cache_deleted'],'info');
 
-		return$c.Eleanor::$Template->OpenTable().'<div class="blockcache"><div class="colomn"><div class="pad">'
+		return$c.'<div class="blockcache"><div class="colomn"><div class="pad">'
 			.static::$lang['cache_'].'<div class="submitline"><form method="post">'
 			.Html::Input('kill_cache','1',['type'=>'hidden'])
 			.Html::Button(static::$lang['cachedel'],'submit',['style'=>'button'])
-			.'</form></div></div></div>	<div class="clr"></div></div>'.Eleanor::$Template->CloseTable();
+			.'</form></div></div></div>	<div class="clr"></div></div>';
 	}
 
 	/** Шаблон страницы с информацией о сервере
@@ -243,7 +242,7 @@ $(function(){
 			$Lst->item(htmlspecialchars($values['ini_get'],\CMS\ENT,\Eleanor\CHARSET),$values['ini_get_v']
 				? htmlspecialchars($values['ini_get_v'],\CMS\ENT,\Eleanor\CHARSET) : '&mdash;');
 
-		return Eleanor::$Template->Cover(
+		return T::$T->Cover(
 			$Lst->button('<a href="'.$GLOBALS['Eleanor']->Url.'">'.T::$lang['go-back'].'</a>')->end()
 		);
 	}
@@ -271,9 +270,9 @@ $(function(){
 					'<a href="'.$v['download'].'">'.$v['path'].'</a>',
 					\Eleanor\Classes\Files::BytesToSize($v['size']),
 					$Lst('func',
-						[$v['view'],static::$lang['view_log'],Eleanor::$Template->default['images'].'viewfile.png'],
-						[$v['download'],static::$lang['download_log'],Eleanor::$Template->default['images'].'downloadfile.png'],
-						[$v['delete'],static::$lang['delete_log'],Eleanor::$Template->default['images'].'delete.png',
+						[$v['view'],static::$lang['view_log'],T::$T->default['images'].'viewfile.png'],
+						[$v['download'],static::$lang['download_log'],T::$T->default['images'].'downloadfile.png'],
+						[$v['delete'],static::$lang['delete_log'],T::$T->default['images'].'delete.png',
 							'extra'=>['onclick'=>'return confirm(\''.T::$lang['are_you_sure'].'\')']]
 					)
 				);
@@ -281,9 +280,9 @@ $(function(){
 			$Lst->end()->s.='<br />';
 		}
 		else
-			$Lst=Eleanor::$Template->Message(static::$lang['nologs'],'info');
+			$Lst=T::$T->Alert(static::$lang['nologs'],'info');
 
-		return Eleanor::$Template->Cover($Lst);
+		return T::$T->Cover($Lst);
 	}
 
 	/** Просмотр лог-файла
@@ -377,10 +376,10 @@ $(function(){
 		else
 			$log=Html::Text('text',$data,['style'=>'width:100%;','readonly'=>'readonly','rows'=>30]);
 
-		return Eleanor::$Template->Cover('<p class="function"><a href="'.$links['download'].'" title="'
-			.static::$lang['download_log'].'"><img src="'.Eleanor::$Template->default['images']
+		return T::$T->Cover('<p class="function"><a href="'.$links['download'].'" title="'
+			.static::$lang['download_log'].'"><img src="'.T::$T->default['images']
 			.'downloadfile.png" alt="" /></a><a href="'.$links['delete'].'" title="'.static::$lang['delete_log']
-			.'" onclick="return confirm(\''.T::$lang['are_you_sure'].'\')"><img src="'.Eleanor::$Template->default['images']
+			.'" onclick="return confirm(\''.T::$lang['are_you_sure'].'\')"><img src="'.T::$T->default['images']
 			.'delete.png" alt="" /></a></p><div style="margin:15px;max-width:953px;">'.$log
 			.'</div><div class="submitline">'.Html::Button(T::$lang['go-back'],'button',[
 				'onclick'=>'window.location=\''.$links['back'].'\'']).'</div>');
@@ -411,17 +410,16 @@ $(function(){
 	public static function License($license,$sanctions)
 	{
 		static::Menu('license');
-		return Eleanor::$Template->Title(static::$lang['license'])->OpenTable()
+		return T::$T->Title(static::$lang['license'])
 			.'<div class="textarea license" style="margin-left:5px">'.$license.'</div><a href="cms/license/license-'
 			.\CMS\Language::$main.'.html" target="_blank" style="margin-left:5px"><img src="'
-			.Eleanor::$Template->default['images'].'print.png" alt="" /> '.static::$lang['print'].'</a>'
-			.Eleanor::$Template->CloseTable().'<br />'
+			.T::$T->default['images'].'print.png" alt="" /> '.static::$lang['print'].'</a>'
+			.'<br />'
 
-			.Eleanor::$Template->Title(static::$lang['sanctions'])->OpenTable()
+			.T::$T->Title(static::$lang['sanctions'])
 			.'<div class="textarea license" style="margin-left:5px">'.$sanctions.'</div><a href="cms/license/sanctions-'
 			.\CMS\Language::$main.'.html" target="_blank" style="margin-left:5px"><img src="'
-			.Eleanor::$Template->default['images'].'print.png" alt="" /> '.static::$lang['print'].'</a>'
-			.Eleanor::$Template->CloseTable();
+			.T::$T->default['images'].'print.png" alt="" /> '.static::$lang['print'].'</a>';
 	}
 }
 General::$lang=Eleanor::$Language->Load(__DIR__.'/../translation/general-*.php',false);

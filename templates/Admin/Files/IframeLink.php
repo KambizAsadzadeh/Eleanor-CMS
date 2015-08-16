@@ -35,6 +35,8 @@
 				},50);
 
 			old_left=left;
+
+			$('#iframe').modal('handleUpdate');
 		}).trigger("scroll",[true]);
 	});
 

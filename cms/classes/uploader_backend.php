@@ -169,7 +169,7 @@ class Uploader_BackEnd
 					$type=strpos($entry,'.')===false ? '' : strtolower(pathinfo($wpath,PATHINFO_EXTENSION));
 
 					try{
-						$image=in_array($type, ['jpeg', 'jpg', 'png', 'bmp', 'gif', 'ico']) ? ['image'=>UploaderPreview::Preview($wpath)] : [];
+						$image=in_array($type, ['jpeg', 'jpg', 'png', 'bmp', 'gif', 'ico', 'webp']) ? ['image'=>UploaderPreview::Preview($wpath)] : [];
 					}catch(EE$E){
 						$image=[];
 					}
@@ -344,7 +344,7 @@ class Uploader_BackEnd
 						$remain--;
 					#/Обновление лимитов
 
-					if(in_array($type,['jpeg','jpg','png','gif']) and (static::$data['watermark'] or static::$data['watermark']===null and $watermark))
+					if(in_array($type,['jpeg','jpg','png','gif','webp']) and (static::$data['watermark'] or static::$data['watermark']===null and $watermark))
 						try
 						{
 							$sets=static::$data['watermark-settings'];
@@ -566,6 +566,10 @@ class UploaderPreview extends Minify
 	public static function Preview($source)
 	{
 		$bn=basename($source);
+
+		#Фикс .webp формата: превьюшки создаем png формата
+		if(preg_match('#\.webp$#i',$bn))
+			$bn.='.png';
 
 		if(Files::Windows($bn,true)!=$bn)
 			$bn=md5($bn).strrchr($bn,'.');

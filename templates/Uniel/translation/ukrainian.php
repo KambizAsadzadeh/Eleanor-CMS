@@ -39,12 +39,6 @@ return[
 	'pages'=>'Сторінки:',
 	'goto_page'=>'Перейти на сторінку',
 
-	#Для Message.php
-	'warning'=>'Попередження',
-	'error'=>'Помилка',
-	'errorи'=>'Помилки',
-	'info'=>'Інформація',
-
 	#Для BlockWhoOnline.php
 	'users'=>function($n){ return$n.Ukrainian::Plural($n,[' користувач:',' користувача:',' користувачів:']); },
 	'minutes_ago'=>function($n){ return$n.Ukrainian::Plural($n,[' хвилину тому:',' хвилини тому',' хвилин тому']); },

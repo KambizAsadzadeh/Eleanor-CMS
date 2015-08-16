@@ -103,7 +103,7 @@ function UserLink($id=0,$name='',$service='index')
 	$Url=new Url(false);
 	$Url->prefix=Url::$base;
 
-	return $name ? $Url([$ma,$name]) : $Url([$ma],'',['id'=>$id]);
+	return $name && !filter_var($name,FILTER_VALIDATE_EMAIL) ? $Url([$ma,$name]) : $Url([$ma],'',['id'=>$id]);
 }
 
 /** В зависимости от настроек системы, возвращается HTML код капчи
@@ -130,6 +130,43 @@ function Captcha($forced=false,$type='Eleanor')
 	}
 
 	return$C;
+}
+
+/** Формирование значения аватара (миниатюры) для шаблона
+ * @param array $user Входящие данные
+ * @return array*/
+function Avatar(array$user)
+{
+	$image=false;
+
+	if($user['avatar'] and $user['avatar_type']) switch($user['avatar_type'])
+	{
+		case'gallery':
+			if(is_file($f=Template::$path['static'].'images/avatars/'.$user['avatar']))
+				$image=[
+					'type'=>'gallery',
+					'path'=>$f,
+					'http'=>Template::$http['static'].'images/avatars/'.$user['avatar'],
+					'src'=>$user['avatar'],
+				];
+		break;
+		case'upload':
+			if(is_file($f=Template::$path['uploads'].'avatars/'.$user['avatar']))
+				$image=[
+					'type'=>'upload',
+					'path'=>$f,
+					'http'=>Template::$http['uploads'].'avatars/'.$user['avatar'],
+					'src'=>$user['avatar'],
+				];
+		break;
+		case'link':
+			$image=[
+				'type'=>'link',
+				'http'=>$user['avatar'],
+			];
+	}
+
+	return$image;
 }
 
 if(AJAX or ANGULAR)
@@ -217,7 +254,7 @@ else
 						$scripts.='</script>';
 
 					$joined=false;
-					$scripts.=$m[0][$k];
+					$scripts.=trim($m[0][$k]);
 				}
 				elseif($m[2][$k])
 				{

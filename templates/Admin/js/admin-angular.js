@@ -11,7 +11,7 @@ if(typeof Uploader!="undefined")
 angular.module('Admin', modules)
 .controller('UploaderFilesHelper',["$scope",function($scope){
 	$scope.Class=function(name){
-		return name.match(/\.(jpe?g|gif|png)$/) ? 'fl-img' : 'fl-'+name.match(/([a-z]+)$/)[1];
+		return name.match(/\.(jpe?g|gif|png|webp)$/) ? 'fl-img' : 'fl-'+name.match(/([a-z]+)$/)[1];
 	};
 	$scope.GoHelp=function(event,Go,where){
 		if(event.currentTarget===event.target)
@@ -35,6 +35,6 @@ angular.module('Admin', modules)
 	};
 	$scope.Preview=function(file)
 	{
-		return file.name.match(/\.(jpe?g|png|gif|bmp)$/) ? true : false;
+		return file.name.match(/\.(jpe?g|png|gif|bmp|webp)$/) ? true : false;
 	};
 }]);
