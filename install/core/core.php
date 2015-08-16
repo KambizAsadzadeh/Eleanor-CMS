@@ -67,7 +67,7 @@ function CheckEnv()
 	if(file_exists(INSTALL.'install.lock'))
 		return[$lang['install.lock']];
 
-	if(version_compare(PHP_VERSION,'5.5','<'))
+	if(version_compare(PHP_VERSION,'5.6','<'))
 		$result[]=sprintf($lang['low_php'],PHP_VERSION);
 
 	if(!function_exists('imagefttext'))

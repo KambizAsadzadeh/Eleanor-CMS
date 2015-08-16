@@ -94,7 +94,9 @@ elseif(isset($_GET['download']))
 	if(Eleanor::$vars['download_no_session'])
 	{
 		$sip=Eleanor::$Db->Escape(Eleanor::$ip);
-		$R=Eleanor::$Db->Query('SELECT `expire` FROM `'.P.'sessions` WHERE `expire`>\''.date('Y-m-d H:i:s').'\' AND (`ip_guest`='.$sip.' OR `ip_user`='.$sip.') LIMIT 1');
+		$date=date('Y-m-d H:i:s');
+		$table=P.'sessions';
+		$R=Eleanor::$Db->Query("SELECT `expire` FROM `{$table}` WHERE `expire`>'{$date}' AND (`ip_guest`={$sip} OR `ip_user`={$sip}) LIMIT 1");
 		if($R->num_rows==0)
 			return ExitPage();
 	}

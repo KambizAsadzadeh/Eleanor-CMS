@@ -63,7 +63,7 @@ switch($step)
 					<td class="sense">{$phpver}</td>
 HTML;
 
-			if(version_compare(PHP_VERSION,'5.5.0','<'))
+			if(version_compare(PHP_VERSION,'5.6.0','<'))
 			{
 				$content.=<<<HTML
 					<td><img src="{$warn}" alt="{$lang['error']}" alt="{$lang['error']}" /></td>

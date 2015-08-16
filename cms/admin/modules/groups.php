@@ -241,8 +241,8 @@ elseif(isset($_GET['edit']))
 		$C=new Controls;
 		return$C->DisplayControls($controls);
 	};
-	$Editor=function()use($Eleanor){
-		return call_user_func_array([$Eleanor->Editor,'Area'],func_get_args());
+	$Editor=function(...$args)use($Eleanor){
+		return$Eleanor->Editor->Area(...$args);
 	};
 
 	$c=Eleanor::$Template->CreateEdit($id,$values,$Editor,$controls,$parents,$Controls2Html,$errors,$back,$links);

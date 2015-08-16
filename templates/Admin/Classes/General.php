@@ -6,6 +6,7 @@
 */
 namespace CMS\Templates\Admin;
 use CMS\Eleanor, CMS\OwnBB, CMS\DynUrl, CMS\Template, \Eleanor\Classes\Html;
+use const \Eleanor\CHARSET, \CMS\ENT;
 
 defined('CMS\STARTED')||die;
 
@@ -75,7 +76,7 @@ HTML;
 				}
 
 			$Lst->item(
-				'<a href="'.$v['_aedit'].'">'.htmlspecialchars($v['name'],\CMS\ENT,\Eleanor\CHARSET).'</a>'
+				'<a href="'.$v['_aedit'].'">'.htmlspecialchars($v['name'],ENT,CHARSET).'</a>'
 				.($v['name']==$v['full_name'] ? '' : "<br /><i>{$v['full_name']}</i>"),
 				[$v['email'],'center'],
 				rtrim($grs,' ,'),
@@ -239,8 +240,8 @@ $(function(){
 			->item(static::$lang['get_value'],'<form method="post">'.Html::Input('ini_get',$values['ini_get']).Html::Button('?').'</form>');
 
 		if($values['ini_get_v'] or $values['ini_get'])
-			$Lst->item(htmlspecialchars($values['ini_get'],\CMS\ENT,\Eleanor\CHARSET),$values['ini_get_v']
-				? htmlspecialchars($values['ini_get_v'],\CMS\ENT,\Eleanor\CHARSET) : '&mdash;');
+			$Lst->item(htmlspecialchars($values['ini_get'],ENT,CHARSET),$values['ini_get_v']
+				? htmlspecialchars($values['ini_get_v'],ENT,CHARSET) : '&mdash;');
 
 		return T::$T->Cover(
 			$Lst->button('<a href="'.$GLOBALS['Eleanor']->Url.'">'.T::$lang['go-back'].'</a>')->end()
@@ -304,7 +305,7 @@ $(function(){
 				case'errors':
 					foreach($data as $k=>$v)
 					{
-						$page=htmlspecialchars($v['d']['p'],\CMS\ENT,\Eleanor\CHARSET,false);
+						$page=htmlspecialchars($v['d']['p'],ENT,CHARSET,false);
 						$p=strpos($v['d']['e'],':');
 						$v['d']['e']=substr_replace($v['d']['e'],'<span style="color:red">',$p+2,0);
 						$v['d']['e']=substr_replace($v['d']['e'],'</b>('.$v['d']['n'].')',$p,0);
@@ -337,14 +338,14 @@ $(function(){
 						if(isset($v['d']['r']))
 							foreach($v['d']['r'] as &$rv)
 							{
-								$rv=htmlspecialchars($rv,\CMS\ENT,\Eleanor\CHARSET,false);
+								$rv=htmlspecialchars($rv,ENT,CHARSET,false);
 								$refs.='<a href="'.$rv.'" target="_blank">'.($rv ? $rv : '/').'</a>, ';
 							}
 
-						$page=htmlspecialchars($v['d']['p'],\CMS\ENT,\Eleanor\CHARSET,false);
+						$page=htmlspecialchars($v['d']['p'],ENT,CHARSET,false);
 						$log.='<div class="warning" data-id="'.$k.'"><code><pre><b>'.$v['d']['e'].'</b>('.$v['d']['n'].')<br />'
 							.(isset($v['d']['u']) ? '<a href="'.\CMS\UserLink($v['d']['ui'],$v['d']['u']).'">'
-							.htmlspecialchars($v['d']['u'],\CMS\ENT,\Eleanor\CHARSET).'</a>' : 'Guest')
+							.htmlspecialchars($v['d']['u'],ENT,CHARSET).'</a>' : 'Guest')
 							.' &mdash; <a href="http://eleanor-cms.ru/whois/'.$v['d']['ip'].'">'.$v['d']['ip'].'</a> &mdash; '
 							.$v['d']['b'].'<br />'
 							.Eleanor::$Language->Date($v['d']['d'],'fdt')
@@ -354,7 +355,7 @@ $(function(){
 					}
 			}
 
-			$log.='</div><script>//<![CDATA[
+			$log.='</div><script>[
 $(function(){
 	$(".logs a[href=#]").click(function(e){
 		e.preventDefault();
@@ -371,7 +372,7 @@ $(function(){
 			}
 		);
 	});
-})//]]></script>';
+})</script>';
 		}
 		else
 			$log=Html::Text('text',$data,['style'=>'width:100%;','readonly'=>'readonly','rows'=>30]);

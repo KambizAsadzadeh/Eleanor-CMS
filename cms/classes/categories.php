@@ -1,6 +1,6 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
@@ -13,13 +13,13 @@ class Categories extends \Eleanor\BaseClass
 		/** @var array Дамп БД категорий, в удобном упорядоченном виде */
 		$dump;
 
-	/** Конструктор. Все входящие переменные передаются методу Init */
-	public function __construct()
+	/** Конструктор. Все входящие переменные передаются методу Init.
+	 * @param string
+	 * @param int|null */
+	public function __construct(...$args)
 	{
-		$a=func_get_args();
-
-		if($a)
-			call_user_func_array([$this,'Init'],$a);
+		if($args)
+			$this->Init(...$args);
 	}
 
 	/** Инициализация, здесь задается имя таблицы, откуда будут формироваться категории

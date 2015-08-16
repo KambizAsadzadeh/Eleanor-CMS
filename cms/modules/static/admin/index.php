@@ -1,6 +1,6 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
@@ -539,8 +539,8 @@ ORDER BY `pos` ASC");
 	else
 		$back=isset($_POST['back']) ? (string)$_POST['back'] : getenv('HTTP_REFERER');
 
-	$Editor=function()use($Eleanor){
-		return call_user_func_array([$Eleanor->Editor,'Area'],func_get_args());
+	$Editor=function(...$args)use($Eleanor){
+		return$Eleanor->Editor->Area(...$args);
 	};
 	$links=[
 		'delete'=>$id ? $Url(['delete'=>$id,'noback'=>1]) : false,

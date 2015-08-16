@@ -1,6 +1,6 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
@@ -162,8 +162,8 @@ $etag=md5($Eleanor->module['etag'].$uid);
 
 if(!Output::TryReturnCache($etag))
 {
-	$Editor=function()use($Eleanor){
-		return call_user_func_array([$Eleanor->Editor,'Area'],func_get_args());
+	$Editor=function(...$args)use($Eleanor){
+		return$Eleanor->Editor->Area(...$args);
 	};
 
 	$out=Eleanor::$Template->ShowError($error,$sent,$values,$Editor,$errors,$back,$Captcha ? $Captcha->GetCode() : '');

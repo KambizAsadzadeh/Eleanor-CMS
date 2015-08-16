@@ -1,11 +1,13 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
 namespace CMS\Templates\Admin;
-use CMS\DynUrl,CMS\Eleanor;
+use CMS\DynUrl, CMS\Eleanor;
+use const \Eleanor\CHARSET;
+
 defined('CMS\STARTED')||die;
 
 if(\CMS\AJAX)
@@ -35,7 +37,7 @@ if(\CMS\AJAX)
 		{
 			$title=call_user_func($lang['min_left'], floor(($t-strtotime($user['enter']))/60));
 			$style=$user['_style'] ? ' style="'.$user['_style'].'"' : '';
-			$user['name']=htmlspecialchars($user['name'], \CMS\ENT, \Eleanor\CHARSET);
+			$user['name']=htmlspecialchars($user['name'], \CMS\ENT, CHARSET);
 			$user=<<<HTML
 	<a class="entry" href="{$user['_aedit']}" data-uid="{$user['user_id']}" data-s="{$sid}" title="{$title}"{$style}>{$user['name']}</a>
 HTML;
@@ -52,7 +54,7 @@ HTML;
 		foreach($session['bots'] as &$bot)
 		{
 			$title=call_user_func($lang['min_left'], floor(($t-strtotime($bot['enter']))/60));
-			$bot['botname']=htmlspecialchars($bot['botname'], \CMS\ENT, \Eleanor\CHARSET);
+			$bot['botname']=htmlspecialchars($bot['botname'], \CMS\ENT, CHARSET);
 			$bot=<<<HTML
 	<span class="entry" data-ip="{$bot['ip_guest']}" data-s="{$sid}" title="{$title}">{$bot['botname']}</span>
 HTML;

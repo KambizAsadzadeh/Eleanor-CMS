@@ -33,7 +33,7 @@ return[
 
 		$u=uniqid();
 		return \Eleanor\Classes\Html::Input($co['controlname'],$value,['id'=>$u])
-		.'<script>//<![CDATA[
+		.'<script>
 $(function(){
 	$("#'.$u.'").autocomplete({
 		serviceUrl:"'.Eleanor::$services['admin']['file'].'",
@@ -44,7 +44,7 @@ $(function(){
 			goal:"users"
 		}
 	});
-})//]]></script>';
+})</script>';
 	},
 	'save'=>function($co,$Obj)
 	{/** @var $Obj Controls */

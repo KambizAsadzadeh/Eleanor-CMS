@@ -4,7 +4,7 @@ defined('CMS\STARTED')||die;
 
 return[
 	'error'=>'Error',
-	'low_php'=>'For the system correct system you must have at least PHP version 5.5, you have %s.',
+	'low_php'=>'For the system correct system you must have at least PHP version 5.6, you have %s.',
 	'low_mysql'=>'For the system correct work you must have at least MySQL version 5.1.',
 	'install.lock'=>'Set locked file install/install.lock. Delete this file and reload page.',
 	'GD'=>'GD2 is required for correct working!',
@@ -65,7 +65,7 @@ return[
 	'mysqlver'=>'For system to work correctly, MySQL is required and it should be no lower than 5.1.<br />
 Unfortunately, without connection, it is impossible to check MySQL version.<br />Please address to your hoster for additional information regarding this.',
 	'php_version'=>'<b>PHP version:</b><br />
-<span class="small">PHP version must be not lower than 5.5</span>',
+<span class="small">PHP version must be not lower than 5.6</span>',
 	'php_gd'=>'<b>Availability of the library GD</b><br />
 <span class="small">Image Processing is required for correct working</span>',
 	'db_drivers'=>'<b>Database drivers</b><br />

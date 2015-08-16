@@ -1,6 +1,6 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
@@ -25,9 +25,8 @@ return[
 <table class="table table-list"><thead class="empty"><tr>{$ths}</tr></thead>
 HTML;
 	},
-	'head'=>function(){
+	'head'=>function(...$args){
 		$GLOBALS['head']['table-list']='<script>$(TableList)</script>';
-		$args=func_get_args();
 
 		if(isset($args[0]) and is_array($args[0]))
 		{
@@ -102,10 +101,8 @@ HTML;
 		return$result.'</tr></thead>';
 	},
 
-	'item'=>function()
+	'item'=>function(...$args)
 	{
-		$args=func_get_args();
-
 		if(isset($args[0]) and is_array($args[0]))
 		{
 			if(!isset($args[0]['tr-extra']) or !is_array($args[0]['tr-extra']))

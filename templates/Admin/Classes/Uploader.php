@@ -117,7 +117,7 @@ class Uploader
 			</div>
 			<pagination data-ng-show="total>pp" data-total-items="total" data-ng-model="page" data-items-per-page="pp" data-max-size="7" data-num-pages="pages" data-ng-change="Go()" direction-links="false" class="pagination-sm"></pagination>
 		</div>
-<script>$(function(){
+<script data-keep-on>$(function(){
 	angular.element( $("#uploader{$uniq} :file")[0] ).scope().Constructor({
 		query:"{$query}",
 		commands:[{$commands}],

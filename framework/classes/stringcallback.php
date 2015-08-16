@@ -32,8 +32,8 @@ class StringCallback extends Eleanor\BaseClass
 	}
 
 	/** Вызов объекта, как функцию */
-	public function __invoke()
+	public function __invoke(...$args)
 	{
-		return call_user_func_array($this->Callback,func_get_args());
+		return call_user_func_array($this->Callback,$args);
 	}
 }

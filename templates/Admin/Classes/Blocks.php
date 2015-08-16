@@ -192,7 +192,7 @@ HTML;
 		.($hasdraft ? ' <a href="'.$links['nodraft'].'">'.$ltpl['nodraft'].'</a>' : '')
 		.'</div>
 	</form></div>',$errors,'error')
-	.'<script>//<![CDATA[
+	.'<script>
 $(window).load(function(){
 	var Change=$.Callbacks("unique"),
 		changed=false;
@@ -292,7 +292,7 @@ $(window).load(function(){
 			}
 		}
 	})
-});//]]></script>';
+});</script>';
 	}
 
 	/*

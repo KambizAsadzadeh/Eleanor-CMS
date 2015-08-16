@@ -92,7 +92,7 @@ HTML;
 	public static function Files($files,$name)
 	{
 		static::Menu('files');
-		return Eleanor::$Template->Cover($files).'<script>//<![CDATA[
+		return Eleanor::$Template->Cover($files).'<script>
 $(function(){
 	$("#showb-tpl").hide().click();
 	FItpl.Open=function(url)
@@ -101,7 +101,7 @@ $(function(){
 		window.open(window.location.protocol+"//"+window.location.hostname+CORE.site_path+"'.Eleanor::$services['download']['file'].'?direct='.Eleanor::$service.'&file='.$GLOBALS['Eleanor']->module['name'].'&f="+url);
 		return false;
 	}
-})//]]></script>';
+})</script>';
 	}
 
 	/*

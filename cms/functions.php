@@ -169,6 +169,34 @@ function Avatar(array$user)
 	return$image;
 }
 
+/** Минификация JS со страницы
+ * @param string $script Участок JS, который необходимо минифицировать
+ * @return string */
+function ScriptMinify($script)
+{
+	#Для отладки
+	#return"<script>{$script}</script>";
+
+	$file=md5($script);
+	$path=DIR."../cache/{$file}.js";
+	$http=\Eleanor\SITEDIR."cache/{$file}.js";
+
+	if(!is_file($path))
+	{
+		if(!class_exists('JavaScriptPacker', false))
+			include Template::$path['3rd'].'JavaScriptPacker.php';
+
+		$M=new \JavaScriptPacker($script, 0);
+		$h=fopen($path,'wb');
+		fwrite($h, "\xEF\xBB\xBF".$script);
+		fclose($h);
+	}
+
+	return<<<HTML
+<script src="{$http}"></script>
+HTML;
+}
+
 if(AJAX or ANGULAR)
 {
 	Eleanor::$bsodtype='json';
@@ -235,13 +263,14 @@ else
 		},$out);
 
 		#Мегафикс #2: перенос JavaScript из верхних частей страницы в нижние по материалам https://developers.google.com/speed/pagespeed/insights/
-		if(strpos($out,'</body>')!==false and preg_match_all('#\t*<script([^>]*)>(.*?)</script>\n*#is',$out,$m)>0)
+		if(!Eleanor::$debug and strpos($out,'</body>')!==false and preg_match_all('#\t*<script([^>]*)>(.*?)</script>\n*#is',$out,$m)>0)
 		{
-			$joined=false;
+			$joined='';
 			$scripts='';
 
 			foreach($m[1] as $k=>$tag)
 			{
+				#Если <script> содержит type="text/javascript" - оставляем его в покое
 				if(strpos($tag, 'type=')!==false)
 					continue;
 
@@ -251,23 +280,27 @@ else
 						continue;
 
 					if($joined)
-						$scripts.='</script>';
+						$scripts.=ScriptMinify($joined);
 
-					$joined=false;
+					$joined='';
 					$scripts.=trim($m[0][$k]);
 				}
+				#Если <script> содержит data-* - не минифицируем его
+				elseif(strpos($tag, 'data-')!==false)
+					$scripts.=trim($m[0][$k]);
 				elseif($m[2][$k])
 				{
-					$scripts.=$joined ? ";\n" : '<script>';
-					$scripts.=trim($m[2][$k],"; \n\r");
-					$joined=true;
+					if($joined)
+						$joined.=";\n";
+
+					$joined.=trim($m[2][$k],"; \n\r");
 				}
 
 				$out=str_replace($m[0][$k],'',$out);
 			}
 
 			if($joined)
-				$scripts.='</script>';
+				$scripts.=ScriptMinify($joined);
 
 			$out=str_replace('</body>',$scripts.'</body>',$out);
 		}

@@ -42,7 +42,7 @@ return[
 	<a href="#" id="down-{$u}">Down</a>
 	<a href="#" id="del-{$u}">Del</a>
 </div>
-<script>//<![CDATA[
+<script>
 $(function(){
 	var sel=$("#sel-{$u}"),
 		add=$("#add-{$u}"),
@@ -124,7 +124,7 @@ $(function(){
 
 	res.filter("[disabled]").prop("disabled",false).find("option").remove();
 	UpdateInput();
-});//]]></script>
+});</script>
 HTML;
 	},
 	'save'=>function($co,$Obj)

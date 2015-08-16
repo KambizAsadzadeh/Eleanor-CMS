@@ -1,11 +1,12 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
 namespace CMS;
 use Eleanor\Classes\Html;
+use const \Eleanor\SITEDIR, \Eleanor\DOMAIN;
 defined('CMS\STARTED')||die;
 
 /** Шаблон страницы входа в админку
@@ -171,7 +172,7 @@ if(Eleanor::$Template->multisite):?>
 <!-- Меню -->
 <div class="footer">
 	<ul class="right hmenu">
-		<li><a href="<?=\Eleanor\SITEDIR?>" title="<?=$a=\Eleanor\DOMAIN.(\Eleanor\SITEDIR=='/' ? '' : \Eleanor\SITEDIR)?>"><?=$a?></a></li>
+		<li><a href="<?=SITEDIR?>" title="<?=$a=DOMAIN.(SITEDIR=='/' ? '' : SITEDIR)?>"><?=$a?></a></li>
 		<li><?=
 #Пожалуйста, не удаляйте и не изменяйте наши копирайты, если, конечно, у вас есть хоть немного уважения к разработчикам.
 'Powered by ',COPYRIGHT,RUNTASK ? '<img src="'.RUNTASK.'" alt="" />' : ''?></li>
@@ -183,7 +184,7 @@ if(Eleanor::$Template->multisite):?>
 </div>
 <!-- / Меню -->
 <?php if(Eleanor::$Template->multisite):?>
-<script>//<![CDATA[
+<script>
 CORE.MultiSite.done(function(queue){
 	var ms=$("#multisitee").show().find("ul").empty();
 	$.each(queue,function(k,v){
@@ -197,7 +198,7 @@ CORE.MultiSite.done(function(queue){
 
 		$("<li>").append(a).appendTo(ms);
 	})
-})//]]></script>
+})</script>
 <?php endif?>
 </body>
 </html>

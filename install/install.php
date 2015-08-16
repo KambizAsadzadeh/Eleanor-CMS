@@ -245,7 +245,7 @@ HTML;
 	</div>
 	<div class="wpbtm"><b>&nbsp;</b></div>
 </div>
-<script>//<![CDATA[
+<script>
 $(function(){
 	$("form").submit(function(e){
 		if($('#name').val()=="")
@@ -259,7 +259,7 @@ $(function(){
 			e.preventDefault();
 		}
 	});
-})//]]></script>
+})</script>
 HTML;
 	break;
 	case 3:

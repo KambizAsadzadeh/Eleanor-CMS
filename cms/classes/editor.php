@@ -114,7 +114,7 @@ var CKEDITOR_CONFIG={
 HTML;
 				$html=Html::Text($name,$value,$extra)
 					.<<<HTML
-<script>//<![CDATA[
+<script>
 (function(){
 	if(typeof CKEDITOR.instances.{$id}!="undefined")
 		try{ CKEDITOR.instances.{$id}.destroy(); }catch(e){};
@@ -149,7 +149,7 @@ HTML;
 	else
 		console.error("CKEditor was no loaded...");
 
-})()//]]></script>
+})()</script>
 HTML;
 			break;
 			case'tinymce':#Tiny MCE
@@ -160,7 +160,7 @@ HTML;
 
 				if($tinyalr)
 					$GLOBALS['head'][]=<<<HTML
-<script>//<![CDATA[
+<script>
 (function(){
 	var Run=function(){
 		tinymce.init({
@@ -177,7 +177,7 @@ HTML;
 		CORE.after_ajax.push(Run);
 	else
 		Run()
-})()//]]></script>
+})()</script>
 HTML;
 				$tinyalr=false;
 

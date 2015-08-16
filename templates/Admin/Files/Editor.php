@@ -91,7 +91,7 @@ if($var_4=='ckeditor')
 
 echo<<<HTML
 <div class="bb-editor">{$var_1}{$foot}</div>
-<script>//<![CDATA[
+<script>
 $(function(){
 	$("#smiles-{$var_0} button").click(function(e){
 		e.preventDefault();
@@ -111,5 +111,5 @@ $(function(){
 		var c=$(this).data("code");
 		EDITOR.Insert("[block-"+c+"]","[/block-"+c+"]",false,"{$var_0}");
 	});
-})//]]></script>
+})</script>
 HTML;

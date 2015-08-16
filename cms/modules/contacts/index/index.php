@@ -172,9 +172,9 @@ unset($v);
 $_SESSION['can']=true;
 $values['session']=session_id();
 
-$Editor=function($name)use($Eleanor){
+$Editor=function(...$args)use($Eleanor){
 	$Editor=new Editor(null,false,false);
-	return call_user_func_array([$Editor,'Area'],func_get_args());
+	return $Editor->Area(...$args);
 };
 
 $Eleanor->module['description']=is_array($data['meta_descr']) ? FilterLangValues($data['meta_descr']) : $data['meta_descr'];

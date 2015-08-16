@@ -1,11 +1,12 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
 namespace CMS\Templates\Admin;
 use CMS\Eleanor, \Eleanor\Classes\Html, \CMS\OwnBB, \Eleanor\Classes\Strings;
+use const \CMS\ENT, \Eleanor\CHARSET;
 
 defined('CMS\STARTED')||die;
 
@@ -84,7 +85,7 @@ class Comments
 			$images=T::$T->default['images'];
 			foreach($items as $k=>$v)
 			{
-				$author=htmlspecialchars($v['author'],\CMS\ENT,\Eleanor\CHARSET);
+				$author=htmlspecialchars($v['author'],ENT,CHARSET);
 				$Lst->item(
 					Eleanor::$Language->Date($v['date'],'fdt'),
 					$v['_aauthor'] ? '<a href="'.$v['_aauthor'].'">'.$author.'</a>' : $author,
@@ -114,10 +115,10 @@ class Comments
 		if($cnt==0)
 			return T::$T->Cover($Lst);
 
-		return T::$T->Cover('<script>//<![CDATA[
+		return'<script>
 $(function(){
 	One2AllCheckboxes("#checks-form","#mass-check","[name=\"mass[]\"]",true);
-})//]]></script>
+})</script>
 <form id="checks-form" action="'.$links['form_items']
 			.'" method="post" onsubmit="return (CheckGroup(this) && confirm(\''.T::$lang['are_you_sure'].'\'))">'.$Lst
 			.'<div class="submitline" style="text-align:right">'
@@ -128,7 +129,7 @@ $(function(){
 			.Html::Select('op',Html::Option(T::$lang['delete'],'k').Html::Option(T::$lang['active'],'a')
 				.Html::Option(T::$lang['inactive'],'d').Html::Option(static::$lang['blocked'],'b'))
 			.Html::Button('Ok').'</div></form>'
-			.T::$T->Pages($cnt,$pp,$page,[$links['pages'],$links['first_page']]));
+			.T::$T->Pages($cnt,$pp,$page,[$links['pages'],$links['first_page']]);
 	}
 
 	/** Страница редактирования комментария
@@ -157,7 +158,7 @@ $(function(){
 		if($back)
 			$back=Html::Input('back',$back,['type'=>'hidden']);
 
-		$author=htmlspecialchars($values['author'],\CMS\ENT,\Eleanor\CHARSET);
+		$author=htmlspecialchars($values['author'],ENT,CHARSET);
 		$Lst=TableForm()
 			->form()
 			->begin()

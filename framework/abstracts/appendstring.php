@@ -41,15 +41,10 @@ abstract class AppendString extends Eleanor\BaseClass
 	 * @param \string Название шаблона
 	 * @params Переменные шаблона
 	 * @return mixed */
-	public function __invoke()
+	public function __invoke(...$a)
 	{
-		$n=func_num_args();
-
-		if($n>0)
-		{
-			$a=func_get_args();
+		if(count($a)>0)
 			return$this->_($a[0],array_slice($a,1));
-		}
 	}
 
 	public function __clone()

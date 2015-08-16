@@ -1,11 +1,12 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
 namespace CMS\Templates\Admin;
 use \CMS\Eleanor, Eleanor\Classes\Html, CMS\UserManager, Eleanor\Classes\Types;
+use const \Eleanor\CHARSET, \Eleanor\SITEDIR, \CMS\ENT;
 
 defined('CMS\STARTED')||die;
 
@@ -220,14 +221,14 @@ HTML;
 				switch($session['type'])
 				{
 					case'bot':
-						$session['botname']=htmlspecialchars($session['botname'],\CMS\ENT,\Eleanor\CHARSET);
+						$session['botname']=htmlspecialchars($session['botname'],ENT,CHARSET);
 						$avatar=ItemAvatar($session['botname']);
 						$name=<<<HTML
 <a href="{$session['_adetail']}" class="iframe"><i>{$session['botname']}</i></a>
 HTML;
 					break;
 					case'user':
-						$session['name']=htmlspecialchars($session['name'],\CMS\ENT,\Eleanor\CHARSET);
+						$session['name']=htmlspecialchars($session['name'],ENT,CHARSET);
 						$avatar=$session['avatar']
 							? <<<HTML
 <a class="zoom-thumb iframe" href="{$session['_adetail']}"><span class="thumb" style="background-image: url({$session['avatar']['http']});"></span></a>
@@ -252,7 +253,7 @@ HTML;
 HTML;
 				}
 
-				$session['location']=htmlspecialchars($session['location'],\CMS\ENT,\Eleanor\CHARSET,false);
+				$session['location']=htmlspecialchars($session['location'],ENT,CHARSET,false);
 				$ip=$session['ip_guest'] ? $session['ip_guest'] : $session['ip_user'];
 
 				$avatar.=<<<HTML
@@ -275,7 +276,7 @@ HTML
 
 			$Items->end()->foot('',$cnt,$pp,$page,$links);
 
-			$back=Html::Input('back',\Eleanor\SITEDIR.\CMS\Url::$current,['type'=>'hidden']);
+			$back=Html::Input('back',SITEDIR.\CMS\Url::$current,['type'=>'hidden']);
 			$t_lang=T::$lang;
 			$c_lang=static::$lang;
 			$Items.=<<<HTML
@@ -428,15 +429,15 @@ HTML;
 		if($session)
 		{
 			$ip=$session['ip_guest'] ? $session['ip_guest'] : $session['ip_user'];
-			$loc=\Eleanor\SITEDIR.htmlspecialchars($session['location'],\CMS\ENT,\Eleanor\CHARSET,false);
+			$loc=SITEDIR.htmlspecialchars($session['location'],ENT,CHARSET,false);
 			$enter=call_user_func(static::$lang['min_left'],floor(($t-strtotime($session['enter']))/60));
-			$browser=htmlspecialchars($session['browser'],\CMS\ENT,\Eleanor\CHARSET,false);
+			$browser=htmlspecialchars($session['browser'],ENT,CHARSET,false);
 
 			#Имя сессии
 			if($session['name'])
 			{
 				$style=$session['style'] ? ' style="'.$session[ 'style' ].'"' : '';
-				$session['name']=htmlspecialchars($session['name'],\CMS\ENT, \Eleanor\CHARSET);
+				$session['name']=htmlspecialchars($session['name'],ENT, CHARSET);
 				$title=<<<HTML
 <h3{$style}>{$session['name']}</h3>
 HTML;
@@ -457,7 +458,7 @@ HTML;
 					continue;
 
 				if($param!='ips')
-					$value=htmlspecialchars($value,\CMS\ENT,\Eleanor\CHARSET);
+					$value=htmlspecialchars($value,ENT,CHARSET);
 
 				switch($param)
 				{
@@ -579,7 +580,7 @@ HTML;
 
 				$Items->item(
 					$Items('main',
-						htmlspecialchars($v['name'],\CMS\ENT,\Eleanor\CHARSET),
+						htmlspecialchars($v['name'],ENT,CHARSET),
 						[ $v['_aedit'],[ $v['_a'], T::$lang['goto'],'extra'=>['target'=>'_blank'] ], [$v['_aedit'], T::$lang['edit']],
 							$v['_adel'] ? [ $v['_adel'], T::$lang['delete'], 'extra'=>['class'=>'delete']] : false],
 						$v['avatar'] ? $v['avatar']['http'] : false
@@ -594,7 +595,7 @@ HTML;
 
 			$Items->end()->foot(Html::Option(T::$lang['delete'],'delete'),$cnt,$pp,$page,$links)->endform()->checks();
 
-			$back=Html::Input('back',\Eleanor\SITEDIR.\CMS\Url::$current,['type'=>'hidden']);
+			$back=Html::Input('back',SITEDIR.\CMS\Url::$current,['type'=>'hidden']);
 			$t_lang=T::$lang;
 			$c_lang=static::$lang;
 			$Items.=<<<HTML

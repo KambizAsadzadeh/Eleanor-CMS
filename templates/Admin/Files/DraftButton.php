@@ -29,7 +29,7 @@ if(!isset($extra['id']))
 	$extra['id']=uniqid();
 
 $GLOBALS['head']['draft']=<<<'HTML'
-<script>//<![CDATA[
+<script>
 CORE.drafts=[];
 $(function(){
 	var lnk="",
@@ -64,7 +64,7 @@ $(function(){
 			e.preventDefault();
 		});
 	});
-})//]]></script>
+})</script>
 HTML;
 
 	if(!isset($extra['class']))
@@ -74,7 +74,7 @@ HTML;
 	$extra=Html::TagParams($extra);
 
 	echo<<<HTML
-<button type="button"{$extra} disabled></button><script>//<![CDATA[
+<button type="button"{$extra} disabled></button><script>
 $(function(){
 	var D{$id}=new CORE.DRAFT({
 			form:$("#{$id}").closest("form"),
@@ -98,6 +98,6 @@ $(function(){
 	setTimeout(function(){
 		D{$id}.enabled=true;
 	},2500);
-})//]]></script>
+})</script>
 HTML
 ;

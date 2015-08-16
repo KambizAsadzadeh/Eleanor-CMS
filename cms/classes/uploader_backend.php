@@ -1,14 +1,11 @@
 <?php
 /**
-	Eleanor CMS © 2014
+	Eleanor CMS © 2015
 	http://eleanor-cms.ru
 	info@eleanor-cms.ru
 */
 namespace CMS;
-use Eleanor\Classes\EE, Eleanor\Classes\Files;
-use Eleanor\Classes\Html;
-use Eleanor\Classes\Image;
-use Eleanor\Classes\Output;
+use Eleanor\Classes\EE, Eleanor\Classes\Files, Eleanor\Classes\Html, Eleanor\Classes\Image, Eleanor\Classes\Output;
 
 /** BackEnd загрузчика файлов */
 class Uploader_BackEnd
@@ -406,9 +403,9 @@ class Uploader_BackEnd
 				if(false===file_put_contents($path,''))
 					return Error(['CREATE_FILE_FAIL']);
 
-				$Editor=function()use($type){
+				$Editor=function(...$args)use($type){
 					$Ed=new Editor('codemirror',false,false);
-					return call_user_func_array([$Ed,'Area'],func_get_args()+[3=>['syntax'=>$type]]);
+					return$Ed->Area(...$args+[3=>['syntax'=>$type]]);
 				};
 
 				$out=(array)Eleanor::$Template->CreateEditFile($Editor,Files::Windows($name,true),'');
@@ -429,9 +426,10 @@ class Uploader_BackEnd
 
 				$path.=$what;
 
-				$Editor=function()use($type){
+				$Editor=function(...$args)use($type){
 					$Ed=new Editor('codemirror',false,false);
-					return call_user_func_array([$Ed,'Area'],func_get_args()+[3=>['syntax'=>$type]]);
+
+					return $Ed->Area(...$args+[3=>['syntax'=>$type]]);
 				};
 
 				$out=(array)Eleanor::$Template->CreateEditFile($Editor,Files::Windows($what,true),file_get_contents($path));
