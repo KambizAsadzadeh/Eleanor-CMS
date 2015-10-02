@@ -79,6 +79,30 @@ function SortOrderLimit($total,&$page,array&$query,array$sorting,$defsort,$defor
 	return[$sort,$order,' LIMIT '.($offset==0 ? '' : $offset.',').$pp,$pp,$offset];
 }
 
+/** Получение вида сортировки, порядка сортировки, лимита для запроса и отступа для большинства ОБРАТНЫХ списков
+ * @param int $total Количество пунктов в списке
+ * @param int $page Номер страницы (может быть скорректирован)
+ * @param array $query GET запрос
+ * @param array $sorting все возможные виды сортировок
+ * @param string $defsort Вид сортировки по умолчанию
+ * @param string $deforder Порядок сортировки по умолчанию (asc,desc)
+ * @param int|null $pp Пунктов на страницу
+ * @return array [$sort,$order,$limit,$offset,$pp] */
+function RSortOrderLimit($total,&$page,array&$query,array$sorting,$defsort,$deforder='desc',$pp=null)
+{
+	if(!is_int($pp))
+		$pp=PerPage($query);
+
+	$np=$total % $pp;
+	$pages=max(ceil($total/$pp)-($np>0 ? 1 : 0),1);
+	$intpage=$pages - ($page===null ? $pages : $page) + 1;
+
+	$result=SortOrderLimit($total,$intpage,$query,$sorting,$defsort,$deforder,$pp);
+	$page=$pages - $intpage + 1;
+
+	return$result;
+}
+
 /** Генерация ссылки на сортировку
  * @param string $sort Нужный вид сортировки
  * @param array $query Строка запроса

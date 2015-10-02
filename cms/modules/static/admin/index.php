@@ -36,11 +36,9 @@ if(isset($_GET['do']))switch($_GET['do'])
 	break;
 	case'files':
 		$title[]=$lang['fp'];
-		$Uploader=new StringCallback(function()use($Eleanor){
-			return$Eleanor->Uploader->Show($Eleanor->module['path'].'DIRECT',false);
-		});
+		$Uploader=new Uploader($config['direct-path'],$config['direct-http']);
 
-		$c=Eleanor::$Template->Files($Uploader);
+		$c=Eleanor::$Template->Files($Uploader->Show());
 		Response($c);
 	break;
 	case'options':

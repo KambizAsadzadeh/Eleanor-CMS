@@ -588,6 +588,8 @@ thead.empty th { padding:0 !important; border:0 !important; }
 .form-group.no-bottom-padding { margin-bottom: 0; }
 .input-lg + .change-name { margin-top: 5px; }
 .form-group + h4, .input-group + h4 { margin-top:20px; margin-bottom: 5px; }
+/* Ссылка удаления внутри fancybox-a */
+.fancybox-title a.glyphicon { color:red;float:left; }
 
 /* Фиксы глюков */
 .menu-fix-1 { z-index:1050; }

@@ -101,10 +101,10 @@ class Uploader
 									<button class="dropdown-toggle" data-toggle="dropdown" type="button"><i class="ico-setting"></i></button>
 									<ul class="dropdown-menu menu-fix-1">
 										<li data-ng-if="file.commands.indexOf('attach')>-1"><a href="#" data-ng-click="Insert(file,true,\$index,\$event);\$event.preventDefault()">{$c_lang['as-object']}</a></li>
-										<li data-ng-if="_preview"><a href="{{file.http||file.download}}" class="uploader-fancybox" data-fancybox-group="uploader" data-fancybox-title="{{file.name}}">{$c_lang['preview']}</a></li>
+										<li data-ng-if="_preview"><a href="{{file.http||file.download}}" class="uploader-fancybox" data-fancybox-group="uploader{$uniq}" data-fancybox-title="{{file.name}}">{$c_lang['preview']}</a></li>
 										<li data-ng-if="!_preview"><a href="#" data-ng-click="Download(file,\$index);\$event.preventDefault()">{$c_lang['download']}</a></li>
 										<li data-ng-if="file.commands.indexOf('rename')>-1"><a href="#" data-ng-click="Rename(file,\$index);\$event.preventDefault()">{$c_lang['rename']}</a></li>
-										<li data-ng-if="file.commands.indexOf('delete')>-1"><a href="#" data-ng-click="Delete(file,\$index);\$event.preventDefault()">{$c_lang['delete']}</a></li>
+										<li data-ng-if="file.commands.indexOf('delete')>-1"><a href="#" class="fancybox-delete" data-ng-click="Delete(file,\$index);\$event.preventDefault()">{$c_lang['delete']}</a></li>
 										<li data-ng-if="file.commands.indexOf('edit')>-1"><a href="#" data-ng-click="Edit(file,\$index);\$event.preventDefault()">{$c_lang['edit']}</a></li>
 									</ul>
 								</div>
@@ -151,7 +151,39 @@ class Uploader
 			});
 		}
 	});
-	$(".uploader-fancybox").fancybox();
+	$(".uploader-fancybox").fancybox({
+		afterShow:function(){
+			var a=this.element;
+
+			$('<a href="#" class="child glyphicon glyphicon-trash" style="float: left; color: red;" title="{$c_lang['delete']}"> </a>')
+				.click(function(e){
+					e.preventDefault();
+					angular.element( a.closest("ul").find("a.fancybox-delete")[0] ).triggerHandler('click');
+
+					if($.fancybox.current.group.length>1)
+					{
+						$.fancybox.current.group.splice($.fancybox.current.index,1);
+
+						if($.fancybox.current.index>$.fancybox.current.group.length)
+						{
+							$.fancybox.current.index--;
+							$.fancybox.prev();
+						}
+						else
+							$.fancybox.next();
+					}
+					else
+						$.fancybox.close();
+				}).prependTo( $.fancybox.skin.find(".fancybox-title") );
+
+			/*var alt = this.element.find('img').attr('alt');
+			this.inner.find('img').attr('alt', alt);
+			this.title = alt;*/
+            /* Add watermark */
+            /*$('<div class="watermark"></div>')
+                .prependTo( $.fancybox.inner ); */
+	    }
+	});
 })</script>
 <!-- Загрузчик [E] -->
 HTML;

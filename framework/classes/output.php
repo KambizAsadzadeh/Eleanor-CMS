@@ -171,7 +171,7 @@ class Output extends Eleanor\BaseClass
 	 * @param string|int $modified Дата последнего изменения страницы
 	 * @param bool $includes Флаг проверки даты у всех проинклуженых файлов
 	 * @return bool */
-	public static function TryReturnCache($etag,$modified=0,$includes=true)
+	public static function TryReturnCache($etag,&$modified=0,$includes=true)
 	{
 		if(!isset($_SERVER['HTTP_IF_NONE_MATCH'],$_SERVER['HTTP_IF_MODIFIED_SINCE']))
 			return false;

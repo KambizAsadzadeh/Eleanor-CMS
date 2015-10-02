@@ -74,7 +74,7 @@ HTML;
 	$extra=Html::TagParams($extra);
 
 	echo<<<HTML
-<button type="button"{$extra} disabled></button><script>
+<button type="button"{$extra} disabled></button><script data-keep-on>
 $(function(){
 	var D{$id}=new CORE.DRAFT({
 			form:$("#{$id}").closest("form"),

@@ -250,8 +250,8 @@ else
 	function Response($content,array$cache=[],$code=200)
 	{
 		$out=isset($_GET['iframe'])
-			? (string)Eleanor::$Template->iframe([ 'content'=>$content ])
-			: (string)Eleanor::$Template->index([ 'content'=>$content ]);
+			? (string)Eleanor::$Template->iframe([ 'content'=>(string)$content ])
+			: (string)Eleanor::$Template->index([ 'content'=>(string)$content ]);
 
 		#Мегафикс #1: поисковики не понимают тег <base href...>, и всегда лишний раз переходят по ссылке без его учета
 		$out=preg_replace_callback('%(href|src)=(["\'])([^\'"#/][^\'"]+)%i',function($match){
@@ -289,12 +289,7 @@ else
 				elseif(strpos($tag, 'data-')!==false)
 					$scripts.=trim($m[0][$k]);
 				elseif($m[2][$k])
-				{
-					if($joined)
-						$joined.=";\n";
-
-					$joined.=trim($m[2][$k],"; \n\r");
-				}
+					$joined.=trim($m[2][$k],"; \n\r").';';
 
 				$out=str_replace($m[0][$k],'',$out);
 			}

@@ -106,7 +106,7 @@ class Index
 					$i++;
 			}
 			$last=array_pop($result);
-			$result[]=str_replace('<a','<a rel="first"',$last);
+			$result[]=str_replace('<a','<a rel="last"',$last);
 			$result=join('',$result);
 			$goto=T::$lang['goto'];
 

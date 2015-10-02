@@ -219,7 +219,7 @@ array_push($GLOBALS['scripts'],'https://cdn.socket.io/socket.io-1.3.5.js',T::$ht
 <head>
 	<link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.min.css" type="text/css">
 	<link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap-theme.css" type="text/css">
-	<script src="//cdn.jsdelivr.net/g/angularjs,angular.bootstrap(ui-bootstrap.min.js+ui-bootstrap-tpls.min.js),jquery,bootstrap@3"></script>
+	<script src="//cdn.jsdelivr.net/g/angularjs,angular.bootstrap(ui-bootstrap.min.js+ui-bootstrap-tpls.min.js),jquery@2,bootstrap@3"></script>
 	<meta name="viewport" content="width=1140">
 
 	<?=Templates\GetHead(true,false)?>

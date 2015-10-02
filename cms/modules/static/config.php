@@ -20,5 +20,9 @@ return[
 	'uploads-http'=>Template::$http['uploads'].'static/',
 	'uploads-path'=>Template::$path['uploads'].'static/',
 
+	#Папка файловых страниц
+	'direct-path'=>__DIR__.'/DIRECT/',
+	'direct-http'=>'cms/modules/'.basename(__DIR__).'/DIRECT/',
+
 	'pv'=>'m_static_',#Префикс настроек
 ];

@@ -28,7 +28,12 @@ class StringCallback extends Eleanor\BaseClass
 	 * @return mixed */
 	public function __toString()
 	{
-		return call_user_func($this->Callback);
+		$s=call_user_func($this->Callback);
+
+		while(is_object($s))
+			$s=(string)$s;
+
+		return$s;
 	}
 
 	/** Вызов объекта, как функцию */

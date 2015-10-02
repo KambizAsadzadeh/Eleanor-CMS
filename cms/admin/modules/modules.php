@@ -386,6 +386,8 @@ elseif(isset($_GET['edit']))
 							if($value)
 								$values['uris'][$uri][$lng]=$value;
 						}
+						elseif(isset($orig['uris'][$uri][$lng]))
+							$values['uris'][$uri][$lng]=$orig['uris'][$uri][$lng];
 				}
 			else
 				foreach($uris as $uri)
@@ -403,6 +405,8 @@ elseif(isset($_GET['edit']))
 						if($value)
 							$values['uris'][$uri]['']=$value;
 					}
+					elseif(isset($orig['uris'][$uri]['']))
+						$values['uris'][$uri]['']=$orig['uris'][$uri][''];
 
 			$exists=[];
 			$Filter=function($v)use($id)

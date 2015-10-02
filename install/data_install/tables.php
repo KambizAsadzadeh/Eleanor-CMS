@@ -472,19 +472,11 @@ SQL;
 
 $tables[]="DROP TABLE IF EXISTS `{$prefix}ping`";
 $tables['ping']=<<<SQL
-CREATE TABLE `{$prefix}ping` (
+CREATE TABLE `{$prefix}seo_ping` (
 	`id` VARCHAR(20) NOT NULL,
 	`pinged` TINYINT NOT NULL,
 	`date` TIMESTAMP NOT NULL default '0000-00-00 00:00:00',
-	`result` TINYTEXT NOT NULL,
-	`services` TINYTEXT NOT NULL,
-	`exclude` TINYTEXT NOT NULL,
-	`method` VARCHAR(30) NOT NULL,
-	`site` TINYTEXT NOT NULL COMMENT 'ping page',
-	`main` TINYTEXT NOT NULL COMMENT 'ping page',
-	`changes` TINYTEXT NOT NULL COMMENT 'ping page',
-	`rss` TINYTEXT NOT NULL COMMENT 'ping page',
-	`categories` TINYTEXT NOT NULL COMMENT 'ping',
+	`url` TINYTEXT NOT NULL,
 	PRIMARY KEY (`id`),
 	KEY `pinged` (`pinged`,`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$charset}
