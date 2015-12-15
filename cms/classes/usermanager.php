@@ -185,6 +185,9 @@ class UserManager extends \Eleanor\BaseClass
 			$todb['temp']=strpos($tosite['groups'],','.static::GROUP_WAIT.',')!==false;
 		}
 
+		if(!isset(Eleanor::$vars['min_pass_length']))
+			LoadOptions('user-profile',false);
+
 		if($single)
 		{
 			$table=[
@@ -231,9 +234,6 @@ class UserManager extends \Eleanor\BaseClass
 		{
 			if($user['_password']=='')
 				throw new EE('EMPTY_PASSWORD',EE::DEV);
-
-			if(!isset(Eleanor::$vars['min_pass_length']))
-				LoadOptions('user-profile',false);
 
 			$len=(int)Eleanor::$vars['min_pass_length'];
 			if($len>0 and ($l=mb_strlen($user['_password']))<$len)

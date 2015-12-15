@@ -8,9 +8,13 @@ namespace CMS;
 defined('CMS\STARTED')||die;
 
 /** Невидимый элемент шаблона, автоматически прописывает URI
- * @var bool $var_0 Включение транслитерации */
+ * @var bool $var_0 Включение транслитерации
+ * @var string $var_1 Имя поля с названием
+ * @var string $var_2 Имя поля с uri */
 
 $trans=Eleanor::$vars['trans_uri'] || !empty($var_0);
+$title=isset($var_1) ? $var_1 : 'title';
+$uri=isset($var_2) ? $var_2 : 'uri';
 
 if($trans)
 	if(Eleanor::$vars['multilang'])
@@ -22,10 +26,10 @@ if($trans)
 
 if(Eleanor::$vars['multilang'])
 	foreach(Eleanor::$langs as $k=>$v)
-		echo'Source2Uri($("#title-',$k,'"),$("#uri-',$k,'"),',
+		echo'Source2Uri($("#',$title,'-',$k,'"),$("#',$uri,'-',$k,'"),',
 		$trans && $k!='english' ? 'CORE.'.ucfirst(Language::$main).'.Translit' : 'false',
 		',"',Eleanor::$vars['url_rep_space'],'");';
 else
-	echo'Source2Uri($("#title"),$("#uri"),',
+	echo'Source2Uri($("#',$title,'"),$("#',$uri,'"),',
 		$trans ? 'CORE.'.ucfirst(Language::$main).'.Translit' : 'false',
 		',"',Eleanor::$vars['url_rep_space'],'");';

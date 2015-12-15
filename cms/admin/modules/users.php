@@ -385,7 +385,7 @@ WHERE `s`.`ip_guest`={$ip} AND `s`.`user_id`={$id} AND `s`.`service`={$service} 
 		else
 		{
 			if(isset($_GET['iframe']))
-				return Response( Eleanor::$Template->Iframe((string)$Url) );
+				return Response( Eleanor::$Template->IframeResponse((string)$Url) );
 
 			return GoAway((string)$Url);
 		}
@@ -779,12 +779,13 @@ elseif(isset($_GET['edit']))
 
 				if(isset($letter['newpass_t'],$letter['newpass'],$values['_password']) and in_array('pass',$letters))
 				{
+					$name=isset($values['name']) ? $values['name'] : $orig['name'];
 					$replace=[
 						'site'=>Eleanor::$vars['site_name'],
-						'fullname'=>$values['full_name'],
-						'name'=>htmlspecialchars(isset($values['name']) ? $values['name'] : $orig['name'],ENT,\Eleanor\CHARSET),
+						'fullname'=>isset($values['full_name']) ? $values['full_name'] : $orig['full_name'],
+						'name'=>htmlspecialchars($name,ENT,\Eleanor\CHARSET),
 						'pass'=>$values['_password'],
-						'userlink'=>UserLink($id,$values['name']),
+						'userlink'=>UserLink($id,$name),
 						'link'=>\Eleanor\PROTOCOL.\Eleanor\DOMAIN.\Eleanor\SITEDIR,
 					];
 					Email::Simple(

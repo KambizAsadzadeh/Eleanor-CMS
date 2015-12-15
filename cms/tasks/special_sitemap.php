@@ -47,7 +47,7 @@ class Sitemap extends \Eleanor\BaseClass implements CMS\Interfaces\Task
 	{
 		$this->data=$data;
 
-		$R=Eleanor::$Db->Query('SELECT `modules`,`file`,`compress`,`limit`,`fulllink`,`sendservice` FROM `'
+		$R=Eleanor::$Db->Query('SELECT `modules`,`file`,`compress`,`limit`,`fulllink`,`send_service` FROM `'
 			.CMS\P.'sitemaps` WHERE `id`='.$this->opts['id'].' LIMIT 1');
 		if(!$sitemap=$R->fetch_assoc() or !$sitemap['modules'])
 			return true;
@@ -196,7 +196,7 @@ class Sitemap extends \Eleanor\BaseClass implements CMS\Interfaces\Task
 					#Удаление оригинального файла
 					#Files::Delete($fx);
 				}
-				$this->data['sent']=$sitemap['sendservice'] ? explode(',,',trim($sitemap['sendservice'],',')) : false;
+				$this->data['sent']=$sitemap['send_service'] ? explode(',,',trim($sitemap['send_service'],',')) : false;
 			}
 			else
 				$this->data['sent']=false;

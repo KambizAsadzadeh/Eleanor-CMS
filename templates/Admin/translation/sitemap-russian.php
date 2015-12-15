@@ -1,6 +1,11 @@
 <?php
-return array(
+return[
 	#Для Classes/Sitemap.php
+	'list'=>'Список sitemap-ов',
+	'create'=>'Создать sitemap',
+	'edit-robots'=>'Править robots.txt',
+
+
 	'NOFILE'=>'Не задан файл',
 	'NO_NEXT_RUN'=>'При заданном времени запуска, задача никогда не запустится',
 	'NOMODULES'=>'Не выбрано ни одного модуля',
@@ -35,4 +40,4 @@ return array(
 	'robots'=>'Содержимое файла robots.txt',
 	'rsaved'=>'Содержимое файла robots.txt успешно сохранено',
 	'deleting'=>'Вы действительно хотите удалить карту сайта &quot;%s&quot;? Файл &quot;%s&quot; так же будет удален.',
-);
+];

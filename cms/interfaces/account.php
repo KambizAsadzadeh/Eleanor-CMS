@@ -17,8 +17,8 @@ interface Account#Интерфейс для создания медов авто
 	 * @return array */
 	public static function Uris();
 
-	/** Пока контента с обработкой запроса
+	/** Получение контента с обработкой запроса
 	 * @param bool $master Возможность обработки входящего запроса с возможным перенаправлением
-	 * @return array */
+	 * @return mixed */
 	public static function Content($master=true);
 }

@@ -40,15 +40,23 @@ class Index
 					if($page<$pages)
 					{
 						$prev=static::PageUrl($href,$page+1);
-						$GLOBALS['head']['prev']='<link rel="prev" href="'.$prev.'" />';
-						$prev='<li><a href="'.$prev.'">&laquo;</a></li>';
+						$GLOBALS['head']['prev']=<<<HTML
+<link rel="prev" href="{$prev}" />
+HTML;
+						$prev=<<<HTML
+<li><a rel="prev" href="{$prev}">&laquo;</a></li>
+HTML;
 					}
 
 					if($page>1)
 					{
 						$next=static::PageUrl($href,$page-1);
-						$GLOBALS['head']['next']='<link rel="next" href="'.$next.'" />';
-						$next='<li><a href="'.$next.'">&raquo;</a></li>';
+						$GLOBALS['head']['next']=<<<HTML
+<link rel="next" href="{$next}" />
+HTML;
+						$next=<<<HTML
+<li><a rel="next" href="{$next}">&raquo;</a></li>
+HTML;
 					}
 				}
 				else
@@ -56,15 +64,23 @@ class Index
 					if($page>1)
 					{
 						$prev=static::PageUrl($href,$page-1);
-						$GLOBALS['head']['prev']='<link rel="prev" href="'.$prev.'" />';
-						$prev='<li><a href="'.$prev.'">&laquo;</a></li>';
+						$GLOBALS['head']['prev']=<<<HTML
+<link rel="prev" href="{$prev}" />
+HTML;
+						$prev=<<<HTML
+<li><a rel="prev" href="{$prev}">&laquo;</a></li>
+HTML;
 					}
 
 					if($page<$pages)
 					{
 						$next=static::PageUrl($href,$page+1);
-						$GLOBALS['head']['next']='<link rel="next" href="'.$next.'" />';
-						$next='<li><a href="'.$next.'">&raquo;</a></li>';
+						$GLOBALS['head']['next']=<<<HTML
+<link rel="next" href="{$next}" />
+HTML;
+						$next=<<<HTML
+<li><a rel="next" href="{$next}">&raquo;</a></li>
+HTML;
 					}
 				}
 
@@ -79,13 +95,25 @@ class Index
 					break;
 
 				if($i==$page)
-					$result[]='<li class="active"><span>'.$i.'</span></li>';
+					$result[]=<<<HTML
+<li class="active"><span>{$i}</span></li>
+HTML;
 				elseif($reverse and $i>$pages-3 or !$reverse and $i<3 or#Левая часть
 					$i>($page-2) and $i<($page+2) or $fill_r and $i>$page or $fill_l and $i<$page or#Средня часть
 					$reverse and $i==1 or !$reverse and $i==$pages#Правая часть
 				)#or $all
-					$result[]='<li><a href="'.static::PageUrl($href,$i).$h.'"'
-						.($first ? ' rel="first"' : '').'>'.$i.'</a></li>';
+				{
+					if($first)
+						$rel=' rel="first"';
+					elseif($reverse and $i+1==$page or !$reverse and $i-1==$page)
+						$rel=' rel="next"';
+					elseif($reverse and $i-1==$page or !$reverse and $i+1==$page)
+						$rel=' rel="prev"';
+					else
+						$rel='';
+
+					$result[]='<li><a href="'.static::PageUrl($href, $i).$h.'"'.$rel.">{$i}</a></li>";
+				}
 				else
 				{
 					$result[]='<li><span>...</span></li>';

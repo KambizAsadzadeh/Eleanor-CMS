@@ -43,6 +43,13 @@ class MySQL extends Eleanor\BaseClass
 		}
 	}
 
+	/** Деструктор */
+	public function __destruct()
+	{
+		if($this->Driver)
+			$this->Driver->close();
+	}
+
 	protected function Connect()
 	{
 		if(!isset($this->params['host'],$this->params['user'],$this->params['pass'],$this->params['db']))

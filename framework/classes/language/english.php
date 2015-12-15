@@ -82,6 +82,6 @@ class English extends Eleanor\BaseClass
 				return'Tomorrow';
 		}
 
-		return date('m F Y',$t);
+		return date('d F Y',$t);
 	}
 }

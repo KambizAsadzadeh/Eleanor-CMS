@@ -51,7 +51,7 @@ function SortOrderLimit($total,&$page,array&$query,array$sorting,$defsort,$defor
 	if($total>0)
 	{
 		if($page>ceil($total/$pp))
-			$page=floor($total/$pp);
+			$page=max(1,floor($total/$pp));
 
 		$offset=($page-1)*$pp;
 	}
@@ -103,7 +103,7 @@ function RSortOrderLimit($total,&$page,array&$query,array$sorting,$defsort,$defo
 	return$result;
 }
 
-/** Генерация ссылки на сортировку
+/** Генерация ссылки на сортировку по динамическому URL
  * @param string $sort Нужный вид сортировки
  * @param array $query Строка запроса
  * @param string $defsort Вид сортировки по умолчанию
@@ -122,4 +122,36 @@ function SortDynUrl($sort,$query,$defsort,$deforder='asc')
 	];
 
 	return$Url(array_merge($query,$so));
+}
+
+/** Генерация ссылки на сортировку по статическому URL
+ * @param string $sort Нужный вид сортировки
+ * @param string|null $order Нужный порядок сортировки
+ * @param array|string $query Запрос, либо префикс будущей ссылки
+ * @param string $defsort Вид сортировки по умолчанию
+ * @param string $deforder Порядок сортировки по умолчанию (asc,desc)
+ * @return string */
+function SortUrl($sort,$order,$query,$defsort,$deforder='desc')
+{
+	#Инверсия
+	if(!$order)
+	{
+		$order=$query['order'];
+		$order=$order=='asc' ? 'desc' : 'asc';
+	}
+
+	$so=[
+		'sort'=>$defsort===$sort ? null : $sort,
+		'order'=>$order===$deforder ? null : $order,
+	];
+
+	if(is_string($query))
+	{
+		$so=Url::Query($so);
+		return$query.($so ? '?'.$so : '');
+	}
+
+	/** @var Url $Url */
+	$Url=$GLOBALS['Eleanor']->Url;
+	return$Url($query,'',$so);
 }

@@ -182,7 +182,7 @@ elseif(isset($_GET['delete']))
 		Eleanor::$Db->Delete($table,"`name`={$qservice} LIMIT 1");
 		Eleanor::$Cache->Obsolete('system-services');
 
-		return GoAway(empty($_POST['back']) ? true : $_POST['back']);
+		return GoAway(empty($_POST['back']) ? true : (string)$_POST['back']);
 	}
 
 	$title[]=$lang['deleting'];

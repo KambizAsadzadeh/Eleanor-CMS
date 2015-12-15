@@ -20,6 +20,15 @@ class Email
 		/** @var string Тема письма */
 		$subject,
 
+		/** @var string Текст письма */
+		$message='',
+
+		/** @var string Тип содержимого */
+		$type,
+
+		/** @var string Кодировка содержимого */
+		$charset=Eleanor\CHARSET,
+
 		/** @var int Уровень важности от 1 (самый важный) до 5 (самый неважный) */
 		$pr=3,
 
@@ -68,14 +77,6 @@ class Email
 
 		/** @var $Email self */
 		$Email=new static;
-		$Email->parts=[
-			'multipart'=>'mixed',
-			[
-				'content-type'=>$extra['type'],
-				'charset'=>Eleanor\CHARSET,
-				'content'=>$mess,
-			],
-		];
 
 		foreach($extra['files'] as $k=>&$v)
 		{
@@ -97,8 +98,23 @@ class Email
 		}
 
 		foreach($extra as $k=>$v)
-			if(!in_array($k,['type','files','copy','hidden']) and $v!==false)
+			if(!in_array($k,['files','copy','hidden']) and $v!==false)
 				$Email->$k=$v;
+
+		if($Email->method=='mail')
+			$Email->message=$mess;
+		else
+		{
+			$Email->message=$Email->type=null;
+			$Email->parts=[
+				'multipart'=>'mixed',
+				[
+					'content-type'=>$extra['type'],
+					'charset'=>Eleanor\CHARSET,
+					'content'=>$mess,
+				],
+			];
+		}
 
 		$Email->subject=$subj;
 		$Email->Send(['to'=>$to,'cc'=>$extra['copy'],'bcc'=>$extra['hidden']]);
@@ -143,6 +159,7 @@ class Email
 				: ($a['to'] ? 'To: '.join(', ',$a['to']).$d : '')
 					.'Subject: '.$subject.$d
 			)
+			.($this->type ? "Content-Type: {$this->type}; charset={$this->charset}".$d : '')
 			.($this->from ? 'Return-Path: '.$this->from.$d : '')
 			.($this->reply ? 'Reply-To: '.$this->reply.$d : '')
 			.($this->from && $this->notice_on ? 'Return-Receipt-To: '.$this->from.$d : '')
@@ -152,7 +169,7 @@ class Email
 		switch($this->method)
 		{
 			case'mail':
-				if(!mail(join(', ',$a['to']),$subject,null,$headers))
+				if(!mail(join(', ',$a['to']),$subject,$this->message,$headers))
 					throw new EE('MAIL',EE::UNIT);
 			break;
 			case'smtp':

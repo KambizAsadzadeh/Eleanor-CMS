@@ -220,7 +220,7 @@ class Html extends Eleanor\BaseClass
 	 * @return string */
 	public static function Select($name,$options='',array$extra=[])
 	{
-		if(!$options)
+		if(!$options and !isset($extra['disabled']))
 		{
 			$options=self::Option('');
 			$extra['disabled']=true;

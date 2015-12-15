@@ -293,7 +293,7 @@ elseif(isset($_GET['edit']))
 						{
 							$uri=Eleanor::$Db->Escape($value);
 							$lin=$lng ? 'IN(\'\',\''.$lng.'\')' : '=\'\'';
-							$R=Eleanor::$Db->Query("SELECT `id` FROM `{$config['t']}` INNER JOIN `{$config['tl']}` USING(`id`) WHERE `uri`={$uri} AND `language`{$lin} AND `id`!='.$id.' LIMIT 1");
+							$R=Eleanor::$Db->Query("SELECT `id` FROM `{$config['t']}` INNER JOIN `{$config['tl']}` USING(`id`) WHERE `uri`={$uri} AND `language`{$lin} AND `id`!={$id} LIMIT 1");
 							if($R->num_rows>0)
 								$value='';
 						}

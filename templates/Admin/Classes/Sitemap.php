@@ -15,20 +15,16 @@ class Sitemap
 	public static $lang;
 
 	/** Меню модуля
-	 * @param string $act Идентификатор активного пункта меню
-	 * @return string */
+	 * @param string $act Идентификатор активного пункта меню */
 	protected static function Menu($act='')
 	{
 		$links=&$GLOBALS['Eleanor']->module['links'];
 
-		$GLOBALS['Eleanor']->module['navigation']=[
-			array($links['list'],Eleanor::$Language['sitemap']['list'],'act'=>$act=='list',
-				'submenu'=>array(
-					array($links['add'],static::$lang['add'],'act'=>$act=='add'),
-				),
-			),
-			array($links['er'],static::$lang['editrobots'],'act'=>$act=='er'),
-		);
+		T::$data['navigation']=[
+			[$links['list'],Eleanor::$Language['sitemaps']['list'],'act'=>$act=='list'],
+			[$links['create'],static::$lang['create'],'act'=>$act=='create'],
+			[$links['robots.txt'],static::$lang['edit-robots'],'act'=>$act=='robots'],
+		];
 	}
 
 	/*
@@ -333,41 +329,36 @@ $(function(){
 })//]]></script>';
 	}
 
-	/*
-		Элемент шаблона. Отображение настроек модуля при правке sitemap-а. Используется и для AJAX
-
-		$ms массив с параметрами сайта. Ключи:
-			id - ID модуля
-			d - описание модуля
-			t - название модуля
-			e - ошибка настроек (общая)
-			c - массив исходных конфигураций модуля, ключи
-				title - название настройки
-				descr - (возможный ключ) описание настройки
-			s - массив результирующего HTML для настроек, ключи сходны с ключами массива c выше.
-	*/
-	public static function GetSettings($ms)
+	/** Страница правки файла robots.txt
+	 * @param string $contents содержимое файла
+	 * @param bool $saved Флаг удачного сохранения файла
+	 * @return string */
+	public static function EditRobots($contents,$saved)
 	{
-		$Lst=Eleanor::LoadListTemplate('table-form')
-			->begin(array('id'=>'ms-'.$ms['id']))
-			->head('<span title="'.$ms['d'].'">'.$ms['t'].'</span>');
+		#SpeedBar
+		T::$data['speedbar']=[
+			[$GLOBALS['Eleanor']->module['links']['list'], Eleanor::$Language['main']['modules']],
+			end($GLOBALS['title'])
+		];
 
-		if($ms['e'])
-			$Lst->s.='<tr><td colspan="2">'.Eleanor::$Template->Message($ms['e'],'error').'</td></tr>';
-		else
-			foreach($ms['c'] as $ck=>&$cv)
-				$Lst->item(array($cv['title'],$ms['s'][$ck],'descr'=>isset($cv['descr']) ? $cv['descr'] : false));
-		return$Lst->end();
-	}
+		static::Menu('robots');
 
-	/**
-	 * Страница правки файла robots.txt
-	 * @param string $v содержимое файла
-	 * @param bool $save Флаг сохраненности
-	 */
-	public static function EditRobots($v,$saved)
-	{
-		static::Menu('er');
+		return<<<HTML
+			<form method="post">
+				<div id="mainbar">
+					<div class="block">
+						{$input['title']}
+					</div>
+				</div>
+				<div id="rightbar"></div>
+				<!-- FootLine -->
+				<div class="submit-pane">
+					<button type="submit" class="btn btn-success need-tabindex"><b>{$success}</b></button>
+				</div>
+				<!-- FootLine [E] -->
+			</form>
+HTML;
+
 		$Lst=Eleanor::LoadListTemplate('table-form')
 			->form()
 			->begin()
@@ -391,4 +382,7 @@ $(function(){
 		return Eleanor::$Template->Cover(Eleanor::$Template->Confirm(sprintf(static::$lang['deleting'],$a['title'],$a['file']),$back));
 	}
 }
-TplSitemap::$lang=Eleanor::$Language->Load(Eleanor::$Template->default['theme'].'langs/sitemap-*.php',false);
+
+Sitemap::$lang=Eleanor::$Language->Load(__DIR__.'/../translation/sitemap-*.php',false);
+
+return Sitemap::class;

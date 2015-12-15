@@ -285,7 +285,7 @@ elseif(isset($_GET['delete']))
 		Eleanor::$Cache->Obsolete('ownbb');
 
 		if(isset($_GET['iframe']))
-			return Response( Eleanor::$Template->Iframe((string)$Url) );
+			return Response( Eleanor::$Template->IframeResponse((string)$Url) );
 
 		return GoAway(empty($_POST['back']) ? true : (string)$_POST['back']);
 	}

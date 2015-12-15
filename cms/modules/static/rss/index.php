@@ -64,11 +64,11 @@ if($ids)
 		.$config['t'].'` INNER JOIN `'.$config['tl'].'` USING(`id`) WHERE `id`'.Eleanor::$Db->In($ids).' AND `status`=1');
 	while($item=$R->fetch_assoc())
 	{
-		if($items['parents'])
+		if($item['parents'])
 		{
 			$c=[];
 
-			foreach(explode(',',rtrim($items['parents'],',')) as $p)
+			foreach(explode(',',rtrim($item['parents'],',')) as $p)
 				if(isset($parents[$p]))
 					$c[]=$parents[$p];
 
@@ -82,7 +82,7 @@ if($ids)
 
 		$u=$Api->GetUrl($item['id'],$Eleanor->Url);
 		$items[ $item['id'] ]=[
-			'title'=>$items['title'],#Заголовок сообщения
+			'title'=>$item['title'],#Заголовок сообщения
 			'link'=>$u,#URL сообщения
 			'description'=>OwnBB::Parse($item['text']),#Краткий обзор сообщения
 			'guid'=>$u,#Строка, уникальным образом идентифицирующая сообщение.
