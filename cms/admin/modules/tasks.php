@@ -230,7 +230,7 @@ elseif(isset($_GET['toggle']))
 
 	if(Eleanor::$ourquery)
 	{
-		Eleanor::$Db->Update($table,['!status'=>'NOT `status`'],'`id`='.$id.' LIMIT 1');
+		Eleanor::$Db->Update($table,['!status'=>'NOT `status`'],'`id`='.$id);
 		Tasks::UpdateNextRun();
 	}
 

@@ -22,6 +22,8 @@ class Url extends Eleanor\BaseClass
 		if($qs===null)
 		{
 			$qs=isset($_SERVER['REDIRECT_QUERY_STRING']) ? $_SERVER['REDIRECT_QUERY_STRING'] : $_SERVER['QUERY_STRING'];
+			$qs=str_replace(["\n","\r"],'',$qs);
+
 			$direct=false;
 		}
 		else

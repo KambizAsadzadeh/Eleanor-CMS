@@ -760,11 +760,14 @@ elseif(isset($_GET['edit']))
 						Eleanor::$Db->Delete($table['ea'],"`provider`={$provider} AND `provider_uid`{$pids}");
 					}
 
+				$name=isset($values['name']) ? $values['name'] : $orig['name'];
+				$fullname=isset($values['full_name']) ? $values['full_name'] : $orig['full_name'];
+
 				if(isset($letter['renamed_t'],$letter['renamed'],$values['name']) and in_array('name',$letters) and $orig['name']!=$values['name'])
 				{
 					$replace=[
 						'site'=>Eleanor::$vars['site_name'],
-						'fullname'=>$values['full_name'],
+						'fullname'=>$fullname,
 						'name'=>htmlspecialchars($values['name'],ENT,\Eleanor\CHARSET),
 						'oldname'=>htmlspecialchars($orig['name'],ENT,\Eleanor\CHARSET),
 						'userlink'=>UserLink($id,$values['name']),
@@ -779,10 +782,9 @@ elseif(isset($_GET['edit']))
 
 				if(isset($letter['newpass_t'],$letter['newpass'],$values['_password']) and in_array('pass',$letters))
 				{
-					$name=isset($values['name']) ? $values['name'] : $orig['name'];
 					$replace=[
 						'site'=>Eleanor::$vars['site_name'],
-						'fullname'=>isset($values['full_name']) ? $values['full_name'] : $orig['full_name'],
+						'fullname'=>$fullname,
 						'name'=>htmlspecialchars($name,ENT,\Eleanor\CHARSET),
 						'pass'=>$values['_password'],
 						'userlink'=>UserLink($id,$name),
@@ -794,6 +796,11 @@ elseif(isset($_GET['edit']))
 						BBCode::ExecLogic($letter['newpass_t'],$replace)
 					);
 				}
+			}
+			catch(EE_DB$E)
+			{
+				$E->Log();
+				$errors[]=$E->getMessage();
 			}
 			catch(EE$E)
 			{

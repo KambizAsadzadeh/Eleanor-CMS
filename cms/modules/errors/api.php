@@ -50,8 +50,7 @@ class ApiErrors extends \Eleanor\BaseClass implements Interfaces\NewLangUrl
 		else
 			return'';
 
-		$R=Eleanor::$Db->Query('SELECT `uri` FROM `'.$this->config['t'].'` INNER JOIN `'.$this->config['tl']
-			.'` USING(`id`) WHERE `language` IN (\'\',\''.$newlang.'\') AND `id`='.$id.' LIMIT 1');
+		$R=Eleanor::$Db->Query("SELECT `uri` FROM `{$this->config['t']}` INNER JOIN `{$this->config['tl']}` USING(`id`) WHERE `language` IN ('','{$newlang}') AND `id`={$id} LIMIT 1");
 		if($a=$R->fetch_assoc())
 			return$a['uri'] ? $Url($a['uri']) : $Url([],'',['id'=>$id]);
 

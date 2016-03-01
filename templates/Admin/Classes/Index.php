@@ -5,7 +5,6 @@
 	info@eleanor-cms.ru
 */
 namespace CMS\Templates\Admin;
-use CMS\Eleanor;
 
 /** Набор основных шаблонов */
 class Index

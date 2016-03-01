@@ -231,7 +231,7 @@ switch($type)
 			if(!$user=$R->fetch_assoc())
 				break;
 
-			Eleanor::$Db->Delete(P.'multisite_jump','`id`='.$id.' LIMIT 1');
+			Eleanor::$Db->Delete(P.'multisite_jump','`id`='.$id);
 		}
 
 		if($user['user_id']==0)

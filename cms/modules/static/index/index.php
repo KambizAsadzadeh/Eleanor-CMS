@@ -91,7 +91,7 @@ else
 
 		if($id>0)
 		{
-			$R=Eleanor::$Db->Query('SELECT `parents` FROM `'.$config['t'].'` WHERE `status`=1 AND `id`='.$id.' LIMIT 1');
+			$R=Eleanor::$Db->Query("SELECT `parents` FROM `{$config['t']}` WHERE `status`=1 AND `id`={$id} LIMIT 1");
 			if(!list($parents)=$R->fetch_row())
 				return ExitPage();
 

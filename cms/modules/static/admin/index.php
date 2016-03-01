@@ -211,7 +211,7 @@ ORDER BY `pos` ASC");
 				$values['parents']=$R->fetch_row()[0].$parent.',';
 
 				#Проверка, не поместили ли мы себя внутри себя
-				if(strpos(','.$id.',',','.$values['parents'])===false)
+				if(strpos(",{$id},",','.$values['parents'])===false)
 					$values['parent']=$parent;
 				else
 					$values['parents']='';
@@ -318,7 +318,7 @@ ORDER BY `pos` ASC");
 			if($orig['parents']!=$values['parents'])
 				Eleanor::$Db->Update($config['t'],['!parents'=>"REPLACE(`parents`,'{$orig['parents']}','{$values['parents']}')"],"`parents` LIKE '{$orig['parents']}{$id},%'");
 
-			Eleanor::$Db->Update($config['t'],$values,'id='.$id.' LIMIT 1');
+			Eleanor::$Db->Update($config['t'],$values,'id='.$id);
 
 			if($langs==[''])
 				Eleanor::$Db->Update($config['tl'],['language'=>''],"`id`={$id} AND `language`='{$langmain}'");
@@ -634,7 +634,7 @@ elseif(isset($_GET['toggle']))
 
 	if(Eleanor::$ourquery)
 	{
-		Eleanor::$Db->Update($config['t'],['!status'=>'NOT `status`'],'`id`='.$id.' LIMIT 1');
+		Eleanor::$Db->Update($config['t'],['!status'=>'NOT `status`'],'`id`='.$id);
 		Eleanor::$Cache->Engine->DeleteByTag($config['n']);
 	}
 

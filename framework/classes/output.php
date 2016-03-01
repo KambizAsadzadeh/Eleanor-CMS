@@ -173,10 +173,11 @@ class Output extends Eleanor\BaseClass
 	 * @return bool */
 	public static function TryReturnCache($etag,&$modified=0,$includes=true)
 	{
-		if(!isset($_SERVER['HTTP_IF_NONE_MATCH'],$_SERVER['HTTP_IF_MODIFIED_SINCE']))
+		if(!$includes and !isset($_SERVER['HTTP_IF_NONE_MATCH'],$_SERVER['HTTP_IF_MODIFIED_SINCE']))
 			return false;
 
-		$ifmod=strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']);
+		$ifmod=isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ? strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) : 0;
+		$iftag=isset($_SERVER['HTTP_IF_NONE_MATCH']) ? (string)$_SERVER['HTTP_IF_NONE_MATCH'] : '';
 
 		if(!$modified)
 			$modified=$ifmod;
@@ -190,8 +191,7 @@ class Output extends Eleanor\BaseClass
 			foreach(get_included_files() as $file)
 				$modified=max($modified,filemtime($file));
 
-		if($ifmod && $modified && $modified<=$ifmod
-			&& $_SERVER['HTTP_IF_NONE_MATCH'] && $etag==$_SERVER['HTTP_IF_NONE_MATCH'])
+		if($ifmod && $modified && $modified<=$ifmod && $iftag && $etag==$iftag)
 		{
 			header('X-Powered-CMS: Eleanor CMS http://eleanor-cms.ru',true,304);
 			return true;
@@ -261,6 +261,7 @@ class Output extends Eleanor\BaseClass
 		}
 
 		header("Content-Type: {$type[0]}; charset={$type[1]}");
+		header("Content-Encoding: {$type[1]}");
 		header('X-Powered-CMS: Eleanor CMS http://eleanor-cms.ru',false,$code);
 
 		return true;

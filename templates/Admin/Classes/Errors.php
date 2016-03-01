@@ -410,11 +410,11 @@ HTML;
 
 	/** Страница правки форматов писем
 	 * @param array $controls Перечень контролов
-	 * @param array $values HTML код контролов
+	 * @param callback $Controls2Html Генератор html из $controls
 	 * @param bool $saved Флаг успешного сохранения
 	 * @param array $errors Ошибки заполнения формы
 	 * @return string*/
-	public static function Letters($controls,$values,$saved,$errors)
+	public static function Letters($controls,$Controls2Html,$saved,$errors)
 	{
 		#SpeedBar
 		T::$data['speedbar']=[
@@ -436,8 +436,9 @@ HTML;
 		#Content
 		$content='';
 		$new_vars=true;
+		$controls_html=$Controls2Html();
 		foreach($controls as $k=>&$v)
-			if($v and is_array($v) and !empty($values[$k]))
+			if($v and is_array($v) and isset($controls_html[$k]))
 			{
 				if($new_vars)
 				{
@@ -449,7 +450,7 @@ HTML;
 HTML;
 				}
 
-				$control=T::$T->LangEdit($values[$k], null);
+				$control=T::$T->LangEdit($controls_html[$k], null);
 				$content.=<<<HTML
 <div class="form-group">
 	<label>{$v['title']}</label>
@@ -479,7 +480,11 @@ HTML;
 			<section id="content">
 				<form method="post">
 					{$content}
-					<button type="submit" class="btn btn-success"><b>{$c_lang['letters-save']}</b></button>
+					<!-- FootLine -->
+					<div class="submit-pane">
+						<button type="submit" class="btn btn-success"><b>{$c_lang['letters-save']}</b></button>
+					</div>
+					<!-- FootLine [E] -->
 				</form>
 			</section>
 <script>$(function(){

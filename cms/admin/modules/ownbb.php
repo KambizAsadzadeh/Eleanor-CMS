@@ -280,7 +280,7 @@ elseif(isset($_GET['delete']))
 
 	if(isset($_POST['ok']))
 	{
-		Eleanor::$Db->Delete($table,'`id`='.$id.' LIMIT 1');
+		Eleanor::$Db->Delete($table,'`id`='.$id);
 		Eleanor::$Db->Update($table,['!pos'=>'`pos`-1'],'`pos`>'.$ownbb['pos']);
 		Eleanor::$Cache->Obsolete('ownbb');
 
@@ -306,7 +306,7 @@ elseif(isset($_GET['toggle']))
 
 	if(Eleanor::$ourquery)
 	{
-		Eleanor::$Db->Update($table,['!status'=>'NOT `status`'],'`id`='.$id.' LIMIT 1');
+		Eleanor::$Db->Update($table,['!status'=>'NOT `status`'],'`id`='.$id);
 		Eleanor::$Cache->Obsolete('ownbb');
 	}
 
@@ -323,7 +323,7 @@ else
 		if(count($order)==$R->num_rows)
 		{
 			foreach($order as $v)
-				Eleanor::$Db->Update($table,$R->fetch_assoc(),'`id`='.$v.' LIMIT 1');
+				Eleanor::$Db->Update($table,$R->fetch_assoc(),'`id`='.$v);
 
 			$status='ok';
 		}

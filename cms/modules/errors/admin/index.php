@@ -138,9 +138,13 @@ if(isset($_GET['do'])) switch($_GET['do'])
 						$values[$k]['value']=$v;
 			}
 
-		$values=$Eleanor->Controls->DisplayControls($controls,$values)+$values;
+		$Controls2Html=function()use($controls,$values){
+			$C=new Controls;
+			return$C->DisplayControls($controls,$values);
+		};
+
 		$title[]=$lang['letters'];
-		$c=Eleanor::$Template->Letters($controls,$values,$post,[]);
+		$c=Eleanor::$Template->Letters($controls,$Controls2Html,$post,[]);
 
 		Response($c);
 	break;
@@ -158,7 +162,7 @@ if(isset($_GET['do'])) switch($_GET['do'])
 elseif(isset($_GET['delete-draft']))
 {
 	$id=(int)$_GET['delete-draft'];
-	Eleanor::$Db->Delete(P.'drafts','`key`=\''.$config['n'].'-'.Eleanor::$Login->Get('id').'-'.$id.'\' LIMIT 1');
+	Eleanor::$Db->Delete(P.'drafts','`key`=\''.$config['n'].'-'.Eleanor::$Login->Get('id')."-{$id}'");
 	GoAway(false);
 }
 elseif(isset($_GET['edit']))
@@ -400,7 +404,7 @@ elseif(isset($_GET['edit']))
 				 and ($values['miniature']!=$orig['miniature'] or $values['miniature_type']!='upload'))
 				Files::Delete($f);
 
-			Eleanor::$Db->Update($config['t'],$values,'id='.$id.' LIMIT 1');
+			Eleanor::$Db->Update($config['t'],$values,'id='.$id);
 
 			if($langs==[''])
 				Eleanor::$Db->Update($config[ 'tl' ], ['language'=>''], "`id`={$id} AND `language`='{$langmain}'");

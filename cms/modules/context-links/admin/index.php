@@ -51,9 +51,9 @@ elseif(isset($_GET['delete']))
 	$id=(int)$_GET['delete'];
 	if(!Eleanor::$our_query)
 		return GoAway();
-	Eleanor::$Db->Delete($config['t'],'`id`='.$id.' LIMIT 1');
+	Eleanor::$Db->Delete($config['t'],'`id`='.$id);
 	Eleanor::$Db->Delete($config['tl'],'`id`='.$id);
-	Eleanor::$Db->Delete(P.'drafts','`key`=\''.$config['n'].'-'.Eleanor::$Login->Get('id').'-'.$id.'\' LIMIT 1');
+	Eleanor::$Db->Delete(P.'drafts','`key`=\''.$config['n'].'-'.Eleanor::$Login->Get('id')."-{$id}' LIMIT 1");
 	Eleanor::$Cache->Engine->DeleteByTag($config['n']);
 	GoAway();
 }
@@ -62,7 +62,7 @@ elseif(isset($_GET['swap']))
 	$id=(int)$_GET['swap'];
 	if(Eleanor::$our_query)
 	{
-		Eleanor::$Db->Update($config['t'],array('!status'=>'NOT `status`'),'`id`='.$id.' LIMIT 1');
+		Eleanor::$Db->Update($config['t'],array('!status'=>'NOT `status`'),'`id`='.$id);
 		Eleanor::$Cache->Engine->DeleteByTag($config['n']);
 	}
 	$back=getenv('HTTP_REFERER');

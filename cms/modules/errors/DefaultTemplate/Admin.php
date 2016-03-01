@@ -81,11 +81,11 @@ class Admin
 
 	/** Страница правки форматов писем
 	 * @param array $controls Перечень контролов
-	 * @param array $values HTML код контролов
+	 * @param callback $Controls2Html Генератор html из $controls
 	 * @param bool $saved Флаг успешного сохранения
 	 * @param array $errors Ошибки заполнения формы
 	 * @return string*/
-	public static function Letters($controls,$values,$errors)
+	public static function Letters($controls,$Controls2Html,$saved,$errors)
 	{
 
 	}

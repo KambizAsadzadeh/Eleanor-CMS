@@ -752,7 +752,7 @@ elseif(isset($_GET['delete']))
 		if($module['miniature_type']=='upload' and is_file($f=Template::$path['static'].'images/modules/'.$module['miniature']))
 			Files::Delete($f);
 
-		Eleanor::$Db->Delete($table,'`id`='.$id.' AND `protected`=0');
+		Eleanor::$Db->Delete($table,"`id`={$id} AND `protected`=0");
 		Eleanor::$Cache->Engine->DeleteByTag('modules');
 
 		return GoAway(empty($_POST['back']) ? true : (string)$_POST['back']);
@@ -774,7 +774,7 @@ elseif(isset($_GET['toggle']))
 
 	if(Eleanor::$ourquery)
 	{
-		Eleanor::$Db->Update($table,['!status'=>'NOT `status`'],'`id`='.$id.' AND `protected`=0 LIMIT 1');
+		Eleanor::$Db->Update($table,['!status'=>'NOT `status`'],"`id`={$id} AND `protected`=0 LIMIT 1");
 		Eleanor::$Cache->Engine->DeleteByTag('modules');
 	}
 

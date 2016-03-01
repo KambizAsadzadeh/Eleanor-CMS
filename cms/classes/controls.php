@@ -508,10 +508,10 @@ class Controls extends \Eleanor\BaseClass
 					$control['value']=$this->GetPostVal($control['name'],$control['value']);
 
 				/** @var Editor $E */
-				$E=new Editor;
+				$E=new Editor(isset($options['type']) ? $options['type'] : null);
 
 				foreach($options as$k=>$v)
-					if($k=='type' and $v==-1)
+					if($k=='type')
 						continue;
 					elseif(property_exists($E,$k))
 						$E->$k=$v;
@@ -677,10 +677,11 @@ class Controls extends \Eleanor\BaseClass
 					$res=null;
 			break;
 			case'editor':
-				$E=new Saver;
+				/** @var Saver $E */
+				$E=new Saver(isset($options['type']) ? $options['type'] : null);
 
 				foreach($options as$k=>$v)
-					if($k=='type' and $v==-1)
+					if($k=='type')
 						continue;
 					elseif(property_exists($E,$k))
 						$E->$k=$v;

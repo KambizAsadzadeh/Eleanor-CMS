@@ -129,7 +129,7 @@ class UserManager extends \Eleanor\BaseClass
 		$iid=Integration::Create($todb+$tosite+$toextra,$user);
 
 		if($iid)
-			Eleanor::$Db->Update(P.'users_site',['integration'=>$iid],'`id`='.$id.' LIMIT 1');
+			Eleanor::$Db->Update(P.'users_site',['integration'=>$iid],'`id`='.$id);
 
 		return$id;
 	}
@@ -221,6 +221,8 @@ class UserManager extends \Eleanor\BaseClass
 				if($R->num_rows>0)
 					throw new EE('NAME_EXISTS',EE::DEV);
 
+				$tosite['name']=$todb['name']=$user['name'];
+
 				if(!isset($todb['full_name']))
 				{
 					$R=Eleanor::$UsersDb->Query("SELECT `full_name`, `name` FROM `{$table['main']}` WHERE `id`{$in} LIMIT 1");
@@ -244,7 +246,7 @@ class UserManager extends \Eleanor\BaseClass
 
 		foreach($user as $k=>$v)
 			if(!array_key_exists($k,$tosite) and !array_key_exists($k,$todb) and $k[0]!='_' and
-				!in_array($k,['id','register']))
+				!in_array($k,['id','register','name']))
 				$toextra[$k]=$v;
 
 		if(isset($toextra['avatar']) and !$toextra['avatar'])

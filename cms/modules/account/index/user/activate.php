@@ -124,7 +124,7 @@ class AccountActivate
 				$table=P.'users_site';
 				$join='';
 			}
-			Eleanor::$Db->Delete(P.'confirmation','`id`='.$id.' LIMIT 1');
+			Eleanor::$Db->Delete(P.'confirmation','`id`='.$id);
 			$R=Eleanor::$Db->Query('SELECT `u`.`name`,`u`.`full_name`,`email` FROM `'.$table.'` `u`'.$join.' WHERE `id`='.$uinfo['id'].' LIMIT 1');
 			if($a=$R->fetch_assoc())
 			{

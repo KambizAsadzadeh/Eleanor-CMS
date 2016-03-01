@@ -65,13 +65,12 @@ elseif(isset($_GET['edit']))
 		if($comment['status']!=$status)
 			ChangeStatus($id,$status);
 
-		Eleanor::$Db->Update($table,$values,'`id`='.$id.' LIMIT 1');
+		Eleanor::$Db->Update($table,$values,"`id`={$id}");
 		return GoAway(empty($_POST['back']) ? true : (string)$_POST['back']);
 	}
 
 	$title[]=$lang['editing'];
-	$R=Eleanor::$Db->Query('SELECT `id`,`module`,`content_id`,`status`,`date`,`author`,`author_id`,`text` FROM `'.P
-		.'comments` WHERE id='.$id.' LIMIT 1');
+	$R=Eleanor::$Db->Query("SELECT `id`,`module`,`content_id`,`status`,`date`,`author`,`author_id`,`text` FROM `{$table}` WHERE id={$id} LIMIT 1");
 	if(!$values=$R->fetch_assoc())
 		return GoAway(true);
 
@@ -119,8 +118,8 @@ elseif(isset($_GET['delete']))
 		$R=Eleanor::$Db->Query("SELECT `parents` FROM `{$table}` WHERE `id`={$id} LIMIT 1");
 		if($comment=$R->fetch_assoc())
 		{
-			Eleanor::$Db->Delete($table,'`parents` LIKE \''.$comment['parents'].$id.',%\'');
-			Eleanor::$Db->Delete($table,'`id`='.$id.' LIMIT 1');
+			Eleanor::$Db->Delete($table,"`parents` LIKE '{$comment['parents']}{$id},%'");
+			Eleanor::$Db->Delete($table,'`id`='.$id);
 		}
 
 		return GoAway(empty($_POST['back']) ? true : (string)$_POST['back']);

@@ -156,7 +156,7 @@ class Russian extends Eleanor\BaseClass
 				return'Завтра';
 		}
 
-		$r=$day[2];
+		$r=sprintf('%02d',$day[2]);
 
 		switch($day[1])
 		{

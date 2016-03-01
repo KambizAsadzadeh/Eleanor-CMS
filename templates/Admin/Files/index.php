@@ -147,7 +147,7 @@ if(isset(T::$data['navigation']))
 						if(!empty($subitem['act']))
 						{
 							$active=true;
-							$extra+=['class'=>'active'];
+							$extra+=['class'=>'bg-info'];
 						}
 						$extra=$extra ? Html::TagParams($extra) : '';
 

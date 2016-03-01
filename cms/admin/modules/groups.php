@@ -123,7 +123,7 @@ elseif(isset($_GET['edit']))
 				$values['parents']=$R->fetch_row()[0].$parent.',';
 
 				#Проверка, не поместили ли мы себя внутри себя
-				if(strpos(','.$id.',',','.$values['parents'])===false)
+				if(strpos(",{$id},",','.$values['parents'])===false)
 					$values['parent']=$parent;
 				else
 					$values['parents']='';
